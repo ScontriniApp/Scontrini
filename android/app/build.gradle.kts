@@ -6,7 +6,10 @@ plugins {
 
 android {
     namespace = "com.swe.scontrini"
-    compileSdk = flutter.compileSdkVersion
+    // 37 instead of flutter.compileSdkVersion (36): permission_handler_android
+    // compiles against SDK 37. Compile SDK is backward compatible; minSdk and
+    // targetSdk are unchanged.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
