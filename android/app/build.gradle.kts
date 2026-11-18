@@ -6,7 +6,9 @@ plugins {
 
 android {
     namespace = "com.swe.scontrini"
-    // permission_handler_android requires compileSdk 37+ (Flutter 3.50 defaults to 36).
+    // 37 instead of flutter.compileSdkVersion (36): permission_handler_android
+    // compiles against SDK 37. Compile SDK is backward compatible; minSdk and
+    // targetSdk are unchanged.
     compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
