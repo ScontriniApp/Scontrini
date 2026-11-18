@@ -1,0 +1,20 @@
+{
+  "@@locale": "en",
+  "appTitle": "Receipts",
+  "navHome": "Home",
+  "navReceipts": "History",
+  "navAnalytics": "Analytics",
+  "navInsights": "Tips",
+  "addReceipt": "Add",
+  "settings": "Settings",
+  "captureTitle": "New receipt",
+  "captureScan": "Scan with camera",
+  "captureGallery": "Choose from gallery",
+  "capturePdf": "Import PDF",
+  "comingSoon": "Coming soon",
+  "dashboardEmpty": "No receipts yet.\nAdd your first one to see your spending.",
+  "receiptsEmpty": "Your purchase history will appear here.",
+  "analyticsEmpty": "Charts and statistics will appear here.",
+  "insightsEmpty": "Personalised tips will appear here.",
+  "settingsEmpty": "Categories, backup and security."
+}

@@ -1,0 +1,20 @@
+{
+  "@@locale": "it",
+  "appTitle": "Scontrini",
+  "navHome": "Home",
+  "navReceipts": "Storico",
+  "navAnalytics": "Analisi",
+  "navInsights": "Consigli",
+  "addReceipt": "Aggiungi",
+  "settings": "Impostazioni",
+  "captureTitle": "Nuovo scontrino",
+  "captureScan": "Scansiona con la fotocamera",
+  "captureGallery": "Scegli dalla galleria",
+  "capturePdf": "Importa PDF",
+  "comingSoon": "Funzionalità in arrivo",
+  "dashboardEmpty": "Nessuno scontrino ancora.\nAggiungi il primo per vedere le tue spese.",
+  "receiptsEmpty": "Lo storico degli acquisti apparirà qui.",
+  "analyticsEmpty": "Grafici e statistiche appariranno qui.",
+  "insightsEmpty": "I consigli personalizzati appariranno qui.",
+  "settingsEmpty": "Categorie, backup e sicurezza."
+}
