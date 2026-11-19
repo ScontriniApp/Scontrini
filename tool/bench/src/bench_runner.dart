@@ -54,6 +54,7 @@ class CaseResult {
   Map<String, Object?> toJson() => {
     'name': benchCase.name,
     'kind': benchCase.kind.name,
+    'group': benchCase.groupLabel,
     'hasTruth': hasTruth,
     'error': ?error,
     'textSource': ?document?.source.name,

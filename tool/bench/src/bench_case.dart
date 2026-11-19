@@ -17,7 +17,7 @@ enum InputKind {
 
 /// One receipt to run through the pipeline.
 class BenchCase {
-  const new(this.name, this.kind, this.files);
+  const new(this.name, this.kind, this.files, {this.group});
 
   /// File name without extension (and without the `.pN` page suffix). The
   /// ground truth is looked up by this name.
@@ -26,6 +26,15 @@ class BenchCase {
 
   /// Input files; several only for multi-page photos, in page order.
   final List<String> files;
+
+  /// Label used to group cases in the summary, e.g. which OCR engine produced
+  /// the text. Defaults to the input kind.
+  final String? group;
+
+  String get groupLabel => group ?? kind.name;
+
+  BenchCase withGroup(String group) =>
+      BenchCase(name, kind, files, group: group);
 }
 
 final _imageRe = RegExp(

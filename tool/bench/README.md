@@ -33,9 +33,24 @@ a real phone ("Esporta come test" + `tool/pull_fixtures.sh`) are replayed the sa
 `assets/test_receipts/incoming/`. So work on the row builder and the parser happens on the PC only;
 the device is needed again only for new photos or to test a different OCR setup.
 
+**Another OCR engine on the PC: GLM-OCR (experiment).** A 0.9B vision-language OCR model, run by
+LM Studio on the PC to compare it with ML Kit on the same photos before trying it on a phone:
+
+```bash
+lms load glm-ocr && lms server start      # once; model: ggml-org/GLM-OCR-GGUF, Q8_0, 1.43 GB
+flutter test tool/bench/desktop_bench_test.dart --dart-define=BENCH_GLM=true
+```
+
+It reads the photos in `data/scontrini_foto_reali` and `data/foto_render` (`BENCH_PHOTOS`) that it
+has not read yet, saves the text in `data/ocr_cache/glm/`, and prints the tokens used per photo
+(on a phone the time grows with the generated tokens). Later runs replay the saved text without
+LM Studio; `BENCH_GLM=refresh` reads everything again. Don't shrink the images: at 2048 px a long
+receipt became unreadable, so the limit is 4096 (`BENCH_GLM_MAX_SIDE`).
+
 ## What it measures
 
-One summary per input kind (PDF, photos), printed and saved in full in `data/bench_runs/`:
+One summary per group (PDF, photos · ML Kit, photos · GLM-OCR), printed and saved in full in
+`data/bench_runs/`:
 
 | Step | Measures | Against |
 |---|---|---|
