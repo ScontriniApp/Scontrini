@@ -12,7 +12,14 @@ part 'ocr_line.g.dart';
 /// them by vertical position first.
 @freezed
 abstract class OcrLine with _$OcrLine {
-  const factory({required String text, required TextBox box}) = _OcrLine;
+  const factory({
+    required String text,
+    required TextBox box,
+
+    /// Rotation of the text in degrees, clockwise in image coordinates
+    /// (y pointing down), as reported by ML Kit. 0 for PDF text.
+    @Default(0) double angle,
+  }) = _OcrLine;
 
   factory fromJson(Map<String, Object?> json) => _$OcrLineFromJson(json);
 }

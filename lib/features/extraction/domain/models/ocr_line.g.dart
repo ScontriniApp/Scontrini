@@ -9,9 +9,11 @@ part of 'ocr_line.dart';
 _OcrLine _$OcrLineFromJson(Map<String, dynamic> json) => _OcrLine(
   text: json['text'] as String,
   box: TextBox.fromJson(json['box'] as Map<String, dynamic>),
+  angle: (json['angle'] as num?)?.toDouble() ?? 0,
 );
 
 Map<String, dynamic> _$OcrLineToJson(_OcrLine instance) => <String, dynamic>{
   'text': instance.text,
   'box': instance.box.toJson(),
+  'angle': instance.angle,
 };

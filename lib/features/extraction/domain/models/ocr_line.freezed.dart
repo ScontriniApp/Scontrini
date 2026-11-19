@@ -16,7 +16,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OcrLine {
 
- String get text; TextBox get box;
+ String get text; TextBox get box;/// Rotation of the text in degrees, clockwise in image coordinates
+/// (y pointing down), as reported by ML Kit. 0 for PDF text.
+ double get angle;
 /// Create a copy of OcrLine
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +32,20 @@ $OcrLineCopyWith<OcrLine> get copyWith => _$OcrLineCopyWithImpl<OcrLine>(this as
 @override
 bool operator ==(Object other) {
   final _this = this as OcrLine;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OcrLine&&(identical(other.text, _this.text) || other.text == _this.text)&&(identical(other.box, _this.box) || other.box == _this.box));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OcrLine&&(identical(other.text, _this.text) || other.text == _this.text)&&(identical(other.box, _this.box) || other.box == _this.box)&&(identical(other.angle, _this.angle) || other.angle == _this.angle));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as OcrLine;
-  return Object.hash(runtimeType,_this.text,_this.box);
+  return Object.hash(runtimeType,_this.text,_this.box,_this.angle);
 }
 
 @override
 String toString() {
   final _this = this as OcrLine;
-  return 'OcrLine(text: ${_this.text}, box: ${_this.box})';
+  return 'OcrLine(text: ${_this.text}, box: ${_this.box}, angle: ${_this.angle})';
 }
 
 
@@ -54,7 +56,7 @@ abstract mixin class $OcrLineCopyWith<$Res>  {
   factory $OcrLineCopyWith(OcrLine value, $Res Function(OcrLine) _then) = _$OcrLineCopyWithImpl;
 @useResult
 $Res call({
- String text, TextBox box
+ String text, TextBox box, double angle
 });
 
 
@@ -71,11 +73,12 @@ class _$OcrLineCopyWithImpl<$Res>
 
 /// Create a copy of OcrLine
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? text = null,Object? box = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? text = null,Object? box = null,Object? angle = null,}) {
   return _then(OcrLine(
 text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
 as String,box: null == box ? _self.box : box // ignore: cast_nullable_to_non_nullable
-as TextBox,
+as TextBox,angle: null == angle ? _self.angle : angle // ignore: cast_nullable_to_non_nullable
+as double,
   ));
 }
 /// Create a copy of OcrLine
@@ -169,10 +172,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String text,  TextBox box)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String text,  TextBox box,  double angle)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OcrLine() when $default != null:
-return $default(_that.text,_that.box);case _:
+return $default(_that.text,_that.box,_that.angle);case _:
   return orElse();
 
 }
@@ -190,10 +193,10 @@ return $default(_that.text,_that.box);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String text,  TextBox box)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String text,  TextBox box,  double angle)  $default,) {final _that = this;
 switch (_that) {
 case _OcrLine():
-return $default(_that.text,_that.box);case _:
+return $default(_that.text,_that.box,_that.angle);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -210,10 +213,10 @@ return $default(_that.text,_that.box);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String text,  TextBox box)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String text,  TextBox box,  double angle)?  $default,) {final _that = this;
 switch (_that) {
 case _OcrLine() when $default != null:
-return $default(_that.text,_that.box);case _:
+return $default(_that.text,_that.box,_that.angle);case _:
   return null;
 
 }
@@ -225,11 +228,14 @@ return $default(_that.text,_that.box);case _:
 @JsonSerializable()
 
 class _OcrLine implements OcrLine {
-  const _OcrLine({required this.text, required this.box});
+  const _OcrLine({required this.text, required this.box, this.angle = 0});
   factory _OcrLine.fromJson(Map<String, dynamic> json) => _$OcrLineFromJson(json);
 
 @override final  String text;
 @override final  TextBox box;
+/// Rotation of the text in degrees, clockwise in image coordinates
+/// (y pointing down), as reported by ML Kit. 0 for PDF text.
+@override@JsonKey() final  double angle;
 
 /// Create a copy of OcrLine
 /// with the given fields replaced by the non-null parameter values.
@@ -244,18 +250,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _OcrLine&&(identical(other.text, text) || other.text == text)&&(identical(other.box, box) || other.box == box));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _OcrLine&&(identical(other.text, text) || other.text == text)&&(identical(other.box, box) || other.box == box)&&(identical(other.angle, angle) || other.angle == angle));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,text,box);
+    return Object.hash(runtimeType,text,box,angle);
 }
 
 @override
 String toString() {
-    return 'OcrLine(text: $text, box: $box)';
+    return 'OcrLine(text: $text, box: $box, angle: $angle)';
 }
 
 
@@ -266,7 +272,7 @@ abstract mixin class _$OcrLineCopyWith<$Res> implements $OcrLineCopyWith<$Res> {
   factory _$OcrLineCopyWith(_OcrLine value, $Res Function(_OcrLine) _then) = __$OcrLineCopyWithImpl;
 @override @useResult
 $Res call({
- String text, TextBox box
+ String text, TextBox box, double angle
 });
 
 
@@ -283,11 +289,12 @@ class __$OcrLineCopyWithImpl<$Res>
 
 /// Create a copy of OcrLine
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? text = null,Object? box = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? text = null,Object? box = null,Object? angle = null,}) {
   return _then(_OcrLine(
 text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
 as String,box: null == box ? _self.box : box // ignore: cast_nullable_to_non_nullable
-as TextBox,
+as TextBox,angle: null == angle ? _self.angle : angle // ignore: cast_nullable_to_non_nullable
+as double,
   ));
 }
 
