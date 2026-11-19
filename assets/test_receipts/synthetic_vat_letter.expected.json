@@ -1,0 +1,14 @@
+{
+  "storeName": "MARKET DI QUARTIERE",
+  "vatNumber": "09876543210",
+  "address": "PIAZZA GARIBALDI 3 - 10100 TORINO",
+  "purchaseDate": "2026-11-19T09:15:00.000",
+  "totalCents": 778,
+  "items": [
+    {"rawName": "YOGURT BIANCO", "unitPriceCents": 79, "lineTotalCents": 79},
+    {"rawName": "ACQUA NATURALE 1,5L", "quantity": 2, "unitPriceCents": 115, "lineTotalCents": 230},
+    {"rawName": "MOZZARELLA", "quantity": 3, "unitPriceCents": 99, "lineTotalCents": 297},
+    {"rawName": "POMODORI", "quantity": 0.812, "unit": "kg", "unitPriceCents": 249, "lineTotalCents": 202, "discountCents": 30}
+  ],
+  "unparsedLines": ["Xk#@ 7 ~~"]
+}
