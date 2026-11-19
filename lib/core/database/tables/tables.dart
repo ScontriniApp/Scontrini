@@ -79,6 +79,12 @@ class Receipts extends Table {
   /// Original OCR output, kept so receipts can be re-parsed later.
   TextColumn get rawOcrText => text().nullable()();
   TextColumn get status => textEnum<ReceiptStatus>()();
+
+  /// SHA-256 of the receipt's identity (store, date/time, total), set when
+  /// the receipt is confirmed and recomputed if those fields are corrected.
+  /// Unique, so the same receipt cannot be confirmed twice. Null for drafts.
+  /// See `transactionHash()` in `features/receipts/domain/`.
+  TextColumn get transactionHash => text().nullable().unique()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 

@@ -35,6 +35,11 @@ class AppDatabase extends _$AppDatabase {
     onUpgrade: (m, from, to) async {
       if (from < 2) {
         // Pantry: lots, their event log, and the links to receipts/products.
+        // Receipts: transaction hash. SQLite cannot add a UNIQUE column, so
+        // the receipts table is rebuilt.
+        await m.alterTable(
+          TableMigration(receipts, newColumns: [receipts.transactionHash]),
+        );
         await m.createTable(pantryLots);
         await m.createTable(pantryEvents);
         await m.addColumn(products, products.trackInPantry);

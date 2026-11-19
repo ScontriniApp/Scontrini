@@ -528,6 +528,22 @@
             }
           },
           {
+            "name": "transaction_hash",
+            "getter_name": "transactionHash",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
             "name": "created_at",
             "getter_name": "createdAt",
             "moor_type": "dateTime",
@@ -1105,7 +1121,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"receipts\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"store_id\" INTEGER NULL REFERENCES stores (id), \"purchase_date\" INTEGER NOT NULL, \"total_cents\" INTEGER NOT NULL, \"discount_cents\" INTEGER NOT NULL DEFAULT 0, \"source_path\" TEXT NULL, \"raw_ocr_text\" TEXT NULL, \"status\" TEXT NOT NULL, \"created_at\" INTEGER NOT NULL DEFAULT (CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER)));"
+          "sql": "CREATE TABLE IF NOT EXISTS \"receipts\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"store_id\" INTEGER NULL REFERENCES stores (id), \"purchase_date\" INTEGER NOT NULL, \"total_cents\" INTEGER NOT NULL, \"discount_cents\" INTEGER NOT NULL DEFAULT 0, \"source_path\" TEXT NULL, \"raw_ocr_text\" TEXT NULL, \"status\" TEXT NOT NULL, \"transaction_hash\" TEXT NULL UNIQUE, \"created_at\" INTEGER NOT NULL DEFAULT (CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER)));"
         }
       ]
     },

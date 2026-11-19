@@ -4,7 +4,6 @@
   "navHome": "Home",
   "navReceipts": "Storico",
   "navAnalytics": "Analisi",
-  "navInsights": "Consigli",
   "addReceipt": "Aggiungi",
   "settings": "Impostazioni",
   "captureTitle": "Nuovo scontrino",
@@ -15,7 +14,6 @@
   "dashboardEmpty": "Nessuno scontrino ancora.\nAggiungi il primo per vedere le tue spese.",
   "receiptsEmpty": "Lo storico degli acquisti apparirà qui.",
   "analyticsEmpty": "Grafici e statistiche appariranno qui.",
-  "insightsEmpty": "I consigli personalizzati appariranno qui.",
   "settingsEmpty": "Categorie, backup e sicurezza.",
   "captureFailed": "Impossibile acquisire lo scontrino.",
   "extractionTitle": "Scontrino letto",
@@ -59,5 +57,85 @@
         "type": "String"
       }
     }
-  }
+  },
+  "navPantry": "Dispensa",
+  "pantryEmpty": "La dispensa è vuota.\nAggiungi prodotti da uno scontrino o a mano.",
+  "pantryShowClosed": "Mostra finiti e buttati",
+  "pantryHideClosed": "Nascondi finiti e buttati",
+  "pantryAdd": "Aggiungi prodotto",
+  "pantryUncategorised": "Senza categoria",
+  "pantryRemaining": "{remaining} di {initial}",
+  "@pantryRemaining": {
+    "placeholders": {
+      "remaining": {
+        "type": "String"
+      },
+      "initial": {
+        "type": "String"
+      }
+    }
+  },
+  "pantrySourceManualPurchase": "Comprato, senza scontrino",
+  "pantrySourceInitialStock": "Già in casa",
+  "pantrySourceGift": "Regalo",
+  "pantryStatusConsumed": "Finito",
+  "pantryStatusDiscarded": "Buttato",
+  "pantryConsumeAll": "Segna come finito",
+  "pantryDiscard": "Butta via",
+  "pantryReasonExpired": "Scaduto",
+  "pantryReasonSpoiled": "Andato a male",
+  "pantryReasonOther": "Altro motivo",
+  "pantryUndo": "Annulla",
+  "pantryUndoLast": "Annulla l'ultima azione",
+  "pantryNothingToUndo": "Niente da annullare",
+  "pantryDelete": "Elimina dalla dispensa",
+  "pantryDeleteConfirm": "Eliminare {name}? Il suo storico di consumo andrà perso.",
+  "@pantryDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pantryConsumedMessage": "{name}: usato {amount}",
+  "@pantryConsumedMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "pantryDiscardedMessage": "{name} buttato",
+  "@pantryDiscardedMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pantryFinishedMessage": "{name} finito",
+  "@pantryFinishedMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Annulla",
+  "delete": "Elimina",
+  "save": "Salva",
+  "pantryFieldName": "Nome",
+  "pantryFieldQuantity": "Quantità",
+  "pantryFieldPrice": "Prezzo pagato (facoltativo)",
+  "pantryFieldCategory": "Categoria",
+  "pantryFieldSource": "Provenienza",
+  "pantryInvalidName": "Inserisci un nome",
+  "pantryInvalidQuantity": "Inserisci una quantità maggiore di zero",
+  "pantryInvalidPrice": "Prezzo non valido",
+  "unitPieces": "pz",
+  "unitKilograms": "kg",
+  "unitLitres": "l"
 }

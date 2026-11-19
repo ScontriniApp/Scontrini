@@ -1,7 +1,8 @@
 # Pantry and statistics: design rules
 
-Status: agreed on 2026-11-19. Schema v2 and `PantryRepository` implement rules 1–7
-(`lib/features/pantry/`); rule 8 belongs to the receipt save step and is not built yet.
+Status: agreed on 2026-11-19/20. Schema v2, `PantryRepository` and the pantry tab
+implement rules 1–7 (`lib/features/pantry/`). Rule 8 has its unique column and hash function; the
+receipt save step (not built yet) must compute the hash and handle the collision.
 This document fixes **what** gets recorded and **when statistics may change**, before the schema
 and the UI are written. The goal: a correction is never counted as a purchase, and statistics
 change only when a real-world fact changes.
@@ -20,9 +21,15 @@ parsing → receipt review → confirm ──→ analytics (purchases)
 ## Model
 
 - **Every item has an origin**: a receipt (photo + label) or a manual entry. Nothing exists without one.
-- **Receipt label**: generated from store and date (e.g. `Esselunga · 12 nov`), shown on every pantry
-  lot so the user can see where it came from and open the receipt. Manual lots show "Added manually".
-  *(Assumption, to confirm: the label is automatic, not a free user tag.)*
+- **Receipt tag** = the receipt's **transaction hash** (`receipts.transaction_hash`), shown as its
+  first 8 hex characters (`#a3f91c02`) on every pantry lot from that receipt. Manual lots show their
+  source instead ("Already at home", "Gift", "Bought, no receipt").
+  - SHA-256 of the receipt's identity: store (VAT number, else normalised name), date/time to the
+    minute in UTC, total in cents, and later the printed document number
+    (`transactionHash()` in `lib/features/receipts/domain/transaction_hash.dart`).
+  - Computed at **confirmation**, from the reviewed fields; drafts have none. Recomputed when one of
+    those fields is corrected. Links between rows, lots and receipts use the internal id, so a
+    changed hash breaks nothing.
 - **Lot** (`pantry_lots`) = what one origin put in the pantry for one product. It stores the
   purchased (`initial`) quantity; the remaining quantity is derived from its events. Two milks from receipt A and one from
   receipt B are two lots; the UI may group them as "Milk: 3".
@@ -59,8 +66,9 @@ parsing → receipt review → confirm ──→ analytics (purchases)
    Lots from other origins are untouched. Example: milk ×2 on the deleted receipt, 1 still in the
    pantry → that lot goes to 0 and disappears; milk from other receipts stays.
 7. **Quantities are never negative.** Every operation (consume, adjust, delete) clamps at 0.
-8. **Duplicate check before confirming**: same store + date/time + total as an existing confirmed
-   receipt → warn, since a re-scan would otherwise count twice.
+8. **No duplicate receipts.** `transaction_hash` is unique, so confirming the same receipt twice
+   fails. On a collision the app asks "is this the same receipt?"; if the user says no, the hash is
+   recomputed with `attempt: 1` (2, …).
 
 ## Pantry events
 
@@ -80,7 +88,10 @@ parsing → receipt review → confirm ──→ analytics (purchases)
 - Undo is a stack: only the latest effective consume / discard / recount can be reverted, so the lot
   always returns to a state that really existed. Stock-ins and corrections follow the receipt and
   are not undoable.
-- The slider writes one event when released, not while dragging.
+- The slider writes one event when released, not while dragging. Moving it back up within
+  5 minutes of a consume corrects that consume (revert + the net consume) instead of recording a
+  recount, so a slip of the finger never counts as consumption.
+- Every consume, finish and discard in the UI shows a snackbar with **Undo**.
 
 ## Statistics
 

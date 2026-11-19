@@ -1631,6 +1631,18 @@ class $ReceiptsTable extends Receipts with TableInfo<$ReceiptsTable, Receipt> {
         type: DriftSqlType.string,
         requiredDuringInsert: true,
       ).withConverter<ReceiptStatus>($ReceiptsTable.$converterstatus);
+  static const VerificationMeta _transactionHashMeta = const VerificationMeta(
+    'transactionHash',
+  );
+  @override
+  late final GeneratedColumn<String> transactionHash = GeneratedColumn<String>(
+    'transaction_hash',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1653,6 +1665,7 @@ class $ReceiptsTable extends Receipts with TableInfo<$ReceiptsTable, Receipt> {
     sourcePath,
     rawOcrText,
     status,
+    transactionHash,
     createdAt,
   ];
   @override
@@ -1719,6 +1732,15 @@ class $ReceiptsTable extends Receipts with TableInfo<$ReceiptsTable, Receipt> {
         ),
       );
     }
+    if (data.containsKey('transaction_hash')) {
+      context.handle(
+        _transactionHashMeta,
+        transactionHash.isAcceptableOrUnknown(
+          data['transaction_hash']!,
+          _transactionHashMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -1768,6 +1790,10 @@ class $ReceiptsTable extends Receipts with TableInfo<$ReceiptsTable, Receipt> {
           data['${effectivePrefix}status'],
         )!,
       ),
+      transactionHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transaction_hash'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -1799,6 +1825,12 @@ class Receipt extends DataClass implements Insertable<Receipt> {
   /// Original OCR output, kept so receipts can be re-parsed later.
   final String? rawOcrText;
   final ReceiptStatus status;
+
+  /// SHA-256 of the receipt's identity (store, date/time, total), set when
+  /// the receipt is confirmed and recomputed if those fields are corrected.
+  /// Unique, so the same receipt cannot be confirmed twice. Null for drafts.
+  /// See `transactionHash()` in `features/receipts/domain/`.
+  final String? transactionHash;
   final DateTime createdAt;
   const Receipt({
     required this.id,
@@ -1809,6 +1841,7 @@ class Receipt extends DataClass implements Insertable<Receipt> {
     this.sourcePath,
     this.rawOcrText,
     required this.status,
+    this.transactionHash,
     required this.createdAt,
   });
   @override
@@ -1832,6 +1865,9 @@ class Receipt extends DataClass implements Insertable<Receipt> {
         $ReceiptsTable.$converterstatus.toSql(status),
       );
     }
+    if (!nullToAbsent || transactionHash != null) {
+      map['transaction_hash'] = Variable<String>(transactionHash);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -1852,6 +1888,9 @@ class Receipt extends DataClass implements Insertable<Receipt> {
           ? const Value.absent()
           : Value(rawOcrText),
       status: Value(status),
+      transactionHash: transactionHash == null && nullToAbsent
+          ? const Value.absent()
+          : Value(transactionHash),
       createdAt: Value(createdAt),
     );
   }
@@ -1872,6 +1911,7 @@ class Receipt extends DataClass implements Insertable<Receipt> {
       status: $ReceiptsTable.$converterstatus.fromJson(
         serializer.fromJson<String>(json['status']),
       ),
+      transactionHash: serializer.fromJson<String?>(json['transactionHash']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -1889,6 +1929,7 @@ class Receipt extends DataClass implements Insertable<Receipt> {
       'status': serializer.toJson<String>(
         $ReceiptsTable.$converterstatus.toJson(status),
       ),
+      'transactionHash': serializer.toJson<String?>(transactionHash),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -1902,6 +1943,7 @@ class Receipt extends DataClass implements Insertable<Receipt> {
     Value<String?> sourcePath = const Value.absent(),
     Value<String?> rawOcrText = const Value.absent(),
     ReceiptStatus? status,
+    Value<String?> transactionHash = const Value.absent(),
     DateTime? createdAt,
   }) => Receipt(
     id: id ?? this.id,
@@ -1912,6 +1954,9 @@ class Receipt extends DataClass implements Insertable<Receipt> {
     sourcePath: sourcePath.present ? sourcePath.value : this.sourcePath,
     rawOcrText: rawOcrText.present ? rawOcrText.value : this.rawOcrText,
     status: status ?? this.status,
+    transactionHash: transactionHash.present
+        ? transactionHash.value
+        : this.transactionHash,
     createdAt: createdAt ?? this.createdAt,
   );
   Receipt copyWithCompanion(ReceiptsCompanion data) {
@@ -1934,6 +1979,9 @@ class Receipt extends DataClass implements Insertable<Receipt> {
           ? data.rawOcrText.value
           : this.rawOcrText,
       status: data.status.present ? data.status.value : this.status,
+      transactionHash: data.transactionHash.present
+          ? data.transactionHash.value
+          : this.transactionHash,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -1949,6 +1997,7 @@ class Receipt extends DataClass implements Insertable<Receipt> {
           ..write('sourcePath: $sourcePath, ')
           ..write('rawOcrText: $rawOcrText, ')
           ..write('status: $status, ')
+          ..write('transactionHash: $transactionHash, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1964,6 +2013,7 @@ class Receipt extends DataClass implements Insertable<Receipt> {
     sourcePath,
     rawOcrText,
     status,
+    transactionHash,
     createdAt,
   );
   @override
@@ -1978,6 +2028,7 @@ class Receipt extends DataClass implements Insertable<Receipt> {
           other.sourcePath == this.sourcePath &&
           other.rawOcrText == this.rawOcrText &&
           other.status == this.status &&
+          other.transactionHash == this.transactionHash &&
           other.createdAt == this.createdAt);
 }
 
@@ -1990,6 +2041,7 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
   final Value<String?> sourcePath;
   final Value<String?> rawOcrText;
   final Value<ReceiptStatus> status;
+  final Value<String?> transactionHash;
   final Value<DateTime> createdAt;
   const ReceiptsCompanion({
     this.id = const Value.absent(),
@@ -2000,6 +2052,7 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
     this.sourcePath = const Value.absent(),
     this.rawOcrText = const Value.absent(),
     this.status = const Value.absent(),
+    this.transactionHash = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   ReceiptsCompanion.insert({
@@ -2011,6 +2064,7 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
     this.sourcePath = const Value.absent(),
     this.rawOcrText = const Value.absent(),
     required ReceiptStatus status,
+    this.transactionHash = const Value.absent(),
     this.createdAt = const Value.absent(),
   }) : purchaseDate = Value(purchaseDate),
        totalCents = Value(totalCents),
@@ -2024,6 +2078,7 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
     Expression<String>? sourcePath,
     Expression<String>? rawOcrText,
     Expression<String>? status,
+    Expression<String>? transactionHash,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
@@ -2035,6 +2090,7 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
       if (sourcePath != null) 'source_path': sourcePath,
       if (rawOcrText != null) 'raw_ocr_text': rawOcrText,
       if (status != null) 'status': status,
+      if (transactionHash != null) 'transaction_hash': transactionHash,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
@@ -2048,6 +2104,7 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
     Value<String?>? sourcePath,
     Value<String?>? rawOcrText,
     Value<ReceiptStatus>? status,
+    Value<String?>? transactionHash,
     Value<DateTime>? createdAt,
   }) {
     return ReceiptsCompanion(
@@ -2059,6 +2116,7 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
       sourcePath: sourcePath ?? this.sourcePath,
       rawOcrText: rawOcrText ?? this.rawOcrText,
       status: status ?? this.status,
+      transactionHash: transactionHash ?? this.transactionHash,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -2092,6 +2150,9 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
         $ReceiptsTable.$converterstatus.toSql(status.value),
       );
     }
+    if (transactionHash.present) {
+      map['transaction_hash'] = Variable<String>(transactionHash.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -2109,6 +2170,7 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
           ..write('sourcePath: $sourcePath, ')
           ..write('rawOcrText: $rawOcrText, ')
           ..write('status: $status, ')
+          ..write('transactionHash: $transactionHash, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -6110,6 +6172,7 @@ typedef $$ReceiptsTableCreateCompanionBuilder = ReceiptsCompanion Function({
   Value<String?> sourcePath,
   Value<String?> rawOcrText,
   required ReceiptStatus status,
+  Value<String?> transactionHash,
   Value<DateTime> createdAt,
 });
 typedef $$ReceiptsTableUpdateCompanionBuilder = ReceiptsCompanion Function({
@@ -6121,6 +6184,7 @@ typedef $$ReceiptsTableUpdateCompanionBuilder = ReceiptsCompanion Function({
   Value<String?> sourcePath,
   Value<String?> rawOcrText,
   Value<ReceiptStatus> status,
+  Value<String?> transactionHash,
   Value<DateTime> createdAt,
 });
 
@@ -6225,6 +6289,11 @@ class $$ReceiptsTableFilterComposer
   get status => $composableBuilder(
     column: $table.status,
     builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<String> get transactionHash => $composableBuilder(
+    column: $table.transactionHash,
+    builder: (column) => ColumnFilters(column),
   );
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
@@ -6350,6 +6419,11 @@ class $$ReceiptsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get transactionHash => $composableBuilder(
+    column: $table.transactionHash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -6418,6 +6492,11 @@ class $$ReceiptsTableAnnotationComposer
 
   GeneratedColumnWithTypeConverter<ReceiptStatus, String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get transactionHash => $composableBuilder(
+    column: $table.transactionHash,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -6536,6 +6615,7 @@ class $$ReceiptsTableTableManager
                 Value<String?> sourcePath = const Value.absent(),
                 Value<String?> rawOcrText = const Value.absent(),
                 Value<ReceiptStatus> status = const Value.absent(),
+                Value<String?> transactionHash = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => ReceiptsCompanion(
                 id: id,
@@ -6546,6 +6626,7 @@ class $$ReceiptsTableTableManager
                 sourcePath: sourcePath,
                 rawOcrText: rawOcrText,
                 status: status,
+                transactionHash: transactionHash,
                 createdAt: createdAt,
               ),
           createCompanionCallback:
@@ -6558,6 +6639,7 @@ class $$ReceiptsTableTableManager
                 Value<String?> sourcePath = const Value.absent(),
                 Value<String?> rawOcrText = const Value.absent(),
                 required ReceiptStatus status,
+                Value<String?> transactionHash = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => ReceiptsCompanion.insert(
                 id: id,
@@ -6568,6 +6650,7 @@ class $$ReceiptsTableTableManager
                 sourcePath: sourcePath,
                 rawOcrText: rawOcrText,
                 status: status,
+                transactionHash: transactionHash,
                 createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0

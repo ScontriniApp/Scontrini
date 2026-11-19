@@ -8,10 +8,12 @@ import 'package:scontrini/features/pantry/domain/lot_ledger.dart';
 void main() {
   late AppDatabase db;
   late PantryRepository repo;
+  late DateTime now;
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
-    repo = PantryRepository(db, clock: () => DateTime.utc(2026, 11, 19, 12));
+    now = DateTime.utc(2026, 11, 19, 12);
+    repo = PantryRepository(db, clock: () => now);
   });
   tearDown(() => db.close());
 
@@ -132,10 +134,11 @@ void main() {
       expect(ledger.status, PantryLotStatus.consumed);
     });
 
-    test('slider up is a recount, not consumption', () async {
+    test('slider up long after a consume is a recount', () async {
       final [lot] = await stocked([('PASTA', 1)]);
 
       await repo.setRemaining(lot, 0.25);
+      now = now.add(const Duration(hours: 1));
       await repo.setRemaining(lot, 0.5);
       await repo.setRemaining(lot, 7); // clamped to the initial quantity
 
@@ -143,6 +146,27 @@ void main() {
       expect(ledger.remaining, 1);
       expect(ledger.consumed, 0.75);
       expect(ledger.effectiveEvents.last.reason, PantryEventReason.recount);
+    });
+
+    test('slider back up right after a consume corrects it', () async {
+      final [lot] = await stocked([('PASTA', 1)]);
+
+      await repo.setRemaining(lot, 0.25); // slipped: meant 0.75
+      now = now.add(const Duration(seconds: 20));
+      await repo.setRemaining(lot, 0.75);
+
+      var ledger = LotLedger(await repo.events(lot));
+      expect(ledger.remaining, 0.75);
+      expect(ledger.consumed, 0.25);
+      expect(ledger.effectiveEvents.map((e) => e.kind), [
+        PantryEventKind.stockIn,
+        PantryEventKind.consume,
+      ]);
+
+      await repo.setRemaining(lot, 1); // and fully back: nothing consumed
+      ledger = LotLedger(await repo.events(lot));
+      expect(ledger.consumed, 0);
+      expect(ledger.remaining, 1);
     });
 
     test('discard throws away only what is left', () async {
@@ -191,6 +215,24 @@ void main() {
           source: PantrySource.receipt,
         ),
         throwsArgumentError,
+      );
+    });
+
+    test('lots show the tag of their receipt', () async {
+      final r = await receipt();
+      await (db.update(db.receipts)..where((x) => x.id.equals(r))).write(
+        const ReceiptsCompanion(transactionHash: Value('a3f91c02ffff')),
+      );
+      await item(r, 'LATTE');
+      final lot = await repo.addFromReceipt(
+        r,
+        (await repo.triageCards(r)).single,
+      );
+
+      expect((await repo.lot(lot)).transactionHash, 'a3f91c02ffff');
+      expect(
+        (await repo.watchLots().first).single.transactionHash,
+        'a3f91c02ffff',
       );
     });
 

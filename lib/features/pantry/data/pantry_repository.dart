@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:scontrini/core/database/app_database.dart';
 import 'package:scontrini/features/pantry/domain/lot_ledger.dart';
+import 'package:scontrini/features/pantry/domain/pantry_category.dart';
 import 'package:scontrini/features/pantry/domain/pantry_event.dart';
 import 'package:scontrini/features/pantry/domain/pantry_lot.dart';
 import 'package:scontrini/features/pantry/domain/triage_grouping.dart';
@@ -19,6 +20,10 @@ class PantryRepository {
 
   DateTime get _now => _clock().toUtc();
 
+  /// A slider moved up within this time after a consume corrects that
+  /// consume instead of recording a recount (docs/pantry_and_stats.md).
+  static const correctionWindow = Duration(minutes: 5);
+
   /// Lots with their remaining quantity, newest first. Closed lots
   /// (consumed or discarded) are included only when [includeClosed].
   Stream<List<PantryLot>> watchLots({bool includeClosed = false}) {
@@ -28,6 +33,10 @@ class PantryRepository {
             _db.pantryEvents,
             _db.pantryEvents.lotId.equalsExp(_db.pantryLots.id),
           ),
+          leftOuterJoin(
+            _db.receipts,
+            _db.receipts.id.equalsExp(_db.pantryLots.receiptId),
+          ),
         ])..orderBy([
           OrderingTerm.desc(_db.pantryLots.addedAt),
           OrderingTerm.desc(_db.pantryLots.id),
@@ -35,17 +44,19 @@ class PantryRepository {
         ]);
     return query.watch().map((rows) {
       final lots = <int, PantryLotRow>{};
+      final hashes = <int, String?>{};
       final events = <int, List<PantryEvent>>{};
       for (final row in rows) {
         final lot = row.readTable(_db.pantryLots);
         lots[lot.id] = lot;
+        hashes[lot.id] = row.readTableOrNull(_db.receipts)?.transactionHash;
         final event = row.readTableOrNull(_db.pantryEvents);
         final list = events.putIfAbsent(lot.id, () => []);
         if (event != null) list.add(_toEvent(event));
       }
       return [
             for (final lot in lots.values)
-              _toLot(lot, LotLedger(events[lot.id]!)),
+              _toLot(lot, LotLedger(events[lot.id]!), hashes[lot.id]),
           ]
           .where((l) => includeClosed || l.status == PantryLotStatus.active)
           .toList();
@@ -56,8 +67,25 @@ class PantryRepository {
     final row = await (_db.select(
       _db.pantryLots,
     )..where((l) => l.id.equals(lotId))).getSingle();
-    return _toLot(row, await _ledger(lotId));
+    final receiptId = row.receiptId;
+    final receipt = receiptId == null
+        ? null
+        : await (_db.select(
+            _db.receipts,
+          )..where((r) => r.id.equals(receiptId))).getSingleOrNull();
+    return _toLot(row, await _ledger(lotId), receipt?.transactionHash);
   }
+
+  /// Categories for grouping and for the manual-add form, by name.
+  Stream<List<PantryCategory>> watchCategories() =>
+      (_db.select(
+        _db.categories,
+      )..orderBy([(c) => OrderingTerm.asc(c.name)])).watch().map(
+        (rows) => [
+          for (final c in rows)
+            PantryCategory(id: c.id, name: c.name, color: c.color),
+        ],
+      );
 
   /// Every event of a lot, reverts included, in order.
   Future<List<PantryEvent>> events(int lotId) async {
@@ -189,14 +217,32 @@ class PantryRepository {
   }
 
   /// Slider release: going down is consumption, going up is a recount
-  /// (not consumption). [target] is clamped to 0…initial quantity.
+  /// (not consumption). Going up within [correctionWindow] of a consume
+  /// corrects that consume instead: it is reverted and the net amount is
+  /// recorded, so a slip of the finger never counts as consumption.
+  /// [target] is clamped to 0…initial quantity.
   Future<void> setRemaining(int lotId, double target) =>
       _db.transaction(() async {
         final lot = await _lotRow(lotId);
         final clamped = roundQuantity(
           target.clamp(0, lot.initialQuantity).toDouble(),
         );
-        final diff = roundQuantity(clamped - (await _ledger(lotId)).remaining);
+        var ledger = await _ledger(lotId);
+        if (clamped > ledger.remaining) {
+          final last = ledger.effectiveEvents.lastOrNull;
+          if (last != null &&
+              last.kind == PantryEventKind.consume &&
+              _now.difference(last.at) <= correctionWindow) {
+            await _insertEvent(
+              lotId,
+              PantryEventKind.revert,
+              -last.delta,
+              revertsEventId: last.id,
+            );
+            ledger = await _ledger(lotId);
+          }
+        }
+        final diff = roundQuantity(clamped - ledger.remaining);
         if (diff < 0) {
           await _insertEvent(lotId, PantryEventKind.consume, diff);
         } else if (diff > 0) {
@@ -356,7 +402,11 @@ class PantryRepository {
     at: row.at,
   );
 
-  static PantryLot _toLot(PantryLotRow row, LotLedger ledger) => PantryLot(
+  static PantryLot _toLot(
+    PantryLotRow row,
+    LotLedger ledger,
+    String? transactionHash,
+  ) => PantryLot(
     id: row.id,
     name: row.name,
     unit: row.unit,
@@ -369,5 +419,6 @@ class PantryRepository {
     productId: row.productId,
     categoryId: row.categoryId,
     priceCents: row.priceCents,
+    transactionHash: transactionHash,
   );
 }

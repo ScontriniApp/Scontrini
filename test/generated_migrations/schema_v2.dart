@@ -1361,6 +1361,14 @@ class Receipts extends Table with TableInfo<Receipts, ReceiptsData> {
     requiredDuringInsert: true,
     $customConstraints: 'NOT NULL',
   );
+  late final GeneratedColumn<String> transactionHash = GeneratedColumn<String>(
+    'transaction_hash',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: 'NULL UNIQUE',
+  );
   late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
     'created_at',
     aliasedName,
@@ -1382,6 +1390,7 @@ class Receipts extends Table with TableInfo<Receipts, ReceiptsData> {
     sourcePath,
     rawOcrText,
     status,
+    transactionHash,
     createdAt,
   ];
   @override
@@ -1427,6 +1436,10 @@ class Receipts extends Table with TableInfo<Receipts, ReceiptsData> {
         DriftSqlType.string,
         data['${effectivePrefix}status'],
       )!,
+      transactionHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transaction_hash'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}created_at'],
@@ -1452,6 +1465,7 @@ class ReceiptsData extends DataClass implements Insertable<ReceiptsData> {
   final String? sourcePath;
   final String? rawOcrText;
   final String status;
+  final String? transactionHash;
   final int createdAt;
   const ReceiptsData({
     required this.id,
@@ -1462,6 +1476,7 @@ class ReceiptsData extends DataClass implements Insertable<ReceiptsData> {
     this.sourcePath,
     this.rawOcrText,
     required this.status,
+    this.transactionHash,
     required this.createdAt,
   });
   @override
@@ -1481,6 +1496,9 @@ class ReceiptsData extends DataClass implements Insertable<ReceiptsData> {
       map['raw_ocr_text'] = Variable<String>(rawOcrText);
     }
     map['status'] = Variable<String>(status);
+    if (!nullToAbsent || transactionHash != null) {
+      map['transaction_hash'] = Variable<String>(transactionHash);
+    }
     map['created_at'] = Variable<int>(createdAt);
     return map;
   }
@@ -1501,6 +1519,9 @@ class ReceiptsData extends DataClass implements Insertable<ReceiptsData> {
           ? const Value.absent()
           : Value(rawOcrText),
       status: Value(status),
+      transactionHash: transactionHash == null && nullToAbsent
+          ? const Value.absent()
+          : Value(transactionHash),
       createdAt: Value(createdAt),
     );
   }
@@ -1519,6 +1540,7 @@ class ReceiptsData extends DataClass implements Insertable<ReceiptsData> {
       sourcePath: serializer.fromJson<String?>(json['sourcePath']),
       rawOcrText: serializer.fromJson<String?>(json['rawOcrText']),
       status: serializer.fromJson<String>(json['status']),
+      transactionHash: serializer.fromJson<String?>(json['transactionHash']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
     );
   }
@@ -1534,6 +1556,7 @@ class ReceiptsData extends DataClass implements Insertable<ReceiptsData> {
       'sourcePath': serializer.toJson<String?>(sourcePath),
       'rawOcrText': serializer.toJson<String?>(rawOcrText),
       'status': serializer.toJson<String>(status),
+      'transactionHash': serializer.toJson<String?>(transactionHash),
       'createdAt': serializer.toJson<int>(createdAt),
     };
   }
@@ -1547,6 +1570,7 @@ class ReceiptsData extends DataClass implements Insertable<ReceiptsData> {
     Value<String?> sourcePath = const Value.absent(),
     Value<String?> rawOcrText = const Value.absent(),
     String? status,
+    Value<String?> transactionHash = const Value.absent(),
     int? createdAt,
   }) => ReceiptsData(
     id: id ?? this.id,
@@ -1557,6 +1581,9 @@ class ReceiptsData extends DataClass implements Insertable<ReceiptsData> {
     sourcePath: sourcePath.present ? sourcePath.value : this.sourcePath,
     rawOcrText: rawOcrText.present ? rawOcrText.value : this.rawOcrText,
     status: status ?? this.status,
+    transactionHash: transactionHash.present
+        ? transactionHash.value
+        : this.transactionHash,
     createdAt: createdAt ?? this.createdAt,
   );
   ReceiptsData copyWithCompanion(ReceiptsCompanion data) {
@@ -1579,6 +1606,9 @@ class ReceiptsData extends DataClass implements Insertable<ReceiptsData> {
           ? data.rawOcrText.value
           : this.rawOcrText,
       status: data.status.present ? data.status.value : this.status,
+      transactionHash: data.transactionHash.present
+          ? data.transactionHash.value
+          : this.transactionHash,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -1594,6 +1624,7 @@ class ReceiptsData extends DataClass implements Insertable<ReceiptsData> {
           ..write('sourcePath: $sourcePath, ')
           ..write('rawOcrText: $rawOcrText, ')
           ..write('status: $status, ')
+          ..write('transactionHash: $transactionHash, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1609,6 +1640,7 @@ class ReceiptsData extends DataClass implements Insertable<ReceiptsData> {
     sourcePath,
     rawOcrText,
     status,
+    transactionHash,
     createdAt,
   );
   @override
@@ -1623,6 +1655,7 @@ class ReceiptsData extends DataClass implements Insertable<ReceiptsData> {
           other.sourcePath == this.sourcePath &&
           other.rawOcrText == this.rawOcrText &&
           other.status == this.status &&
+          other.transactionHash == this.transactionHash &&
           other.createdAt == this.createdAt);
 }
 
@@ -1635,6 +1668,7 @@ class ReceiptsCompanion extends UpdateCompanion<ReceiptsData> {
   final Value<String?> sourcePath;
   final Value<String?> rawOcrText;
   final Value<String> status;
+  final Value<String?> transactionHash;
   final Value<int> createdAt;
   const ReceiptsCompanion({
     this.id = const Value.absent(),
@@ -1645,6 +1679,7 @@ class ReceiptsCompanion extends UpdateCompanion<ReceiptsData> {
     this.sourcePath = const Value.absent(),
     this.rawOcrText = const Value.absent(),
     this.status = const Value.absent(),
+    this.transactionHash = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   ReceiptsCompanion.insert({
@@ -1656,6 +1691,7 @@ class ReceiptsCompanion extends UpdateCompanion<ReceiptsData> {
     this.sourcePath = const Value.absent(),
     this.rawOcrText = const Value.absent(),
     required String status,
+    this.transactionHash = const Value.absent(),
     this.createdAt = const Value.absent(),
   }) : purchaseDate = Value(purchaseDate),
        totalCents = Value(totalCents),
@@ -1669,6 +1705,7 @@ class ReceiptsCompanion extends UpdateCompanion<ReceiptsData> {
     Expression<String>? sourcePath,
     Expression<String>? rawOcrText,
     Expression<String>? status,
+    Expression<String>? transactionHash,
     Expression<int>? createdAt,
   }) {
     return RawValuesInsertable({
@@ -1680,6 +1717,7 @@ class ReceiptsCompanion extends UpdateCompanion<ReceiptsData> {
       if (sourcePath != null) 'source_path': sourcePath,
       if (rawOcrText != null) 'raw_ocr_text': rawOcrText,
       if (status != null) 'status': status,
+      if (transactionHash != null) 'transaction_hash': transactionHash,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
@@ -1693,6 +1731,7 @@ class ReceiptsCompanion extends UpdateCompanion<ReceiptsData> {
     Value<String?>? sourcePath,
     Value<String?>? rawOcrText,
     Value<String>? status,
+    Value<String?>? transactionHash,
     Value<int>? createdAt,
   }) {
     return ReceiptsCompanion(
@@ -1704,6 +1743,7 @@ class ReceiptsCompanion extends UpdateCompanion<ReceiptsData> {
       sourcePath: sourcePath ?? this.sourcePath,
       rawOcrText: rawOcrText ?? this.rawOcrText,
       status: status ?? this.status,
+      transactionHash: transactionHash ?? this.transactionHash,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -1735,6 +1775,9 @@ class ReceiptsCompanion extends UpdateCompanion<ReceiptsData> {
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
+    if (transactionHash.present) {
+      map['transaction_hash'] = Variable<String>(transactionHash.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<int>(createdAt.value);
     }
@@ -1752,6 +1795,7 @@ class ReceiptsCompanion extends UpdateCompanion<ReceiptsData> {
           ..write('sourcePath: $sourcePath, ')
           ..write('rawOcrText: $rawOcrText, ')
           ..write('status: $status, ')
+          ..write('transactionHash: $transactionHash, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();

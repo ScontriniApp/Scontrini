@@ -16,6 +16,7 @@ class PantryLot {
     this.productId,
     this.categoryId,
     this.priceCents,
+    this.transactionHash,
   });
 
   final int id;
@@ -34,6 +35,9 @@ class PantryLot {
   final int? productId;
   final int? categoryId;
   final int? priceCents;
+
+  /// Hash of the receipt the lot came from (its tag), when confirmed.
+  final String? transactionHash;
 
   /// Share left, 0–1, for the slider.
   double get remainingFraction => initialQuantity <= 0
