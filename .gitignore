@@ -49,3 +49,6 @@ app.*.map.json
 
 # Real receipts pulled from a phone, before redaction (tool/pull_fixtures.sh).
 /assets/test_receipts/incoming/
+
+# Real receipts, ground truth and benchmark reports: personal data, local only (tool/bench/README.md).
+/data/
