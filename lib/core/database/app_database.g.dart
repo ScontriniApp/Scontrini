@@ -703,8 +703,29 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _trackInPantryMeta = const VerificationMeta(
+    'trackInPantry',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, canonicalName, categoryId, unit];
+  late final GeneratedColumn<bool> trackInPantry = GeneratedColumn<bool>(
+    'track_in_pantry',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("track_in_pantry" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    canonicalName,
+    categoryId,
+    unit,
+    trackInPantry,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -743,6 +764,15 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
         unit.isAcceptableOrUnknown(data['unit']!, _unitMeta),
       );
     }
+    if (data.containsKey('track_in_pantry')) {
+      context.handle(
+        _trackInPantryMeta,
+        trackInPantry.isAcceptableOrUnknown(
+          data['track_in_pantry']!,
+          _trackInPantryMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -768,6 +798,10 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
         DriftSqlType.string,
         data['${effectivePrefix}unit'],
       ),
+      trackInPantry: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}track_in_pantry'],
+      )!,
     );
   }
 
@@ -784,11 +818,16 @@ class Product extends DataClass implements Insertable<Product> {
 
   /// Unit of measure: `kg`, `l` or `pz`.
   final String? unit;
+
+  /// Whether the pantry triage offers this product (false for bags,
+  /// newspapers and the like).
+  final bool trackInPantry;
   const Product({
     required this.id,
     required this.canonicalName,
     this.categoryId,
     this.unit,
+    required this.trackInPantry,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -801,6 +840,7 @@ class Product extends DataClass implements Insertable<Product> {
     if (!nullToAbsent || unit != null) {
       map['unit'] = Variable<String>(unit);
     }
+    map['track_in_pantry'] = Variable<bool>(trackInPantry);
     return map;
   }
 
@@ -812,6 +852,7 @@ class Product extends DataClass implements Insertable<Product> {
           ? const Value.absent()
           : Value(categoryId),
       unit: unit == null && nullToAbsent ? const Value.absent() : Value(unit),
+      trackInPantry: Value(trackInPantry),
     );
   }
 
@@ -825,6 +866,7 @@ class Product extends DataClass implements Insertable<Product> {
       canonicalName: serializer.fromJson<String>(json['canonicalName']),
       categoryId: serializer.fromJson<int?>(json['categoryId']),
       unit: serializer.fromJson<String?>(json['unit']),
+      trackInPantry: serializer.fromJson<bool>(json['trackInPantry']),
     );
   }
   @override
@@ -835,6 +877,7 @@ class Product extends DataClass implements Insertable<Product> {
       'canonicalName': serializer.toJson<String>(canonicalName),
       'categoryId': serializer.toJson<int?>(categoryId),
       'unit': serializer.toJson<String?>(unit),
+      'trackInPantry': serializer.toJson<bool>(trackInPantry),
     };
   }
 
@@ -843,11 +886,13 @@ class Product extends DataClass implements Insertable<Product> {
     String? canonicalName,
     Value<int?> categoryId = const Value.absent(),
     Value<String?> unit = const Value.absent(),
+    bool? trackInPantry,
   }) => Product(
     id: id ?? this.id,
     canonicalName: canonicalName ?? this.canonicalName,
     categoryId: categoryId.present ? categoryId.value : this.categoryId,
     unit: unit.present ? unit.value : this.unit,
+    trackInPantry: trackInPantry ?? this.trackInPantry,
   );
   Product copyWithCompanion(ProductsCompanion data) {
     return Product(
@@ -859,6 +904,9 @@ class Product extends DataClass implements Insertable<Product> {
           ? data.categoryId.value
           : this.categoryId,
       unit: data.unit.present ? data.unit.value : this.unit,
+      trackInPantry: data.trackInPantry.present
+          ? data.trackInPantry.value
+          : this.trackInPantry,
     );
   }
 
@@ -868,13 +916,15 @@ class Product extends DataClass implements Insertable<Product> {
           ..write('id: $id, ')
           ..write('canonicalName: $canonicalName, ')
           ..write('categoryId: $categoryId, ')
-          ..write('unit: $unit')
+          ..write('unit: $unit, ')
+          ..write('trackInPantry: $trackInPantry')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, canonicalName, categoryId, unit);
+  int get hashCode =>
+      Object.hash(id, canonicalName, categoryId, unit, trackInPantry);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -882,7 +932,8 @@ class Product extends DataClass implements Insertable<Product> {
           other.id == this.id &&
           other.canonicalName == this.canonicalName &&
           other.categoryId == this.categoryId &&
-          other.unit == this.unit);
+          other.unit == this.unit &&
+          other.trackInPantry == this.trackInPantry);
 }
 
 class ProductsCompanion extends UpdateCompanion<Product> {
@@ -890,29 +941,34 @@ class ProductsCompanion extends UpdateCompanion<Product> {
   final Value<String> canonicalName;
   final Value<int?> categoryId;
   final Value<String?> unit;
+  final Value<bool> trackInPantry;
   const ProductsCompanion({
     this.id = const Value.absent(),
     this.canonicalName = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.unit = const Value.absent(),
+    this.trackInPantry = const Value.absent(),
   });
   ProductsCompanion.insert({
     this.id = const Value.absent(),
     required String canonicalName,
     this.categoryId = const Value.absent(),
     this.unit = const Value.absent(),
+    this.trackInPantry = const Value.absent(),
   }) : canonicalName = Value(canonicalName);
   static Insertable<Product> custom({
     Expression<int>? id,
     Expression<String>? canonicalName,
     Expression<int>? categoryId,
     Expression<String>? unit,
+    Expression<bool>? trackInPantry,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (canonicalName != null) 'canonical_name': canonicalName,
       if (categoryId != null) 'category_id': categoryId,
       if (unit != null) 'unit': unit,
+      if (trackInPantry != null) 'track_in_pantry': trackInPantry,
     });
   }
 
@@ -921,12 +977,14 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     Value<String>? canonicalName,
     Value<int?>? categoryId,
     Value<String?>? unit,
+    Value<bool>? trackInPantry,
   }) {
     return ProductsCompanion(
       id: id ?? this.id,
       canonicalName: canonicalName ?? this.canonicalName,
       categoryId: categoryId ?? this.categoryId,
       unit: unit ?? this.unit,
+      trackInPantry: trackInPantry ?? this.trackInPantry,
     );
   }
 
@@ -945,6 +1003,9 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     if (unit.present) {
       map['unit'] = Variable<String>(unit.value);
     }
+    if (trackInPantry.present) {
+      map['track_in_pantry'] = Variable<bool>(trackInPantry.value);
+    }
     return map;
   }
 
@@ -954,7 +1015,8 @@ class ProductsCompanion extends UpdateCompanion<Product> {
           ..write('id: $id, ')
           ..write('canonicalName: $canonicalName, ')
           ..write('categoryId: $categoryId, ')
-          ..write('unit: $unit')
+          ..write('unit: $unit, ')
+          ..write('trackInPantry: $trackInPantry')
           ..write(')'))
         .toString();
   }
@@ -2053,6 +2115,636 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
   }
 }
 
+class $PantryLotsTable extends PantryLots
+    with TableInfo<$PantryLotsTable, PantryLotRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PantryLotsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _receiptIdMeta = const VerificationMeta(
+    'receiptId',
+  );
+  @override
+  late final GeneratedColumn<int> receiptId = GeneratedColumn<int>(
+    'receipt_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES receipts (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _productIdMeta = const VerificationMeta(
+    'productId',
+  );
+  @override
+  late final GeneratedColumn<int> productId = GeneratedColumn<int>(
+    'product_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES products (id) ON DELETE SET NULL',
+    ),
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
+    'category_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES categories (id) ON DELETE SET NULL',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _unitMeta = const VerificationMeta('unit');
+  @override
+  late final GeneratedColumn<String> unit = GeneratedColumn<String>(
+    'unit',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pz'),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<PantrySource, String> source =
+      GeneratedColumn<String>(
+        'source',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<PantrySource>($PantryLotsTable.$convertersource);
+  static const VerificationMeta _initialQuantityMeta = const VerificationMeta(
+    'initialQuantity',
+  );
+  @override
+  late final GeneratedColumn<double> initialQuantity = GeneratedColumn<double>(
+    'initial_quantity',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _priceCentsMeta = const VerificationMeta(
+    'priceCents',
+  );
+  @override
+  late final GeneratedColumn<int> priceCents = GeneratedColumn<int>(
+    'price_cents',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _addedAtMeta = const VerificationMeta(
+    'addedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> addedAt = GeneratedColumn<DateTime>(
+    'added_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    receiptId,
+    productId,
+    categoryId,
+    name,
+    unit,
+    source,
+    initialQuantity,
+    priceCents,
+    addedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pantry_lots';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PantryLotRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('receipt_id')) {
+      context.handle(
+        _receiptIdMeta,
+        receiptId.isAcceptableOrUnknown(data['receipt_id']!, _receiptIdMeta),
+      );
+    }
+    if (data.containsKey('product_id')) {
+      context.handle(
+        _productIdMeta,
+        productId.isAcceptableOrUnknown(data['product_id']!, _productIdMeta),
+      );
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('unit')) {
+      context.handle(
+        _unitMeta,
+        unit.isAcceptableOrUnknown(data['unit']!, _unitMeta),
+      );
+    }
+    if (data.containsKey('initial_quantity')) {
+      context.handle(
+        _initialQuantityMeta,
+        initialQuantity.isAcceptableOrUnknown(
+          data['initial_quantity']!,
+          _initialQuantityMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_initialQuantityMeta);
+    }
+    if (data.containsKey('price_cents')) {
+      context.handle(
+        _priceCentsMeta,
+        priceCents.isAcceptableOrUnknown(data['price_cents']!, _priceCentsMeta),
+      );
+    }
+    if (data.containsKey('added_at')) {
+      context.handle(
+        _addedAtMeta,
+        addedAt.isAcceptableOrUnknown(data['added_at']!, _addedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_addedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PantryLotRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PantryLotRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      receiptId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}receipt_id'],
+      ),
+      productId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}product_id'],
+      ),
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}category_id'],
+      ),
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      unit: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit'],
+      )!,
+      source: $PantryLotsTable.$convertersource.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}source'],
+        )!,
+      ),
+      initialQuantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}initial_quantity'],
+      )!,
+      priceCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}price_cents'],
+      ),
+      addedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}added_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PantryLotsTable createAlias(String alias) {
+    return $PantryLotsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<PantrySource, String, String> $convertersource =
+      const EnumNameConverter<PantrySource>(PantrySource.values);
+}
+
+class PantryLotRow extends DataClass implements Insertable<PantryLotRow> {
+  final int id;
+
+  /// Set exactly when [source] is `receipt`. Deleting the receipt deletes
+  /// the lot and its events.
+  final int? receiptId;
+  final int? productId;
+  final int? categoryId;
+  final String name;
+
+  /// `pz`, `kg` or `l`.
+  final String unit;
+  final PantrySource source;
+
+  /// Purchased quantity. Changes only when the purchase is corrected.
+  final double initialQuantity;
+
+  /// What was paid for the lot after discounts, when known.
+  final int? priceCents;
+
+  /// Stored in UTC.
+  final DateTime addedAt;
+  const PantryLotRow({
+    required this.id,
+    this.receiptId,
+    this.productId,
+    this.categoryId,
+    required this.name,
+    required this.unit,
+    required this.source,
+    required this.initialQuantity,
+    this.priceCents,
+    required this.addedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || receiptId != null) {
+      map['receipt_id'] = Variable<int>(receiptId);
+    }
+    if (!nullToAbsent || productId != null) {
+      map['product_id'] = Variable<int>(productId);
+    }
+    if (!nullToAbsent || categoryId != null) {
+      map['category_id'] = Variable<int>(categoryId);
+    }
+    map['name'] = Variable<String>(name);
+    map['unit'] = Variable<String>(unit);
+    {
+      map['source'] = Variable<String>(
+        $PantryLotsTable.$convertersource.toSql(source),
+      );
+    }
+    map['initial_quantity'] = Variable<double>(initialQuantity);
+    if (!nullToAbsent || priceCents != null) {
+      map['price_cents'] = Variable<int>(priceCents);
+    }
+    map['added_at'] = Variable<DateTime>(addedAt);
+    return map;
+  }
+
+  PantryLotsCompanion toCompanion(bool nullToAbsent) {
+    return PantryLotsCompanion(
+      id: Value(id),
+      receiptId: receiptId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiptId),
+      productId: productId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(productId),
+      categoryId: categoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryId),
+      name: Value(name),
+      unit: Value(unit),
+      source: Value(source),
+      initialQuantity: Value(initialQuantity),
+      priceCents: priceCents == null && nullToAbsent
+          ? const Value.absent()
+          : Value(priceCents),
+      addedAt: Value(addedAt),
+    );
+  }
+
+  factory PantryLotRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PantryLotRow(
+      id: serializer.fromJson<int>(json['id']),
+      receiptId: serializer.fromJson<int?>(json['receiptId']),
+      productId: serializer.fromJson<int?>(json['productId']),
+      categoryId: serializer.fromJson<int?>(json['categoryId']),
+      name: serializer.fromJson<String>(json['name']),
+      unit: serializer.fromJson<String>(json['unit']),
+      source: $PantryLotsTable.$convertersource.fromJson(
+        serializer.fromJson<String>(json['source']),
+      ),
+      initialQuantity: serializer.fromJson<double>(json['initialQuantity']),
+      priceCents: serializer.fromJson<int?>(json['priceCents']),
+      addedAt: serializer.fromJson<DateTime>(json['addedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'receiptId': serializer.toJson<int?>(receiptId),
+      'productId': serializer.toJson<int?>(productId),
+      'categoryId': serializer.toJson<int?>(categoryId),
+      'name': serializer.toJson<String>(name),
+      'unit': serializer.toJson<String>(unit),
+      'source': serializer.toJson<String>(
+        $PantryLotsTable.$convertersource.toJson(source),
+      ),
+      'initialQuantity': serializer.toJson<double>(initialQuantity),
+      'priceCents': serializer.toJson<int?>(priceCents),
+      'addedAt': serializer.toJson<DateTime>(addedAt),
+    };
+  }
+
+  PantryLotRow copyWith({
+    int? id,
+    Value<int?> receiptId = const Value.absent(),
+    Value<int?> productId = const Value.absent(),
+    Value<int?> categoryId = const Value.absent(),
+    String? name,
+    String? unit,
+    PantrySource? source,
+    double? initialQuantity,
+    Value<int?> priceCents = const Value.absent(),
+    DateTime? addedAt,
+  }) => PantryLotRow(
+    id: id ?? this.id,
+    receiptId: receiptId.present ? receiptId.value : this.receiptId,
+    productId: productId.present ? productId.value : this.productId,
+    categoryId: categoryId.present ? categoryId.value : this.categoryId,
+    name: name ?? this.name,
+    unit: unit ?? this.unit,
+    source: source ?? this.source,
+    initialQuantity: initialQuantity ?? this.initialQuantity,
+    priceCents: priceCents.present ? priceCents.value : this.priceCents,
+    addedAt: addedAt ?? this.addedAt,
+  );
+  PantryLotRow copyWithCompanion(PantryLotsCompanion data) {
+    return PantryLotRow(
+      id: data.id.present ? data.id.value : this.id,
+      receiptId: data.receiptId.present ? data.receiptId.value : this.receiptId,
+      productId: data.productId.present ? data.productId.value : this.productId,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      name: data.name.present ? data.name.value : this.name,
+      unit: data.unit.present ? data.unit.value : this.unit,
+      source: data.source.present ? data.source.value : this.source,
+      initialQuantity: data.initialQuantity.present
+          ? data.initialQuantity.value
+          : this.initialQuantity,
+      priceCents: data.priceCents.present
+          ? data.priceCents.value
+          : this.priceCents,
+      addedAt: data.addedAt.present ? data.addedAt.value : this.addedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PantryLotRow(')
+          ..write('id: $id, ')
+          ..write('receiptId: $receiptId, ')
+          ..write('productId: $productId, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('name: $name, ')
+          ..write('unit: $unit, ')
+          ..write('source: $source, ')
+          ..write('initialQuantity: $initialQuantity, ')
+          ..write('priceCents: $priceCents, ')
+          ..write('addedAt: $addedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    receiptId,
+    productId,
+    categoryId,
+    name,
+    unit,
+    source,
+    initialQuantity,
+    priceCents,
+    addedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PantryLotRow &&
+          other.id == this.id &&
+          other.receiptId == this.receiptId &&
+          other.productId == this.productId &&
+          other.categoryId == this.categoryId &&
+          other.name == this.name &&
+          other.unit == this.unit &&
+          other.source == this.source &&
+          other.initialQuantity == this.initialQuantity &&
+          other.priceCents == this.priceCents &&
+          other.addedAt == this.addedAt);
+}
+
+class PantryLotsCompanion extends UpdateCompanion<PantryLotRow> {
+  final Value<int> id;
+  final Value<int?> receiptId;
+  final Value<int?> productId;
+  final Value<int?> categoryId;
+  final Value<String> name;
+  final Value<String> unit;
+  final Value<PantrySource> source;
+  final Value<double> initialQuantity;
+  final Value<int?> priceCents;
+  final Value<DateTime> addedAt;
+  const PantryLotsCompanion({
+    this.id = const Value.absent(),
+    this.receiptId = const Value.absent(),
+    this.productId = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.unit = const Value.absent(),
+    this.source = const Value.absent(),
+    this.initialQuantity = const Value.absent(),
+    this.priceCents = const Value.absent(),
+    this.addedAt = const Value.absent(),
+  });
+  PantryLotsCompanion.insert({
+    this.id = const Value.absent(),
+    this.receiptId = const Value.absent(),
+    this.productId = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    required String name,
+    this.unit = const Value.absent(),
+    required PantrySource source,
+    required double initialQuantity,
+    this.priceCents = const Value.absent(),
+    required DateTime addedAt,
+  }) : name = Value(name),
+       source = Value(source),
+       initialQuantity = Value(initialQuantity),
+       addedAt = Value(addedAt);
+  static Insertable<PantryLotRow> custom({
+    Expression<int>? id,
+    Expression<int>? receiptId,
+    Expression<int>? productId,
+    Expression<int>? categoryId,
+    Expression<String>? name,
+    Expression<String>? unit,
+    Expression<String>? source,
+    Expression<double>? initialQuantity,
+    Expression<int>? priceCents,
+    Expression<DateTime>? addedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (receiptId != null) 'receipt_id': receiptId,
+      if (productId != null) 'product_id': productId,
+      if (categoryId != null) 'category_id': categoryId,
+      if (name != null) 'name': name,
+      if (unit != null) 'unit': unit,
+      if (source != null) 'source': source,
+      if (initialQuantity != null) 'initial_quantity': initialQuantity,
+      if (priceCents != null) 'price_cents': priceCents,
+      if (addedAt != null) 'added_at': addedAt,
+    });
+  }
+
+  PantryLotsCompanion copyWith({
+    Value<int>? id,
+    Value<int?>? receiptId,
+    Value<int?>? productId,
+    Value<int?>? categoryId,
+    Value<String>? name,
+    Value<String>? unit,
+    Value<PantrySource>? source,
+    Value<double>? initialQuantity,
+    Value<int?>? priceCents,
+    Value<DateTime>? addedAt,
+  }) {
+    return PantryLotsCompanion(
+      id: id ?? this.id,
+      receiptId: receiptId ?? this.receiptId,
+      productId: productId ?? this.productId,
+      categoryId: categoryId ?? this.categoryId,
+      name: name ?? this.name,
+      unit: unit ?? this.unit,
+      source: source ?? this.source,
+      initialQuantity: initialQuantity ?? this.initialQuantity,
+      priceCents: priceCents ?? this.priceCents,
+      addedAt: addedAt ?? this.addedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (receiptId.present) {
+      map['receipt_id'] = Variable<int>(receiptId.value);
+    }
+    if (productId.present) {
+      map['product_id'] = Variable<int>(productId.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<int>(categoryId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (unit.present) {
+      map['unit'] = Variable<String>(unit.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(
+        $PantryLotsTable.$convertersource.toSql(source.value),
+      );
+    }
+    if (initialQuantity.present) {
+      map['initial_quantity'] = Variable<double>(initialQuantity.value);
+    }
+    if (priceCents.present) {
+      map['price_cents'] = Variable<int>(priceCents.value);
+    }
+    if (addedAt.present) {
+      map['added_at'] = Variable<DateTime>(addedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PantryLotsCompanion(')
+          ..write('id: $id, ')
+          ..write('receiptId: $receiptId, ')
+          ..write('productId: $productId, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('name: $name, ')
+          ..write('unit: $unit, ')
+          ..write('source: $source, ')
+          ..write('initialQuantity: $initialQuantity, ')
+          ..write('priceCents: $priceCents, ')
+          ..write('addedAt: $addedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $ReceiptItemsTable extends ReceiptItems
     with TableInfo<$ReceiptItemsTable, ReceiptItem> {
   @override
@@ -2123,6 +2815,16 @@ class $ReceiptItemsTable extends ReceiptItems
     requiredDuringInsert: false,
     defaultValue: const Constant(1),
   );
+  static const VerificationMeta _unitMeta = const VerificationMeta('unit');
+  @override
+  late final GeneratedColumn<String> unit = GeneratedColumn<String>(
+    'unit',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pz'),
+  );
   static const VerificationMeta _unitPriceCentsMeta = const VerificationMeta(
     'unitPriceCents',
   );
@@ -2171,6 +2873,20 @@ class $ReceiptItemsTable extends ReceiptItems
       'REFERENCES categories (id)',
     ),
   );
+  static const VerificationMeta _pantryLotIdMeta = const VerificationMeta(
+    'pantryLotId',
+  );
+  @override
+  late final GeneratedColumn<int> pantryLotId = GeneratedColumn<int>(
+    'pantry_lot_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES pantry_lots (id) ON DELETE SET NULL',
+    ),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2178,10 +2894,12 @@ class $ReceiptItemsTable extends ReceiptItems
     productId,
     rawName,
     quantity,
+    unit,
     unitPriceCents,
     lineTotalCents,
     discountCents,
     categoryId,
+    pantryLotId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2226,6 +2944,12 @@ class $ReceiptItemsTable extends ReceiptItems
         quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta),
       );
     }
+    if (data.containsKey('unit')) {
+      context.handle(
+        _unitMeta,
+        unit.isAcceptableOrUnknown(data['unit']!, _unitMeta),
+      );
+    }
     if (data.containsKey('unit_price_cents')) {
       context.handle(
         _unitPriceCentsMeta,
@@ -2263,6 +2987,15 @@ class $ReceiptItemsTable extends ReceiptItems
         categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
       );
     }
+    if (data.containsKey('pantry_lot_id')) {
+      context.handle(
+        _pantryLotIdMeta,
+        pantryLotId.isAcceptableOrUnknown(
+          data['pantry_lot_id']!,
+          _pantryLotIdMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2292,6 +3025,10 @@ class $ReceiptItemsTable extends ReceiptItems
         DriftSqlType.double,
         data['${effectivePrefix}quantity'],
       )!,
+      unit: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit'],
+      )!,
       unitPriceCents: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}unit_price_cents'],
@@ -2307,6 +3044,10 @@ class $ReceiptItemsTable extends ReceiptItems
       categoryId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}category_id'],
+      ),
+      pantryLotId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pantry_lot_id'],
       ),
     );
   }
@@ -2327,20 +3068,29 @@ class ReceiptItem extends DataClass implements Insertable<ReceiptItem> {
 
   /// Pieces, or kg/l for weighed items.
   final double quantity;
+
+  /// Unit of [quantity]: `pz`, `kg` or `l`.
+  final String unit;
   final int unitPriceCents;
   final int lineTotalCents;
   final int discountCents;
   final int? categoryId;
+
+  /// Pantry lot this row went into, if the user added it during triage.
+  /// Several rows of the same product share one lot.
+  final int? pantryLotId;
   const ReceiptItem({
     required this.id,
     required this.receiptId,
     this.productId,
     required this.rawName,
     required this.quantity,
+    required this.unit,
     required this.unitPriceCents,
     required this.lineTotalCents,
     required this.discountCents,
     this.categoryId,
+    this.pantryLotId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2352,11 +3102,15 @@ class ReceiptItem extends DataClass implements Insertable<ReceiptItem> {
     }
     map['raw_name'] = Variable<String>(rawName);
     map['quantity'] = Variable<double>(quantity);
+    map['unit'] = Variable<String>(unit);
     map['unit_price_cents'] = Variable<int>(unitPriceCents);
     map['line_total_cents'] = Variable<int>(lineTotalCents);
     map['discount_cents'] = Variable<int>(discountCents);
     if (!nullToAbsent || categoryId != null) {
       map['category_id'] = Variable<int>(categoryId);
+    }
+    if (!nullToAbsent || pantryLotId != null) {
+      map['pantry_lot_id'] = Variable<int>(pantryLotId);
     }
     return map;
   }
@@ -2370,12 +3124,16 @@ class ReceiptItem extends DataClass implements Insertable<ReceiptItem> {
           : Value(productId),
       rawName: Value(rawName),
       quantity: Value(quantity),
+      unit: Value(unit),
       unitPriceCents: Value(unitPriceCents),
       lineTotalCents: Value(lineTotalCents),
       discountCents: Value(discountCents),
       categoryId: categoryId == null && nullToAbsent
           ? const Value.absent()
           : Value(categoryId),
+      pantryLotId: pantryLotId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pantryLotId),
     );
   }
 
@@ -2390,10 +3148,12 @@ class ReceiptItem extends DataClass implements Insertable<ReceiptItem> {
       productId: serializer.fromJson<int?>(json['productId']),
       rawName: serializer.fromJson<String>(json['rawName']),
       quantity: serializer.fromJson<double>(json['quantity']),
+      unit: serializer.fromJson<String>(json['unit']),
       unitPriceCents: serializer.fromJson<int>(json['unitPriceCents']),
       lineTotalCents: serializer.fromJson<int>(json['lineTotalCents']),
       discountCents: serializer.fromJson<int>(json['discountCents']),
       categoryId: serializer.fromJson<int?>(json['categoryId']),
+      pantryLotId: serializer.fromJson<int?>(json['pantryLotId']),
     );
   }
   @override
@@ -2405,10 +3165,12 @@ class ReceiptItem extends DataClass implements Insertable<ReceiptItem> {
       'productId': serializer.toJson<int?>(productId),
       'rawName': serializer.toJson<String>(rawName),
       'quantity': serializer.toJson<double>(quantity),
+      'unit': serializer.toJson<String>(unit),
       'unitPriceCents': serializer.toJson<int>(unitPriceCents),
       'lineTotalCents': serializer.toJson<int>(lineTotalCents),
       'discountCents': serializer.toJson<int>(discountCents),
       'categoryId': serializer.toJson<int?>(categoryId),
+      'pantryLotId': serializer.toJson<int?>(pantryLotId),
     };
   }
 
@@ -2418,20 +3180,24 @@ class ReceiptItem extends DataClass implements Insertable<ReceiptItem> {
     Value<int?> productId = const Value.absent(),
     String? rawName,
     double? quantity,
+    String? unit,
     int? unitPriceCents,
     int? lineTotalCents,
     int? discountCents,
     Value<int?> categoryId = const Value.absent(),
+    Value<int?> pantryLotId = const Value.absent(),
   }) => ReceiptItem(
     id: id ?? this.id,
     receiptId: receiptId ?? this.receiptId,
     productId: productId.present ? productId.value : this.productId,
     rawName: rawName ?? this.rawName,
     quantity: quantity ?? this.quantity,
+    unit: unit ?? this.unit,
     unitPriceCents: unitPriceCents ?? this.unitPriceCents,
     lineTotalCents: lineTotalCents ?? this.lineTotalCents,
     discountCents: discountCents ?? this.discountCents,
     categoryId: categoryId.present ? categoryId.value : this.categoryId,
+    pantryLotId: pantryLotId.present ? pantryLotId.value : this.pantryLotId,
   );
   ReceiptItem copyWithCompanion(ReceiptItemsCompanion data) {
     return ReceiptItem(
@@ -2440,6 +3206,7 @@ class ReceiptItem extends DataClass implements Insertable<ReceiptItem> {
       productId: data.productId.present ? data.productId.value : this.productId,
       rawName: data.rawName.present ? data.rawName.value : this.rawName,
       quantity: data.quantity.present ? data.quantity.value : this.quantity,
+      unit: data.unit.present ? data.unit.value : this.unit,
       unitPriceCents: data.unitPriceCents.present
           ? data.unitPriceCents.value
           : this.unitPriceCents,
@@ -2452,6 +3219,9 @@ class ReceiptItem extends DataClass implements Insertable<ReceiptItem> {
       categoryId: data.categoryId.present
           ? data.categoryId.value
           : this.categoryId,
+      pantryLotId: data.pantryLotId.present
+          ? data.pantryLotId.value
+          : this.pantryLotId,
     );
   }
 
@@ -2463,10 +3233,12 @@ class ReceiptItem extends DataClass implements Insertable<ReceiptItem> {
           ..write('productId: $productId, ')
           ..write('rawName: $rawName, ')
           ..write('quantity: $quantity, ')
+          ..write('unit: $unit, ')
           ..write('unitPriceCents: $unitPriceCents, ')
           ..write('lineTotalCents: $lineTotalCents, ')
           ..write('discountCents: $discountCents, ')
-          ..write('categoryId: $categoryId')
+          ..write('categoryId: $categoryId, ')
+          ..write('pantryLotId: $pantryLotId')
           ..write(')'))
         .toString();
   }
@@ -2478,10 +3250,12 @@ class ReceiptItem extends DataClass implements Insertable<ReceiptItem> {
     productId,
     rawName,
     quantity,
+    unit,
     unitPriceCents,
     lineTotalCents,
     discountCents,
     categoryId,
+    pantryLotId,
   );
   @override
   bool operator ==(Object other) =>
@@ -2492,10 +3266,12 @@ class ReceiptItem extends DataClass implements Insertable<ReceiptItem> {
           other.productId == this.productId &&
           other.rawName == this.rawName &&
           other.quantity == this.quantity &&
+          other.unit == this.unit &&
           other.unitPriceCents == this.unitPriceCents &&
           other.lineTotalCents == this.lineTotalCents &&
           other.discountCents == this.discountCents &&
-          other.categoryId == this.categoryId);
+          other.categoryId == this.categoryId &&
+          other.pantryLotId == this.pantryLotId);
 }
 
 class ReceiptItemsCompanion extends UpdateCompanion<ReceiptItem> {
@@ -2504,20 +3280,24 @@ class ReceiptItemsCompanion extends UpdateCompanion<ReceiptItem> {
   final Value<int?> productId;
   final Value<String> rawName;
   final Value<double> quantity;
+  final Value<String> unit;
   final Value<int> unitPriceCents;
   final Value<int> lineTotalCents;
   final Value<int> discountCents;
   final Value<int?> categoryId;
+  final Value<int?> pantryLotId;
   const ReceiptItemsCompanion({
     this.id = const Value.absent(),
     this.receiptId = const Value.absent(),
     this.productId = const Value.absent(),
     this.rawName = const Value.absent(),
     this.quantity = const Value.absent(),
+    this.unit = const Value.absent(),
     this.unitPriceCents = const Value.absent(),
     this.lineTotalCents = const Value.absent(),
     this.discountCents = const Value.absent(),
     this.categoryId = const Value.absent(),
+    this.pantryLotId = const Value.absent(),
   });
   ReceiptItemsCompanion.insert({
     this.id = const Value.absent(),
@@ -2525,10 +3305,12 @@ class ReceiptItemsCompanion extends UpdateCompanion<ReceiptItem> {
     this.productId = const Value.absent(),
     required String rawName,
     this.quantity = const Value.absent(),
+    this.unit = const Value.absent(),
     required int unitPriceCents,
     required int lineTotalCents,
     this.discountCents = const Value.absent(),
     this.categoryId = const Value.absent(),
+    this.pantryLotId = const Value.absent(),
   }) : receiptId = Value(receiptId),
        rawName = Value(rawName),
        unitPriceCents = Value(unitPriceCents),
@@ -2539,10 +3321,12 @@ class ReceiptItemsCompanion extends UpdateCompanion<ReceiptItem> {
     Expression<int>? productId,
     Expression<String>? rawName,
     Expression<double>? quantity,
+    Expression<String>? unit,
     Expression<int>? unitPriceCents,
     Expression<int>? lineTotalCents,
     Expression<int>? discountCents,
     Expression<int>? categoryId,
+    Expression<int>? pantryLotId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2550,10 +3334,12 @@ class ReceiptItemsCompanion extends UpdateCompanion<ReceiptItem> {
       if (productId != null) 'product_id': productId,
       if (rawName != null) 'raw_name': rawName,
       if (quantity != null) 'quantity': quantity,
+      if (unit != null) 'unit': unit,
       if (unitPriceCents != null) 'unit_price_cents': unitPriceCents,
       if (lineTotalCents != null) 'line_total_cents': lineTotalCents,
       if (discountCents != null) 'discount_cents': discountCents,
       if (categoryId != null) 'category_id': categoryId,
+      if (pantryLotId != null) 'pantry_lot_id': pantryLotId,
     });
   }
 
@@ -2563,10 +3349,12 @@ class ReceiptItemsCompanion extends UpdateCompanion<ReceiptItem> {
     Value<int?>? productId,
     Value<String>? rawName,
     Value<double>? quantity,
+    Value<String>? unit,
     Value<int>? unitPriceCents,
     Value<int>? lineTotalCents,
     Value<int>? discountCents,
     Value<int?>? categoryId,
+    Value<int?>? pantryLotId,
   }) {
     return ReceiptItemsCompanion(
       id: id ?? this.id,
@@ -2574,10 +3362,12 @@ class ReceiptItemsCompanion extends UpdateCompanion<ReceiptItem> {
       productId: productId ?? this.productId,
       rawName: rawName ?? this.rawName,
       quantity: quantity ?? this.quantity,
+      unit: unit ?? this.unit,
       unitPriceCents: unitPriceCents ?? this.unitPriceCents,
       lineTotalCents: lineTotalCents ?? this.lineTotalCents,
       discountCents: discountCents ?? this.discountCents,
       categoryId: categoryId ?? this.categoryId,
+      pantryLotId: pantryLotId ?? this.pantryLotId,
     );
   }
 
@@ -2599,6 +3389,9 @@ class ReceiptItemsCompanion extends UpdateCompanion<ReceiptItem> {
     if (quantity.present) {
       map['quantity'] = Variable<double>(quantity.value);
     }
+    if (unit.present) {
+      map['unit'] = Variable<String>(unit.value);
+    }
     if (unitPriceCents.present) {
       map['unit_price_cents'] = Variable<int>(unitPriceCents.value);
     }
@@ -2611,6 +3404,9 @@ class ReceiptItemsCompanion extends UpdateCompanion<ReceiptItem> {
     if (categoryId.present) {
       map['category_id'] = Variable<int>(categoryId.value);
     }
+    if (pantryLotId.present) {
+      map['pantry_lot_id'] = Variable<int>(pantryLotId.value);
+    }
     return map;
   }
 
@@ -2622,10 +3418,484 @@ class ReceiptItemsCompanion extends UpdateCompanion<ReceiptItem> {
           ..write('productId: $productId, ')
           ..write('rawName: $rawName, ')
           ..write('quantity: $quantity, ')
+          ..write('unit: $unit, ')
           ..write('unitPriceCents: $unitPriceCents, ')
           ..write('lineTotalCents: $lineTotalCents, ')
           ..write('discountCents: $discountCents, ')
-          ..write('categoryId: $categoryId')
+          ..write('categoryId: $categoryId, ')
+          ..write('pantryLotId: $pantryLotId')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PantryEventsTable extends PantryEvents
+    with TableInfo<$PantryEventsTable, PantryEventRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PantryEventsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _lotIdMeta = const VerificationMeta('lotId');
+  @override
+  late final GeneratedColumn<int> lotId = GeneratedColumn<int>(
+    'lot_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES pantry_lots (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<PantryEventKind, String> kind =
+      GeneratedColumn<String>(
+        'kind',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<PantryEventKind>($PantryEventsTable.$converterkind);
+  @override
+  late final GeneratedColumnWithTypeConverter<PantryEventReason?, String>
+  reason = GeneratedColumn<String>(
+    'reason',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  ).withConverter<PantryEventReason?>($PantryEventsTable.$converterreasonn);
+  static const VerificationMeta _deltaMeta = const VerificationMeta('delta');
+  @override
+  late final GeneratedColumn<double> delta = GeneratedColumn<double>(
+    'delta',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _revertsEventIdMeta = const VerificationMeta(
+    'revertsEventId',
+  );
+  @override
+  late final GeneratedColumn<int> revertsEventId = GeneratedColumn<int>(
+    'reverts_event_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES pantry_events (id)',
+    ),
+  );
+  static const VerificationMeta _atMeta = const VerificationMeta('at');
+  @override
+  late final GeneratedColumn<DateTime> at = GeneratedColumn<DateTime>(
+    'at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    lotId,
+    kind,
+    reason,
+    delta,
+    revertsEventId,
+    at,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pantry_events';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PantryEventRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('lot_id')) {
+      context.handle(
+        _lotIdMeta,
+        lotId.isAcceptableOrUnknown(data['lot_id']!, _lotIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lotIdMeta);
+    }
+    if (data.containsKey('delta')) {
+      context.handle(
+        _deltaMeta,
+        delta.isAcceptableOrUnknown(data['delta']!, _deltaMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_deltaMeta);
+    }
+    if (data.containsKey('reverts_event_id')) {
+      context.handle(
+        _revertsEventIdMeta,
+        revertsEventId.isAcceptableOrUnknown(
+          data['reverts_event_id']!,
+          _revertsEventIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('at')) {
+      context.handle(_atMeta, at.isAcceptableOrUnknown(data['at']!, _atMeta));
+    } else if (isInserting) {
+      context.missing(_atMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PantryEventRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PantryEventRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      lotId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}lot_id'],
+      )!,
+      kind: $PantryEventsTable.$converterkind.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}kind'],
+        )!,
+      ),
+      reason: $PantryEventsTable.$converterreasonn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}reason'],
+        ),
+      ),
+      delta: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}delta'],
+      )!,
+      revertsEventId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}reverts_event_id'],
+      ),
+      at: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}at'],
+      )!,
+    );
+  }
+
+  @override
+  $PantryEventsTable createAlias(String alias) {
+    return $PantryEventsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<PantryEventKind, String, String> $converterkind =
+      const EnumNameConverter<PantryEventKind>(PantryEventKind.values);
+  static JsonTypeConverter2<PantryEventReason, String, String>
+  $converterreason = const EnumNameConverter<PantryEventReason>(
+    PantryEventReason.values,
+  );
+  static JsonTypeConverter2<PantryEventReason?, String?, String?>
+  $converterreasonn = JsonTypeConverter2.asNullable($converterreason);
+}
+
+class PantryEventRow extends DataClass implements Insertable<PantryEventRow> {
+  final int id;
+  final int lotId;
+  final PantryEventKind kind;
+  final PantryEventReason? reason;
+
+  /// Change actually applied to the remaining quantity, already clamped so
+  /// the remaining quantity never goes below 0. A revert carries the
+  /// opposite of the event it cancels.
+  final double delta;
+  final int? revertsEventId;
+
+  /// Stored in UTC.
+  final DateTime at;
+  const PantryEventRow({
+    required this.id,
+    required this.lotId,
+    required this.kind,
+    this.reason,
+    required this.delta,
+    this.revertsEventId,
+    required this.at,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['lot_id'] = Variable<int>(lotId);
+    {
+      map['kind'] = Variable<String>(
+        $PantryEventsTable.$converterkind.toSql(kind),
+      );
+    }
+    if (!nullToAbsent || reason != null) {
+      map['reason'] = Variable<String>(
+        $PantryEventsTable.$converterreasonn.toSql(reason),
+      );
+    }
+    map['delta'] = Variable<double>(delta);
+    if (!nullToAbsent || revertsEventId != null) {
+      map['reverts_event_id'] = Variable<int>(revertsEventId);
+    }
+    map['at'] = Variable<DateTime>(at);
+    return map;
+  }
+
+  PantryEventsCompanion toCompanion(bool nullToAbsent) {
+    return PantryEventsCompanion(
+      id: Value(id),
+      lotId: Value(lotId),
+      kind: Value(kind),
+      reason: reason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reason),
+      delta: Value(delta),
+      revertsEventId: revertsEventId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(revertsEventId),
+      at: Value(at),
+    );
+  }
+
+  factory PantryEventRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PantryEventRow(
+      id: serializer.fromJson<int>(json['id']),
+      lotId: serializer.fromJson<int>(json['lotId']),
+      kind: $PantryEventsTable.$converterkind.fromJson(
+        serializer.fromJson<String>(json['kind']),
+      ),
+      reason: $PantryEventsTable.$converterreasonn.fromJson(
+        serializer.fromJson<String?>(json['reason']),
+      ),
+      delta: serializer.fromJson<double>(json['delta']),
+      revertsEventId: serializer.fromJson<int?>(json['revertsEventId']),
+      at: serializer.fromJson<DateTime>(json['at']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'lotId': serializer.toJson<int>(lotId),
+      'kind': serializer.toJson<String>(
+        $PantryEventsTable.$converterkind.toJson(kind),
+      ),
+      'reason': serializer.toJson<String?>(
+        $PantryEventsTable.$converterreasonn.toJson(reason),
+      ),
+      'delta': serializer.toJson<double>(delta),
+      'revertsEventId': serializer.toJson<int?>(revertsEventId),
+      'at': serializer.toJson<DateTime>(at),
+    };
+  }
+
+  PantryEventRow copyWith({
+    int? id,
+    int? lotId,
+    PantryEventKind? kind,
+    Value<PantryEventReason?> reason = const Value.absent(),
+    double? delta,
+    Value<int?> revertsEventId = const Value.absent(),
+    DateTime? at,
+  }) => PantryEventRow(
+    id: id ?? this.id,
+    lotId: lotId ?? this.lotId,
+    kind: kind ?? this.kind,
+    reason: reason.present ? reason.value : this.reason,
+    delta: delta ?? this.delta,
+    revertsEventId: revertsEventId.present
+        ? revertsEventId.value
+        : this.revertsEventId,
+    at: at ?? this.at,
+  );
+  PantryEventRow copyWithCompanion(PantryEventsCompanion data) {
+    return PantryEventRow(
+      id: data.id.present ? data.id.value : this.id,
+      lotId: data.lotId.present ? data.lotId.value : this.lotId,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      reason: data.reason.present ? data.reason.value : this.reason,
+      delta: data.delta.present ? data.delta.value : this.delta,
+      revertsEventId: data.revertsEventId.present
+          ? data.revertsEventId.value
+          : this.revertsEventId,
+      at: data.at.present ? data.at.value : this.at,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PantryEventRow(')
+          ..write('id: $id, ')
+          ..write('lotId: $lotId, ')
+          ..write('kind: $kind, ')
+          ..write('reason: $reason, ')
+          ..write('delta: $delta, ')
+          ..write('revertsEventId: $revertsEventId, ')
+          ..write('at: $at')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, lotId, kind, reason, delta, revertsEventId, at);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PantryEventRow &&
+          other.id == this.id &&
+          other.lotId == this.lotId &&
+          other.kind == this.kind &&
+          other.reason == this.reason &&
+          other.delta == this.delta &&
+          other.revertsEventId == this.revertsEventId &&
+          other.at == this.at);
+}
+
+class PantryEventsCompanion extends UpdateCompanion<PantryEventRow> {
+  final Value<int> id;
+  final Value<int> lotId;
+  final Value<PantryEventKind> kind;
+  final Value<PantryEventReason?> reason;
+  final Value<double> delta;
+  final Value<int?> revertsEventId;
+  final Value<DateTime> at;
+  const PantryEventsCompanion({
+    this.id = const Value.absent(),
+    this.lotId = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.reason = const Value.absent(),
+    this.delta = const Value.absent(),
+    this.revertsEventId = const Value.absent(),
+    this.at = const Value.absent(),
+  });
+  PantryEventsCompanion.insert({
+    this.id = const Value.absent(),
+    required int lotId,
+    required PantryEventKind kind,
+    this.reason = const Value.absent(),
+    required double delta,
+    this.revertsEventId = const Value.absent(),
+    required DateTime at,
+  }) : lotId = Value(lotId),
+       kind = Value(kind),
+       delta = Value(delta),
+       at = Value(at);
+  static Insertable<PantryEventRow> custom({
+    Expression<int>? id,
+    Expression<int>? lotId,
+    Expression<String>? kind,
+    Expression<String>? reason,
+    Expression<double>? delta,
+    Expression<int>? revertsEventId,
+    Expression<DateTime>? at,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (lotId != null) 'lot_id': lotId,
+      if (kind != null) 'kind': kind,
+      if (reason != null) 'reason': reason,
+      if (delta != null) 'delta': delta,
+      if (revertsEventId != null) 'reverts_event_id': revertsEventId,
+      if (at != null) 'at': at,
+    });
+  }
+
+  PantryEventsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? lotId,
+    Value<PantryEventKind>? kind,
+    Value<PantryEventReason?>? reason,
+    Value<double>? delta,
+    Value<int?>? revertsEventId,
+    Value<DateTime>? at,
+  }) {
+    return PantryEventsCompanion(
+      id: id ?? this.id,
+      lotId: lotId ?? this.lotId,
+      kind: kind ?? this.kind,
+      reason: reason ?? this.reason,
+      delta: delta ?? this.delta,
+      revertsEventId: revertsEventId ?? this.revertsEventId,
+      at: at ?? this.at,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (lotId.present) {
+      map['lot_id'] = Variable<int>(lotId.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(
+        $PantryEventsTable.$converterkind.toSql(kind.value),
+      );
+    }
+    if (reason.present) {
+      map['reason'] = Variable<String>(
+        $PantryEventsTable.$converterreasonn.toSql(reason.value),
+      );
+    }
+    if (delta.present) {
+      map['delta'] = Variable<double>(delta.value);
+    }
+    if (revertsEventId.present) {
+      map['reverts_event_id'] = Variable<int>(revertsEventId.value);
+    }
+    if (at.present) {
+      map['at'] = Variable<DateTime>(at.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PantryEventsCompanion(')
+          ..write('id: $id, ')
+          ..write('lotId: $lotId, ')
+          ..write('kind: $kind, ')
+          ..write('reason: $reason, ')
+          ..write('delta: $delta, ')
+          ..write('revertsEventId: $revertsEventId, ')
+          ..write('at: $at')
           ..write(')'))
         .toString();
   }
@@ -2642,7 +3912,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $ReceiptsTable receipts = $ReceiptsTable(this);
+  late final $PantryLotsTable pantryLots = $PantryLotsTable(this);
   late final $ReceiptItemsTable receiptItems = $ReceiptItemsTable(this);
+  late final $PantryEventsTable pantryEvents = $PantryEventsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2654,7 +3926,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     productAliases,
     categoryKeywords,
     receipts,
+    pantryLots,
     receiptItems,
+    pantryEvents,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2677,7 +3951,42 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         'receipts',
         limitUpdateKind: UpdateKind.delete,
       ),
+      result: [TableUpdate('pantry_lots', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'products',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('pantry_lots', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'categories',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('pantry_lots', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'receipts',
+        limitUpdateKind: UpdateKind.delete,
+      ),
       result: [TableUpdate('receipt_items', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'pantry_lots',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('receipt_items', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'pantry_lots',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('pantry_events', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -3029,6 +4338,24 @@ final class $$CategoriesTableReferences
     );
   }
 
+  static MultiTypedResultKey<$PantryLotsTable, List<PantryLotRow>>
+  _pantryLotsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.pantryLots,
+    aliasName: 'categories__id__pantry_lots__category_id',
+  );
+
+  $$PantryLotsTableProcessedTableManager get pantryLotsRefs {
+    final manager = $$PantryLotsTableTableManager(
+      $_db,
+      $_db.pantryLots,
+    ).filter((f) => f.categoryId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_pantryLotsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$ReceiptItemsTable, List<ReceiptItem>>
   _receiptItemsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.receiptItems,
@@ -3141,6 +4468,31 @@ class $$CategoriesTableFilterComposer
           }) => $$CategoryKeywordsTableFilterComposer(
             $db: $db,
             $table: $db.categoryKeywords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> pantryLotsRefs(
+    Expression<bool> Function($$PantryLotsTableFilterComposer f) f,
+  ) {
+    final $$PantryLotsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.pantryLots,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryLotsTableFilterComposer(
+            $db: $db,
+            $table: $db.pantryLots,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3323,6 +4675,31 @@ class $$CategoriesTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> pantryLotsRefs<T extends Object>(
+    Expression<T> Function($$PantryLotsTableAnnotationComposer a) f,
+  ) {
+    final $$PantryLotsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.pantryLots,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryLotsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.pantryLots,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> receiptItemsRefs<T extends Object>(
     Expression<T> Function($$ReceiptItemsTableAnnotationComposer a) f,
   ) {
@@ -3366,6 +4743,7 @@ class $$CategoriesTableTableManager
             bool parentId,
             bool productsRefs,
             bool categoryKeywordsRefs,
+            bool pantryLotsRefs,
             bool receiptItemsRefs,
           })
         > {
@@ -3421,6 +4799,7 @@ class $$CategoriesTableTableManager
                 parentId = false,
                 productsRefs = false,
                 categoryKeywordsRefs = false,
+                pantryLotsRefs = false,
                 receiptItemsRefs = false,
               }) {
                 return PrefetchHooks(
@@ -3428,6 +4807,7 @@ class $$CategoriesTableTableManager
                   explicitlyWatchedTables: [
                     if (productsRefs) db.products,
                     if (categoryKeywordsRefs) db.categoryKeywords,
+                    if (pantryLotsRefs) db.pantryLots,
                     if (receiptItemsRefs) db.receiptItems,
                   ],
                   addJoins:
@@ -3502,6 +4882,26 @@ class $$CategoriesTableTableManager
                           referencedColumn: 'category_id',
                           typedResults: items,
                         ),
+                      if (pantryLotsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          Category,
+                          $CategoriesTable,
+                          PantryLotRow,
+                          $PantryLotsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CategoriesTableReferences
+                              ._pantryLotsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CategoriesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).pantryLotsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'category_id',
+                          typedResults: items,
+                        ),
                       if (receiptItemsRefs)
                         await $_getPrefetchedDataByColumns<
                           Category,
@@ -3546,6 +4946,7 @@ typedef $$CategoriesTableProcessedTableManager =
         bool parentId,
         bool productsRefs,
         bool categoryKeywordsRefs,
+        bool pantryLotsRefs,
         bool receiptItemsRefs,
       })
     >;
@@ -3554,12 +4955,14 @@ typedef $$ProductsTableCreateCompanionBuilder = ProductsCompanion Function({
   required String canonicalName,
   Value<int?> categoryId,
   Value<String?> unit,
+  Value<bool> trackInPantry,
 });
 typedef $$ProductsTableUpdateCompanionBuilder = ProductsCompanion Function({
   Value<int> id,
   Value<String> canonicalName,
   Value<int?> categoryId,
   Value<String?> unit,
+  Value<bool> trackInPantry,
 });
 
 final class $$ProductsTableReferences
@@ -3596,6 +4999,24 @@ final class $$ProductsTableReferences
     ).filter((f) => f.productId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_productAliasesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$PantryLotsTable, List<PantryLotRow>>
+  _pantryLotsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.pantryLots,
+    aliasName: 'products__id__pantry_lots__product_id',
+  );
+
+  $$PantryLotsTableProcessedTableManager get pantryLotsRefs {
+    final manager = $$PantryLotsTableTableManager(
+      $_db,
+      $_db.pantryLots,
+    ).filter((f) => f.productId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_pantryLotsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -3644,6 +5065,11 @@ class $$ProductsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get trackInPantry => $composableBuilder(
+    column: $table.trackInPantry,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$CategoriesTableFilterComposer get categoryId {
     final $$CategoriesTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -3683,6 +5109,31 @@ class $$ProductsTableFilterComposer
           }) => $$ProductAliasesTableFilterComposer(
             $db: $db,
             $table: $db.productAliases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> pantryLotsRefs(
+    Expression<bool> Function($$PantryLotsTableFilterComposer f) f,
+  ) {
+    final $$PantryLotsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.pantryLots,
+      getReferencedColumn: (t) => t.productId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryLotsTableFilterComposer(
+            $db: $db,
+            $table: $db.pantryLots,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3742,6 +5193,11 @@ class $$ProductsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get trackInPantry => $composableBuilder(
+    column: $table.trackInPantry,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$CategoriesTableOrderingComposer get categoryId {
     final $$CategoriesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -3786,6 +5242,11 @@ class $$ProductsTableAnnotationComposer
   GeneratedColumn<String> get unit =>
       $composableBuilder(column: $table.unit, builder: (column) => column);
 
+  GeneratedColumn<bool> get trackInPantry => $composableBuilder(
+    column: $table.trackInPantry,
+    builder: (column) => column,
+  );
+
   $$CategoriesTableAnnotationComposer get categoryId {
     final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -3825,6 +5286,31 @@ class $$ProductsTableAnnotationComposer
           }) => $$ProductAliasesTableAnnotationComposer(
             $db: $db,
             $table: $db.productAliases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> pantryLotsRefs<T extends Object>(
+    Expression<T> Function($$PantryLotsTableAnnotationComposer a) f,
+  ) {
+    final $$PantryLotsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.pantryLots,
+      getReferencedColumn: (t) => t.productId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryLotsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.pantryLots,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3876,6 +5362,7 @@ class $$ProductsTableTableManager
           PrefetchHooks Function({
             bool categoryId,
             bool productAliasesRefs,
+            bool pantryLotsRefs,
             bool receiptItemsRefs,
           })
         > {
@@ -3896,11 +5383,13 @@ class $$ProductsTableTableManager
                 Value<String> canonicalName = const Value.absent(),
                 Value<int?> categoryId = const Value.absent(),
                 Value<String?> unit = const Value.absent(),
+                Value<bool> trackInPantry = const Value.absent(),
               }) => ProductsCompanion(
                 id: id,
                 canonicalName: canonicalName,
                 categoryId: categoryId,
                 unit: unit,
+                trackInPantry: trackInPantry,
               ),
           createCompanionCallback:
               ({
@@ -3908,11 +5397,13 @@ class $$ProductsTableTableManager
                 required String canonicalName,
                 Value<int?> categoryId = const Value.absent(),
                 Value<String?> unit = const Value.absent(),
+                Value<bool> trackInPantry = const Value.absent(),
               }) => ProductsCompanion.insert(
                 id: id,
                 canonicalName: canonicalName,
                 categoryId: categoryId,
                 unit: unit,
+                trackInPantry: trackInPantry,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -3926,12 +5417,14 @@ class $$ProductsTableTableManager
               ({
                 categoryId = false,
                 productAliasesRefs = false,
+                pantryLotsRefs = false,
                 receiptItemsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (productAliasesRefs) db.productAliases,
+                    if (pantryLotsRefs) db.pantryLots,
                     if (receiptItemsRefs) db.receiptItems,
                   ],
                   addJoins:
@@ -3986,6 +5479,26 @@ class $$ProductsTableTableManager
                           referencedColumn: 'product_id',
                           typedResults: items,
                         ),
+                      if (pantryLotsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          Product,
+                          $ProductsTable,
+                          PantryLotRow,
+                          $PantryLotsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ProductsTableReferences
+                              ._pantryLotsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ProductsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).pantryLotsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'product_id',
+                          typedResults: items,
+                        ),
                       if (receiptItemsRefs)
                         await $_getPrefetchedDataByColumns<
                           Product,
@@ -4029,6 +5542,7 @@ typedef $$ProductsTableProcessedTableManager =
       PrefetchHooks Function({
         bool categoryId,
         bool productAliasesRefs,
+        bool pantryLotsRefs,
         bool receiptItemsRefs,
       })
     >;
@@ -4631,6 +6145,24 @@ final class $$ReceiptsTableReferences
     );
   }
 
+  static MultiTypedResultKey<$PantryLotsTable, List<PantryLotRow>>
+  _pantryLotsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.pantryLots,
+    aliasName: 'receipts__id__pantry_lots__receipt_id',
+  );
+
+  $$PantryLotsTableProcessedTableManager get pantryLotsRefs {
+    final manager = $$PantryLotsTableTableManager(
+      $_db,
+      $_db.pantryLots,
+    ).filter((f) => f.receiptId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_pantryLotsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$ReceiptItemsTable, List<ReceiptItem>>
   _receiptItemsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.receiptItems,
@@ -4721,6 +6253,31 @@ class $$ReceiptsTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  Expression<bool> pantryLotsRefs(
+    Expression<bool> Function($$PantryLotsTableFilterComposer f) f,
+  ) {
+    final $$PantryLotsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.pantryLots,
+      getReferencedColumn: (t) => t.receiptId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryLotsTableFilterComposer(
+            $db: $db,
+            $table: $db.pantryLots,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 
   Expression<bool> receiptItemsRefs(
@@ -4888,6 +6445,31 @@ class $$ReceiptsTableAnnotationComposer
     return composer;
   }
 
+  Expression<T> pantryLotsRefs<T extends Object>(
+    Expression<T> Function($$PantryLotsTableAnnotationComposer a) f,
+  ) {
+    final $$PantryLotsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.pantryLots,
+      getReferencedColumn: (t) => t.receiptId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryLotsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.pantryLots,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> receiptItemsRefs<T extends Object>(
     Expression<T> Function($$ReceiptItemsTableAnnotationComposer a) f,
   ) {
@@ -4927,7 +6509,11 @@ class $$ReceiptsTableTableManager
           $$ReceiptsTableUpdateCompanionBuilder,
           (Receipt, $$ReceiptsTableReferences),
           Receipt,
-          PrefetchHooks Function({bool storeId, bool receiptItemsRefs})
+          PrefetchHooks Function({
+            bool storeId,
+            bool pantryLotsRefs,
+            bool receiptItemsRefs,
+          })
         > {
   $$ReceiptsTableTableManager(_$AppDatabase db, $ReceiptsTable table)
     : super(
@@ -4992,65 +6578,94 @@ class $$ReceiptsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({storeId = false, receiptItemsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (receiptItemsRefs) db.receiptItems],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (storeId) {
-                      state = state.withJoin(
-                        currentTable: table,
-                        currentColumn: table.storeId,
-                        referencedTable: $$ReceiptsTableReferences
-                            ._storeIdTable(db),
-                        referencedColumn: $$ReceiptsTableReferences
-                            ._storeIdTable(db)
-                            .id,
-                      ) as T;
-                    }
+          prefetchHooksCallback:
+              ({
+                storeId = false,
+                pantryLotsRefs = false,
+                receiptItemsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (pantryLotsRefs) db.pantryLots,
+                    if (receiptItemsRefs) db.receiptItems,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (storeId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.storeId,
+                            referencedTable: $$ReceiptsTableReferences
+                                ._storeIdTable(db),
+                            referencedColumn: $$ReceiptsTableReferences
+                                ._storeIdTable(db)
+                                .id,
+                          ) as T;
+                        }
 
-                    return state;
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (pantryLotsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          Receipt,
+                          $ReceiptsTable,
+                          PantryLotRow,
+                          $PantryLotsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ReceiptsTableReferences
+                              ._pantryLotsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ReceiptsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).pantryLotsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'receipt_id',
+                          typedResults: items,
+                        ),
+                      if (receiptItemsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          Receipt,
+                          $ReceiptsTable,
+                          ReceiptItem,
+                          $ReceiptItemsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ReceiptsTableReferences
+                              ._receiptItemsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ReceiptsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).receiptItemsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'receipt_id',
+                          typedResults: items,
+                        ),
+                    ];
                   },
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (receiptItemsRefs)
-                    await $_getPrefetchedDataByColumns<
-                      Receipt,
-                      $ReceiptsTable,
-                      ReceiptItem,
-                      $ReceiptItemsTable
-                    >(
-                      currentTable: table,
-                      referencedTable: $$ReceiptsTableReferences
-                          ._receiptItemsRefsTable(db),
-                      managerFromTypedResult: (p0) => $$ReceiptsTableReferences(
-                        db,
-                        table,
-                        p0,
-                      ).receiptItemsRefs,
-                      currentColumn: 'id',
-                      referencedColumn: 'receipt_id',
-                      typedResults: items,
-                    ),
-                ];
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -5067,7 +6682,785 @@ typedef $$ReceiptsTableProcessedTableManager =
       $$ReceiptsTableUpdateCompanionBuilder,
       (Receipt, $$ReceiptsTableReferences),
       Receipt,
-      PrefetchHooks Function({bool storeId, bool receiptItemsRefs})
+      PrefetchHooks Function({
+        bool storeId,
+        bool pantryLotsRefs,
+        bool receiptItemsRefs,
+      })
+    >;
+typedef $$PantryLotsTableCreateCompanionBuilder = PantryLotsCompanion Function({
+  Value<int> id,
+  Value<int?> receiptId,
+  Value<int?> productId,
+  Value<int?> categoryId,
+  required String name,
+  Value<String> unit,
+  required PantrySource source,
+  required double initialQuantity,
+  Value<int?> priceCents,
+  required DateTime addedAt,
+});
+typedef $$PantryLotsTableUpdateCompanionBuilder = PantryLotsCompanion Function({
+  Value<int> id,
+  Value<int?> receiptId,
+  Value<int?> productId,
+  Value<int?> categoryId,
+  Value<String> name,
+  Value<String> unit,
+  Value<PantrySource> source,
+  Value<double> initialQuantity,
+  Value<int?> priceCents,
+  Value<DateTime> addedAt,
+});
+
+final class $$PantryLotsTableReferences
+    extends BaseReferences<_$AppDatabase, $PantryLotsTable, PantryLotRow> {
+  $$PantryLotsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ReceiptsTable _receiptIdTable(_$AppDatabase db) =>
+      db.receipts.createAlias('pantry_lots__receipt_id__receipts__id');
+
+  $$ReceiptsTableProcessedTableManager? get receiptId {
+    final $_column = $_itemColumn<int>('receipt_id');
+    if ($_column == null) return null;
+    final manager = $$ReceiptsTableTableManager(
+      $_db,
+      $_db.receipts,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_receiptIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ProductsTable _productIdTable(_$AppDatabase db) =>
+      db.products.createAlias('pantry_lots__product_id__products__id');
+
+  $$ProductsTableProcessedTableManager? get productId {
+    final $_column = $_itemColumn<int>('product_id');
+    if ($_column == null) return null;
+    final manager = $$ProductsTableTableManager(
+      $_db,
+      $_db.products,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_productIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $CategoriesTable _categoryIdTable(_$AppDatabase db) =>
+      db.categories.createAlias('pantry_lots__category_id__categories__id');
+
+  $$CategoriesTableProcessedTableManager? get categoryId {
+    final $_column = $_itemColumn<int>('category_id');
+    if ($_column == null) return null;
+    final manager = $$CategoriesTableTableManager(
+      $_db,
+      $_db.categories,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$ReceiptItemsTable, List<ReceiptItem>>
+  _receiptItemsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.receiptItems,
+    aliasName: 'pantry_lots__id__receipt_items__pantry_lot_id',
+  );
+
+  $$ReceiptItemsTableProcessedTableManager get receiptItemsRefs {
+    final manager = $$ReceiptItemsTableTableManager(
+      $_db,
+      $_db.receiptItems,
+    ).filter((f) => f.pantryLotId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_receiptItemsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$PantryEventsTable, List<PantryEventRow>>
+  _pantryEventsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.pantryEvents,
+    aliasName: 'pantry_lots__id__pantry_events__lot_id',
+  );
+
+  $$PantryEventsTableProcessedTableManager get pantryEventsRefs {
+    final manager = $$PantryEventsTableTableManager(
+      $_db,
+      $_db.pantryEvents,
+    ).filter((f) => f.lotId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_pantryEventsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$PantryLotsTableFilterComposer
+    extends Composer<_$AppDatabase, $PantryLotsTable> {
+  $$PantryLotsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<PantrySource, PantrySource, String>
+  get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<double> get initialQuantity => $composableBuilder(
+    column: $table.initialQuantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get priceCents => $composableBuilder(
+    column: $table.priceCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get addedAt => $composableBuilder(
+    column: $table.addedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ReceiptsTableFilterComposer get receiptId {
+    final $$ReceiptsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.receiptId,
+      referencedTable: $db.receipts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptsTableFilterComposer(
+            $db: $db,
+            $table: $db.receipts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ProductsTableFilterComposer get productId {
+    final $$ProductsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.productId,
+      referencedTable: $db.products,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProductsTableFilterComposer(
+            $db: $db,
+            $table: $db.products,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableFilterComposer get categoryId {
+    final $$CategoriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableFilterComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> receiptItemsRefs(
+    Expression<bool> Function($$ReceiptItemsTableFilterComposer f) f,
+  ) {
+    final $$ReceiptItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.receiptItems,
+      getReferencedColumn: (t) => t.pantryLotId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.receiptItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> pantryEventsRefs(
+    Expression<bool> Function($$PantryEventsTableFilterComposer f) f,
+  ) {
+    final $$PantryEventsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.pantryEvents,
+      getReferencedColumn: (t) => t.lotId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryEventsTableFilterComposer(
+            $db: $db,
+            $table: $db.pantryEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$PantryLotsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PantryLotsTable> {
+  $$PantryLotsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get initialQuantity => $composableBuilder(
+    column: $table.initialQuantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get priceCents => $composableBuilder(
+    column: $table.priceCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get addedAt => $composableBuilder(
+    column: $table.addedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ReceiptsTableOrderingComposer get receiptId {
+    final $$ReceiptsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.receiptId,
+      referencedTable: $db.receipts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptsTableOrderingComposer(
+            $db: $db,
+            $table: $db.receipts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ProductsTableOrderingComposer get productId {
+    final $$ProductsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.productId,
+      referencedTable: $db.products,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProductsTableOrderingComposer(
+            $db: $db,
+            $table: $db.products,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableOrderingComposer get categoryId {
+    final $$CategoriesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableOrderingComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PantryLotsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PantryLotsTable> {
+  $$PantryLotsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get unit =>
+      $composableBuilder(column: $table.unit, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<PantrySource, String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<double> get initialQuantity => $composableBuilder(
+    column: $table.initialQuantity,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get priceCents => $composableBuilder(
+    column: $table.priceCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get addedAt =>
+      $composableBuilder(column: $table.addedAt, builder: (column) => column);
+
+  $$ReceiptsTableAnnotationComposer get receiptId {
+    final $$ReceiptsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.receiptId,
+      referencedTable: $db.receipts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.receipts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ProductsTableAnnotationComposer get productId {
+    final $$ProductsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.productId,
+      referencedTable: $db.products,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProductsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.products,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableAnnotationComposer get categoryId {
+    final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> receiptItemsRefs<T extends Object>(
+    Expression<T> Function($$ReceiptItemsTableAnnotationComposer a) f,
+  ) {
+    final $$ReceiptItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.receiptItems,
+      getReferencedColumn: (t) => t.pantryLotId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.receiptItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> pantryEventsRefs<T extends Object>(
+    Expression<T> Function($$PantryEventsTableAnnotationComposer a) f,
+  ) {
+    final $$PantryEventsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.pantryEvents,
+      getReferencedColumn: (t) => t.lotId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryEventsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.pantryEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$PantryLotsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PantryLotsTable,
+          PantryLotRow,
+          $$PantryLotsTableFilterComposer,
+          $$PantryLotsTableOrderingComposer,
+          $$PantryLotsTableAnnotationComposer,
+          $$PantryLotsTableCreateCompanionBuilder,
+          $$PantryLotsTableUpdateCompanionBuilder,
+          (PantryLotRow, $$PantryLotsTableReferences),
+          PantryLotRow,
+          PrefetchHooks Function({
+            bool receiptId,
+            bool productId,
+            bool categoryId,
+            bool receiptItemsRefs,
+            bool pantryEventsRefs,
+          })
+        > {
+  $$PantryLotsTableTableManager(_$AppDatabase db, $PantryLotsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PantryLotsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PantryLotsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PantryLotsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int?> receiptId = const Value.absent(),
+                Value<int?> productId = const Value.absent(),
+                Value<int?> categoryId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> unit = const Value.absent(),
+                Value<PantrySource> source = const Value.absent(),
+                Value<double> initialQuantity = const Value.absent(),
+                Value<int?> priceCents = const Value.absent(),
+                Value<DateTime> addedAt = const Value.absent(),
+              }) => PantryLotsCompanion(
+                id: id,
+                receiptId: receiptId,
+                productId: productId,
+                categoryId: categoryId,
+                name: name,
+                unit: unit,
+                source: source,
+                initialQuantity: initialQuantity,
+                priceCents: priceCents,
+                addedAt: addedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int?> receiptId = const Value.absent(),
+                Value<int?> productId = const Value.absent(),
+                Value<int?> categoryId = const Value.absent(),
+                required String name,
+                Value<String> unit = const Value.absent(),
+                required PantrySource source,
+                required double initialQuantity,
+                Value<int?> priceCents = const Value.absent(),
+                required DateTime addedAt,
+              }) => PantryLotsCompanion.insert(
+                id: id,
+                receiptId: receiptId,
+                productId: productId,
+                categoryId: categoryId,
+                name: name,
+                unit: unit,
+                source: source,
+                initialQuantity: initialQuantity,
+                priceCents: priceCents,
+                addedAt: addedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PantryLotsTable, PantryLotRow>(table),
+                  $$PantryLotsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                receiptId = false,
+                productId = false,
+                categoryId = false,
+                receiptItemsRefs = false,
+                pantryEventsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (receiptItemsRefs) db.receiptItems,
+                    if (pantryEventsRefs) db.pantryEvents,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (receiptId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.receiptId,
+                            referencedTable: $$PantryLotsTableReferences
+                                ._receiptIdTable(db),
+                            referencedColumn: $$PantryLotsTableReferences
+                                ._receiptIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+                        if (productId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.productId,
+                            referencedTable: $$PantryLotsTableReferences
+                                ._productIdTable(db),
+                            referencedColumn: $$PantryLotsTableReferences
+                                ._productIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+                        if (categoryId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.categoryId,
+                            referencedTable: $$PantryLotsTableReferences
+                                ._categoryIdTable(db),
+                            referencedColumn: $$PantryLotsTableReferences
+                                ._categoryIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (receiptItemsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          PantryLotRow,
+                          $PantryLotsTable,
+                          ReceiptItem,
+                          $ReceiptItemsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PantryLotsTableReferences
+                              ._receiptItemsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PantryLotsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).receiptItemsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'pantry_lot_id',
+                          typedResults: items,
+                        ),
+                      if (pantryEventsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          PantryLotRow,
+                          $PantryLotsTable,
+                          PantryEventRow,
+                          $PantryEventsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PantryLotsTableReferences
+                              ._pantryEventsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PantryLotsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).pantryEventsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'lot_id',
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$PantryLotsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PantryLotsTable,
+      PantryLotRow,
+      $$PantryLotsTableFilterComposer,
+      $$PantryLotsTableOrderingComposer,
+      $$PantryLotsTableAnnotationComposer,
+      $$PantryLotsTableCreateCompanionBuilder,
+      $$PantryLotsTableUpdateCompanionBuilder,
+      (PantryLotRow, $$PantryLotsTableReferences),
+      PantryLotRow,
+      PrefetchHooks Function({
+        bool receiptId,
+        bool productId,
+        bool categoryId,
+        bool receiptItemsRefs,
+        bool pantryEventsRefs,
+      })
     >;
 typedef $$ReceiptItemsTableCreateCompanionBuilder =
     ReceiptItemsCompanion Function({
@@ -5076,10 +7469,12 @@ typedef $$ReceiptItemsTableCreateCompanionBuilder =
       Value<int?> productId,
       required String rawName,
       Value<double> quantity,
+      Value<String> unit,
       required int unitPriceCents,
       required int lineTotalCents,
       Value<int> discountCents,
       Value<int?> categoryId,
+      Value<int?> pantryLotId,
     });
 typedef $$ReceiptItemsTableUpdateCompanionBuilder =
     ReceiptItemsCompanion Function({
@@ -5088,10 +7483,12 @@ typedef $$ReceiptItemsTableUpdateCompanionBuilder =
       Value<int?> productId,
       Value<String> rawName,
       Value<double> quantity,
+      Value<String> unit,
       Value<int> unitPriceCents,
       Value<int> lineTotalCents,
       Value<int> discountCents,
       Value<int?> categoryId,
+      Value<int?> pantryLotId,
     });
 
 final class $$ReceiptItemsTableReferences
@@ -5148,6 +7545,23 @@ final class $$ReceiptItemsTableReferences
       manager.$state.copyWith(prefetchedData: [item]),
     );
   }
+
+  static $PantryLotsTable _pantryLotIdTable(_$AppDatabase db) => db.pantryLots
+      .createAlias('receipt_items__pantry_lot_id__pantry_lots__id');
+
+  $$PantryLotsTableProcessedTableManager? get pantryLotId {
+    final $_column = $_itemColumn<int>('pantry_lot_id');
+    if ($_column == null) return null;
+    final manager = $$PantryLotsTableTableManager(
+      $_db,
+      $_db.pantryLots,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_pantryLotIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
 }
 
 class $$ReceiptItemsTableFilterComposer
@@ -5171,6 +7585,11 @@ class $$ReceiptItemsTableFilterComposer
 
   ColumnFilters<double> get quantity => $composableBuilder(
     column: $table.quantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unit => $composableBuilder(
+    column: $table.unit,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5257,6 +7676,29 @@ class $$ReceiptItemsTableFilterComposer
     );
     return composer;
   }
+
+  $$PantryLotsTableFilterComposer get pantryLotId {
+    final $$PantryLotsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.pantryLotId,
+      referencedTable: $db.pantryLots,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryLotsTableFilterComposer(
+            $db: $db,
+            $table: $db.pantryLots,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$ReceiptItemsTableOrderingComposer
@@ -5280,6 +7722,11 @@ class $$ReceiptItemsTableOrderingComposer
 
   ColumnOrderings<double> get quantity => $composableBuilder(
     column: $table.quantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unit => $composableBuilder(
+    column: $table.unit,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -5366,6 +7813,29 @@ class $$ReceiptItemsTableOrderingComposer
     );
     return composer;
   }
+
+  $$PantryLotsTableOrderingComposer get pantryLotId {
+    final $$PantryLotsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.pantryLotId,
+      referencedTable: $db.pantryLots,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryLotsTableOrderingComposer(
+            $db: $db,
+            $table: $db.pantryLots,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$ReceiptItemsTableAnnotationComposer
@@ -5385,6 +7855,9 @@ class $$ReceiptItemsTableAnnotationComposer
 
   GeneratedColumn<double> get quantity =>
       $composableBuilder(column: $table.quantity, builder: (column) => column);
+
+  GeneratedColumn<String> get unit =>
+      $composableBuilder(column: $table.unit, builder: (column) => column);
 
   GeneratedColumn<int> get unitPriceCents => $composableBuilder(
     column: $table.unitPriceCents,
@@ -5469,6 +7942,29 @@ class $$ReceiptItemsTableAnnotationComposer
     );
     return composer;
   }
+
+  $$PantryLotsTableAnnotationComposer get pantryLotId {
+    final $$PantryLotsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.pantryLotId,
+      referencedTable: $db.pantryLots,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryLotsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.pantryLots,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$ReceiptItemsTableTableManager
@@ -5488,6 +7984,7 @@ class $$ReceiptItemsTableTableManager
             bool receiptId,
             bool productId,
             bool categoryId,
+            bool pantryLotId,
           })
         > {
   $$ReceiptItemsTableTableManager(_$AppDatabase db, $ReceiptItemsTable table)
@@ -5508,20 +8005,24 @@ class $$ReceiptItemsTableTableManager
                 Value<int?> productId = const Value.absent(),
                 Value<String> rawName = const Value.absent(),
                 Value<double> quantity = const Value.absent(),
+                Value<String> unit = const Value.absent(),
                 Value<int> unitPriceCents = const Value.absent(),
                 Value<int> lineTotalCents = const Value.absent(),
                 Value<int> discountCents = const Value.absent(),
                 Value<int?> categoryId = const Value.absent(),
+                Value<int?> pantryLotId = const Value.absent(),
               }) => ReceiptItemsCompanion(
                 id: id,
                 receiptId: receiptId,
                 productId: productId,
                 rawName: rawName,
                 quantity: quantity,
+                unit: unit,
                 unitPriceCents: unitPriceCents,
                 lineTotalCents: lineTotalCents,
                 discountCents: discountCents,
                 categoryId: categoryId,
+                pantryLotId: pantryLotId,
               ),
           createCompanionCallback:
               ({
@@ -5530,20 +8031,24 @@ class $$ReceiptItemsTableTableManager
                 Value<int?> productId = const Value.absent(),
                 required String rawName,
                 Value<double> quantity = const Value.absent(),
+                Value<String> unit = const Value.absent(),
                 required int unitPriceCents,
                 required int lineTotalCents,
                 Value<int> discountCents = const Value.absent(),
                 Value<int?> categoryId = const Value.absent(),
+                Value<int?> pantryLotId = const Value.absent(),
               }) => ReceiptItemsCompanion.insert(
                 id: id,
                 receiptId: receiptId,
                 productId: productId,
                 rawName: rawName,
                 quantity: quantity,
+                unit: unit,
                 unitPriceCents: unitPriceCents,
                 lineTotalCents: lineTotalCents,
                 discountCents: discountCents,
                 categoryId: categoryId,
+                pantryLotId: pantryLotId,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -5554,7 +8059,12 @@ class $$ReceiptItemsTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({receiptId = false, productId = false, categoryId = false}) {
+              ({
+                receiptId = false,
+                productId = false,
+                categoryId = false,
+                pantryLotId = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [],
@@ -5607,6 +8117,17 @@ class $$ReceiptItemsTableTableManager
                                 .id,
                           ) as T;
                         }
+                        if (pantryLotId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.pantryLotId,
+                            referencedTable: $$ReceiptItemsTableReferences
+                                ._pantryLotIdTable(db),
+                            referencedColumn: $$ReceiptItemsTableReferences
+                                ._pantryLotIdTable(db)
+                                .id,
+                          ) as T;
+                        }
 
                         return state;
                       },
@@ -5631,7 +8152,446 @@ typedef $$ReceiptItemsTableProcessedTableManager =
       $$ReceiptItemsTableUpdateCompanionBuilder,
       (ReceiptItem, $$ReceiptItemsTableReferences),
       ReceiptItem,
-      PrefetchHooks Function({bool receiptId, bool productId, bool categoryId})
+      PrefetchHooks Function({
+        bool receiptId,
+        bool productId,
+        bool categoryId,
+        bool pantryLotId,
+      })
+    >;
+typedef $$PantryEventsTableCreateCompanionBuilder =
+    PantryEventsCompanion Function({
+      Value<int> id,
+      required int lotId,
+      required PantryEventKind kind,
+      Value<PantryEventReason?> reason,
+      required double delta,
+      Value<int?> revertsEventId,
+      required DateTime at,
+    });
+typedef $$PantryEventsTableUpdateCompanionBuilder =
+    PantryEventsCompanion Function({
+      Value<int> id,
+      Value<int> lotId,
+      Value<PantryEventKind> kind,
+      Value<PantryEventReason?> reason,
+      Value<double> delta,
+      Value<int?> revertsEventId,
+      Value<DateTime> at,
+    });
+
+final class $$PantryEventsTableReferences
+    extends BaseReferences<_$AppDatabase, $PantryEventsTable, PantryEventRow> {
+  $$PantryEventsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $PantryLotsTable _lotIdTable(_$AppDatabase db) =>
+      db.pantryLots.createAlias('pantry_events__lot_id__pantry_lots__id');
+
+  $$PantryLotsTableProcessedTableManager get lotId {
+    final $_column = $_itemColumn<int>('lot_id')!;
+
+    final manager = $$PantryLotsTableTableManager(
+      $_db,
+      $_db.pantryLots,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_lotIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $PantryEventsTable _revertsEventIdTable(_$AppDatabase db) => db
+      .pantryEvents
+      .createAlias('pantry_events__reverts_event_id__pantry_events__id');
+
+  $$PantryEventsTableProcessedTableManager? get revertsEventId {
+    final $_column = $_itemColumn<int>('reverts_event_id');
+    if ($_column == null) return null;
+    final manager = $$PantryEventsTableTableManager(
+      $_db,
+      $_db.pantryEvents,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_revertsEventIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PantryEventsTableFilterComposer
+    extends Composer<_$AppDatabase, $PantryEventsTable> {
+  $$PantryEventsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<PantryEventKind, PantryEventKind, String>
+  get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<PantryEventReason?, PantryEventReason, String>
+  get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<double> get delta => $composableBuilder(
+    column: $table.delta,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get at => $composableBuilder(
+    column: $table.at,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PantryLotsTableFilterComposer get lotId {
+    final $$PantryLotsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.lotId,
+      referencedTable: $db.pantryLots,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryLotsTableFilterComposer(
+            $db: $db,
+            $table: $db.pantryLots,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PantryEventsTableFilterComposer get revertsEventId {
+    final $$PantryEventsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.revertsEventId,
+      referencedTable: $db.pantryEvents,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryEventsTableFilterComposer(
+            $db: $db,
+            $table: $db.pantryEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PantryEventsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PantryEventsTable> {
+  $$PantryEventsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get delta => $composableBuilder(
+    column: $table.delta,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get at => $composableBuilder(
+    column: $table.at,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PantryLotsTableOrderingComposer get lotId {
+    final $$PantryLotsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.lotId,
+      referencedTable: $db.pantryLots,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryLotsTableOrderingComposer(
+            $db: $db,
+            $table: $db.pantryLots,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PantryEventsTableOrderingComposer get revertsEventId {
+    final $$PantryEventsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.revertsEventId,
+      referencedTable: $db.pantryEvents,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryEventsTableOrderingComposer(
+            $db: $db,
+            $table: $db.pantryEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PantryEventsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PantryEventsTable> {
+  $$PantryEventsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<PantryEventKind, String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<PantryEventReason?, String> get reason =>
+      $composableBuilder(column: $table.reason, builder: (column) => column);
+
+  GeneratedColumn<double> get delta =>
+      $composableBuilder(column: $table.delta, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get at =>
+      $composableBuilder(column: $table.at, builder: (column) => column);
+
+  $$PantryLotsTableAnnotationComposer get lotId {
+    final $$PantryLotsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.lotId,
+      referencedTable: $db.pantryLots,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryLotsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.pantryLots,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PantryEventsTableAnnotationComposer get revertsEventId {
+    final $$PantryEventsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.revertsEventId,
+      referencedTable: $db.pantryEvents,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PantryEventsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.pantryEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PantryEventsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PantryEventsTable,
+          PantryEventRow,
+          $$PantryEventsTableFilterComposer,
+          $$PantryEventsTableOrderingComposer,
+          $$PantryEventsTableAnnotationComposer,
+          $$PantryEventsTableCreateCompanionBuilder,
+          $$PantryEventsTableUpdateCompanionBuilder,
+          (PantryEventRow, $$PantryEventsTableReferences),
+          PantryEventRow,
+          PrefetchHooks Function({bool lotId, bool revertsEventId})
+        > {
+  $$PantryEventsTableTableManager(_$AppDatabase db, $PantryEventsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PantryEventsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PantryEventsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PantryEventsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> lotId = const Value.absent(),
+                Value<PantryEventKind> kind = const Value.absent(),
+                Value<PantryEventReason?> reason = const Value.absent(),
+                Value<double> delta = const Value.absent(),
+                Value<int?> revertsEventId = const Value.absent(),
+                Value<DateTime> at = const Value.absent(),
+              }) => PantryEventsCompanion(
+                id: id,
+                lotId: lotId,
+                kind: kind,
+                reason: reason,
+                delta: delta,
+                revertsEventId: revertsEventId,
+                at: at,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int lotId,
+                required PantryEventKind kind,
+                Value<PantryEventReason?> reason = const Value.absent(),
+                required double delta,
+                Value<int?> revertsEventId = const Value.absent(),
+                required DateTime at,
+              }) => PantryEventsCompanion.insert(
+                id: id,
+                lotId: lotId,
+                kind: kind,
+                reason: reason,
+                delta: delta,
+                revertsEventId: revertsEventId,
+                at: at,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PantryEventsTable, PantryEventRow>(table),
+                  $$PantryEventsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({lotId = false, revertsEventId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (lotId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.lotId,
+                        referencedTable: $$PantryEventsTableReferences
+                            ._lotIdTable(db),
+                        referencedColumn: $$PantryEventsTableReferences
+                            ._lotIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (revertsEventId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.revertsEventId,
+                        referencedTable: $$PantryEventsTableReferences
+                            ._revertsEventIdTable(db),
+                        referencedColumn: $$PantryEventsTableReferences
+                            ._revertsEventIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PantryEventsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PantryEventsTable,
+      PantryEventRow,
+      $$PantryEventsTableFilterComposer,
+      $$PantryEventsTableOrderingComposer,
+      $$PantryEventsTableAnnotationComposer,
+      $$PantryEventsTableCreateCompanionBuilder,
+      $$PantryEventsTableUpdateCompanionBuilder,
+      (PantryEventRow, $$PantryEventsTableReferences),
+      PantryEventRow,
+      PrefetchHooks Function({bool lotId, bool revertsEventId})
     >;
 
 class $AppDatabaseManager {
@@ -5649,6 +8609,10 @@ class $AppDatabaseManager {
       $$CategoryKeywordsTableTableManager(_db, _db.categoryKeywords);
   $$ReceiptsTableTableManager get receipts =>
       $$ReceiptsTableTableManager(_db, _db.receipts);
+  $$PantryLotsTableTableManager get pantryLots =>
+      $$PantryLotsTableTableManager(_db, _db.pantryLots);
   $$ReceiptItemsTableTableManager get receiptItems =>
       $$ReceiptItemsTableTableManager(_db, _db.receiptItems);
+  $$PantryEventsTableTableManager get pantryEvents =>
+      $$PantryEventsTableTableManager(_db, _db.pantryEvents);
 }
