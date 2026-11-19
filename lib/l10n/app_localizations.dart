@@ -199,6 +199,138 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Categorie, backup e sicurezza.'**
   String get settingsEmpty;
+
+  /// No description provided for @captureFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Impossibile acquisire lo scontrino.'**
+  String get captureFailed;
+
+  /// No description provided for @extractionTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Scontrino letto'**
+  String get extractionTitle;
+
+  /// No description provided for @extractionLoading.
+  ///
+  /// In it, this message translates to:
+  /// **'Lettura dello scontrino…'**
+  String get extractionLoading;
+
+  /// No description provided for @extractionFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Impossibile leggere lo scontrino.'**
+  String get extractionFailed;
+
+  /// No description provided for @retry.
+  ///
+  /// In it, this message translates to:
+  /// **'Riprova'**
+  String get retry;
+
+  /// No description provided for @extractionPreviewNotice.
+  ///
+  /// In it, this message translates to:
+  /// **'Anteprima di sviluppo: lo scontrino non viene ancora salvato.'**
+  String get extractionPreviewNotice;
+
+  /// No description provided for @fieldStore.
+  ///
+  /// In it, this message translates to:
+  /// **'Negozio'**
+  String get fieldStore;
+
+  /// No description provided for @fieldDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data'**
+  String get fieldDate;
+
+  /// No description provided for @fieldTotal.
+  ///
+  /// In it, this message translates to:
+  /// **'Totale'**
+  String get fieldTotal;
+
+  /// No description provided for @fieldItemsTotal.
+  ///
+  /// In it, this message translates to:
+  /// **'Somma articoli'**
+  String get fieldItemsTotal;
+
+  /// No description provided for @extractionItems.
+  ///
+  /// In it, this message translates to:
+  /// **'Articoli ({count})'**
+  String extractionItems(int count);
+
+  /// No description provided for @extractionDiscount.
+  ///
+  /// In it, this message translates to:
+  /// **'Sconto {amount}'**
+  String extractionDiscount(String amount);
+
+  /// No description provided for @extractionReceiptDiscount.
+  ///
+  /// In it, this message translates to:
+  /// **'Sconti sul totale'**
+  String get extractionReceiptDiscount;
+
+  /// No description provided for @extractionUnparsed.
+  ///
+  /// In it, this message translates to:
+  /// **'Righe non riconosciute'**
+  String get extractionUnparsed;
+
+  /// No description provided for @extractionRawText.
+  ///
+  /// In it, this message translates to:
+  /// **'Testo riconosciuto'**
+  String get extractionRawText;
+
+  /// No description provided for @warningMissingStore.
+  ///
+  /// In it, this message translates to:
+  /// **'Negozio non trovato'**
+  String get warningMissingStore;
+
+  /// No description provided for @warningMissingDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data non trovata'**
+  String get warningMissingDate;
+
+  /// No description provided for @warningMissingTotal.
+  ///
+  /// In it, this message translates to:
+  /// **'Totale non trovato'**
+  String get warningMissingTotal;
+
+  /// No description provided for @warningTotalMismatch.
+  ///
+  /// In it, this message translates to:
+  /// **'La somma degli articoli non corrisponde al totale'**
+  String get warningTotalMismatch;
+
+  /// No description provided for @warningLineTotalMismatch.
+  ///
+  /// In it, this message translates to:
+  /// **'Quantità × prezzo diverso dall\'importo della riga'**
+  String get warningLineTotalMismatch;
+
+  /// No description provided for @exportFixture.
+  ///
+  /// In it, this message translates to:
+  /// **'Esporta come test'**
+  String get exportFixture;
+
+  /// No description provided for @exportFixtureDone.
+  ///
+  /// In it, this message translates to:
+  /// **'Salvato: {name}'**
+  String exportFixtureDone(String name);
 }
 
 class _AppLocalizationsDelegate

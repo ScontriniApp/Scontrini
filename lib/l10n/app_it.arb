@@ -16,5 +16,48 @@
   "receiptsEmpty": "Lo storico degli acquisti apparirà qui.",
   "analyticsEmpty": "Grafici e statistiche appariranno qui.",
   "insightsEmpty": "I consigli personalizzati appariranno qui.",
-  "settingsEmpty": "Categorie, backup e sicurezza."
+  "settingsEmpty": "Categorie, backup e sicurezza.",
+  "captureFailed": "Impossibile acquisire lo scontrino.",
+  "extractionTitle": "Scontrino letto",
+  "extractionLoading": "Lettura dello scontrino…",
+  "extractionFailed": "Impossibile leggere lo scontrino.",
+  "retry": "Riprova",
+  "extractionPreviewNotice": "Anteprima di sviluppo: lo scontrino non viene ancora salvato.",
+  "fieldStore": "Negozio",
+  "fieldDate": "Data",
+  "fieldTotal": "Totale",
+  "fieldItemsTotal": "Somma articoli",
+  "extractionItems": "Articoli ({count})",
+  "@extractionItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "extractionDiscount": "Sconto {amount}",
+  "@extractionDiscount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "extractionReceiptDiscount": "Sconti sul totale",
+  "extractionUnparsed": "Righe non riconosciute",
+  "extractionRawText": "Testo riconosciuto",
+  "warningMissingStore": "Negozio non trovato",
+  "warningMissingDate": "Data non trovata",
+  "warningMissingTotal": "Totale non trovato",
+  "warningTotalMismatch": "La somma degli articoli non corrisponde al totale",
+  "warningLineTotalMismatch": "Quantità × prezzo diverso dall'importo della riga",
+  "exportFixture": "Esporta come test",
+  "exportFixtureDone": "Salvato: {name}",
+  "@exportFixtureDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

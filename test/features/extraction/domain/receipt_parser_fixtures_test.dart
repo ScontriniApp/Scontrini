@@ -20,15 +20,19 @@ void main() {
 
   for (final file in fixtures) {
     final name = file.uri.pathSegments.last.replaceAll('.txt', '');
-    test(name, () {
-      final expectedFile = File(file.path.replaceAll('.txt', '.expected.json'));
-      final expected = ParsedReceipt.fromJson(
-        jsonDecode(expectedFile.readAsStringSync()) as Map<String, Object?>,
-      );
+    final expectedFile = File(file.path.replaceAll('.txt', '.expected.json'));
+    test(
+      name,
+      skip: expectedFile.existsSync() ? null : 'no $name.expected.json yet',
+      () {
+        final expected = ParsedReceipt.fromJson(
+          jsonDecode(expectedFile.readAsStringSync()) as Map<String, Object?>,
+        );
 
-      final actual = const ReceiptParser().parseLines(file.readAsLinesSync());
+        final actual = const ReceiptParser().parseLines(file.readAsLinesSync());
 
-      expect(actual, expected);
-    });
+        expect(actual, expected);
+      },
+    );
   }
 }

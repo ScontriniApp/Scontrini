@@ -60,4 +60,79 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get settingsEmpty => 'Categorie, backup e sicurezza.';
+
+  @override
+  String get captureFailed => 'Impossibile acquisire lo scontrino.';
+
+  @override
+  String get extractionTitle => 'Scontrino letto';
+
+  @override
+  String get extractionLoading => 'Lettura dello scontrino…';
+
+  @override
+  String get extractionFailed => 'Impossibile leggere lo scontrino.';
+
+  @override
+  String get retry => 'Riprova';
+
+  @override
+  String get extractionPreviewNotice =>
+      'Anteprima di sviluppo: lo scontrino non viene ancora salvato.';
+
+  @override
+  String get fieldStore => 'Negozio';
+
+  @override
+  String get fieldDate => 'Data';
+
+  @override
+  String get fieldTotal => 'Totale';
+
+  @override
+  String get fieldItemsTotal => 'Somma articoli';
+
+  @override
+  String extractionItems(int count) {
+    return 'Articoli ($count)';
+  }
+
+  @override
+  String extractionDiscount(String amount) {
+    return 'Sconto $amount';
+  }
+
+  @override
+  String get extractionReceiptDiscount => 'Sconti sul totale';
+
+  @override
+  String get extractionUnparsed => 'Righe non riconosciute';
+
+  @override
+  String get extractionRawText => 'Testo riconosciuto';
+
+  @override
+  String get warningMissingStore => 'Negozio non trovato';
+
+  @override
+  String get warningMissingDate => 'Data non trovata';
+
+  @override
+  String get warningMissingTotal => 'Totale non trovato';
+
+  @override
+  String get warningTotalMismatch =>
+      'La somma degli articoli non corrisponde al totale';
+
+  @override
+  String get warningLineTotalMismatch =>
+      'Quantità × prezzo diverso dall\'importo della riga';
+
+  @override
+  String get exportFixture => 'Esporta come test';
+
+  @override
+  String exportFixtureDone(String name) {
+    return 'Salvato: $name';
+  }
 }

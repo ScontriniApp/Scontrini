@@ -60,4 +60,78 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsEmpty => 'Categories, backup and security.';
+
+  @override
+  String get captureFailed => 'Couldn\'t capture the receipt.';
+
+  @override
+  String get extractionTitle => 'Receipt read';
+
+  @override
+  String get extractionLoading => 'Reading the receipt…';
+
+  @override
+  String get extractionFailed => 'Couldn\'t read the receipt.';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get extractionPreviewNotice =>
+      'Development preview: the receipt is not saved yet.';
+
+  @override
+  String get fieldStore => 'Store';
+
+  @override
+  String get fieldDate => 'Date';
+
+  @override
+  String get fieldTotal => 'Total';
+
+  @override
+  String get fieldItemsTotal => 'Items total';
+
+  @override
+  String extractionItems(int count) {
+    return 'Items ($count)';
+  }
+
+  @override
+  String extractionDiscount(String amount) {
+    return 'Discount $amount';
+  }
+
+  @override
+  String get extractionReceiptDiscount => 'Discounts on the total';
+
+  @override
+  String get extractionUnparsed => 'Unrecognised rows';
+
+  @override
+  String get extractionRawText => 'Recognised text';
+
+  @override
+  String get warningMissingStore => 'Store not found';
+
+  @override
+  String get warningMissingDate => 'Date not found';
+
+  @override
+  String get warningMissingTotal => 'Total not found';
+
+  @override
+  String get warningTotalMismatch => 'The items don\'t add up to the total';
+
+  @override
+  String get warningLineTotalMismatch =>
+      'Quantity × price differs from the line amount';
+
+  @override
+  String get exportFixture => 'Export as test';
+
+  @override
+  String exportFixtureDone(String name) {
+    return 'Saved: $name';
+  }
 }

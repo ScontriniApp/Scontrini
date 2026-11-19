@@ -1,8 +1,11 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/features/analytics/presentation/analytics_screen.dart';
 import 'package:scontrini/features/analytics/presentation/dashboard_screen.dart';
+import 'package:scontrini/features/capture/domain/receipt_source.dart';
 import 'package:scontrini/features/capture/presentation/capture_screen.dart';
+import 'package:scontrini/features/extraction/presentation/extraction_screen.dart';
 import 'package:scontrini/features/insights/presentation/insights_screen.dart';
 import 'package:scontrini/features/receipts/presentation/receipts_screen.dart';
 import 'package:scontrini/features/settings/presentation/settings_screen.dart';
@@ -14,10 +17,21 @@ abstract final class Routes {
   static const analytics = '/analytics';
   static const insights = '/insights';
   static const capture = '/capture';
+
+  /// Needs the captured `ReceiptSource` as `extra`.
+  static const extraction = '/extraction';
   static const settings = '/settings';
 }
 
-final GoRouter appRouter = GoRouter(
+/// One router per `ProviderScope`, so navigation state doesn't leak between
+/// app instances (widget tests create a new one each time).
+final routerProvider = Provider<GoRouter>((ref) {
+  final router = _createRouter();
+  ref.onDispose(router.dispose);
+  return router;
+});
+
+GoRouter _createRouter() => GoRouter(
   routes: [
     StatefulShellRoute.indexedStack(
       builder: (context, state, shell) => _AppShell(shell: shell),
@@ -57,6 +71,16 @@ final GoRouter appRouter = GoRouter(
       ],
     ),
     GoRoute(path: Routes.capture, builder: (_, _) => const CaptureScreen()),
+    GoRoute(
+      path: Routes.extraction,
+      // `extra` is lost on deep links and restarts: go back to capture.
+      redirect: (_, state) =>
+          state.extra is ReceiptSource ? null : Routes.capture,
+      builder: (_, state) => switch (state.extra) {
+        final ReceiptSource source => ExtractionScreen(source: source),
+        _ => const CaptureScreen(),
+      },
+    ),
     GoRoute(path: Routes.settings, builder: (_, _) => const SettingsScreen()),
   ],
 );
