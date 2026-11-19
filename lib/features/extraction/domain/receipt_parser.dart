@@ -67,8 +67,11 @@ final _skipRe = RegExp(
 );
 final _letterRe = RegExp('[A-Z]');
 
+// P.IVA · P. IVA · P.I.V.A. · P.I. · PARTITA IVA, then 11 digits (OCR may
+// space them out).
 final _vatNumberRe = RegExp(
-  r'(?:P\.?\s*|PARTITA\s+)IVA\s*[:.]?\s*(?:IT\s*)?(\d[\d ]{9,14}\d)',
+  r'(?:\bP\.?\s*I\.?\s*V\.?\s*A\b\.?|\bP\.\s*I\.|PARTITA\s+I\.?V\.?A\.?)'
+  r'\s*[:.]?\s*(?:IT\s*)?(\d[\d ]{9,14}\d)',
 );
 final _addressRe = RegExp(
   r'^(?:VIA|V\.LE|VIALE|PIAZZA|P\.ZZA|P\.ZA|PZA|CORSO|C\.SO|LARGO|STRADA|'
@@ -78,7 +81,8 @@ final _postcodeRe = RegExp(r'^\d{5}\s+[A-Z]');
 final _phoneRe = RegExp(r'\bTEL\b|TELEFONO');
 final _dateRe = RegExp(
   r'(?<!\d)(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4}|\d{2})(?!\d)'
-  r'(?:\s+(?:ORE\s+)?(\d{1,2})[:.](\d{2})(?!\d))?',
+  // Optional time on the same row: 18:42 · ORE 18.42 · ORA: 11: 17.
+  r'(?:\s*(?:ORE|ORA|H)?\s*:?\s+(\d{1,2})\s?[:.]\s?(\d{2})(?!\d))?',
 );
 
 /// Uppercases, drops the euro sign, joins amounts that OCR split
@@ -406,21 +410,29 @@ class _Parse {
     return null;
   }
 
+  /// The first valid date on the receipt, preferring one printed with a
+  /// time (receipts often repeat the date, only sometimes with the time).
   static DateTime? _date(List<String> rows) {
+    DateTime? dateOnly;
     for (final row in rows) {
       for (final m in _dateRe.allMatches(row)) {
         final day = int.parse(m[1]!);
         final month = int.parse(m[2]!);
         var year = int.parse(m[3]!);
         if (year < 100) year += 2000;
-        final hour = m[4] == null ? 0 : int.parse(m[4]!);
-        final minute = m[5] == null ? 0 : int.parse(m[5]!);
-        if (year < 2000 || year > 2100 || hour > 23 || minute > 59) continue;
-        final date = DateTime(year, month, day, hour, minute);
+        if (year < 2000 || year > 2100) continue;
+        final date = DateTime(year, month, day);
         // DateTime rolls invalid dates over (31/02 → 03/03): reject those.
-        if (date.month == month && date.day == day) return date;
+        if (date.month != month || date.day != day) continue;
+
+        final hour = m[4] == null ? null : int.parse(m[4]!);
+        final minute = m[5] == null ? null : int.parse(m[5]!);
+        if (hour != null && minute != null && hour < 24 && minute < 60) {
+          return DateTime(year, month, day, hour, minute);
+        }
+        dateOnly ??= date;
       }
     }
-    return null;
+    return dateOnly;
   }
 }

@@ -21,10 +21,38 @@ void main() {
       expect(dateOf('DATA 1.3.2026'), DateTime(2026, 3));
     });
 
+    test('reads a time after "Ora:" with OCR spaces', () {
+      expect(
+        dateOf('Data: 08/10/26 Ora: 11: 17'),
+        DateTime(2026, 10, 8, 11, 17),
+      );
+    });
+
+    test('prefers a later date that has a time', () {
+      final receipt = _parser.parseLines([
+        'NEGOZIO',
+        'EMESSO IL 08/10/2026',
+        '000000101 001 00001 08/10/2026 11:17',
+      ]);
+      expect(receipt.purchaseDate, DateTime(2026, 10, 8, 11, 17));
+    });
+
+    test('ignores an impossible time but keeps the date', () {
+      expect(dateOf('08/10/2026 14.83'), DateTime(2026, 10, 8));
+    });
+
     test('rejects impossible dates', () {
       expect(dateOf('31/02/2026'), isNull);
       expect(dateOf('12/13/2026'), isNull);
     });
+  });
+
+  test('reads VAT numbers in their common spellings', () {
+    String? vatOf(String row) => _parser.parseLines(['NEGOZIO', row]).vatNumber;
+    expect(vatOf('P.I. 02036440275'), '02036440275');
+    expect(vatOf('P.IVA 02036440275'), '02036440275');
+    expect(vatOf('P.I.V.A. IT02036440275'), '02036440275');
+    expect(vatOf("PIU' AMENO 02036440275"), isNull);
   });
 
   test('reads a VAT number split by OCR spaces', () {
