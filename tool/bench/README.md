@@ -23,6 +23,10 @@ tool/bench/run_device.sh                                # photos in data/scontri
 tool/bench/run_device.sh --pdfs data/scontrini/scontrini # also the PDFs, through the app's PDF path
 ```
 
+Keep the phone **unlocked with the screen on** during the run: with the screen locked Android sends
+the app to the background and the test stops after a few seconds ("did not complete"). Add `-v` to
+Flutter's output with `BENCH_FLUTTER_ARGS=-v` to debug a run.
+
 It pushes the receipts and the answers to the app's folder on the device, runs
 `integration_test/bench/device_bench_test.dart`, pulls the report, and deletes the receipts from the
 device (`--keep` to leave them). The first run builds the app (~4 min); later runs take about a minute.

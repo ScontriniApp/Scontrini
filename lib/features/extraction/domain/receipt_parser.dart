@@ -38,6 +38,15 @@ const _amount = r'(?<![\d.,])-?\d+(?:[.,]\d{3})*[.,]\d{2}-?(?!\d)';
 const _vatCode = r'(?:\d{1,2}(?:,\d{1,2})?\s?%|[A-Z]{1,2}\d?|\*)';
 
 final _amountRe = RegExp(_amount);
+
+// A VAT rate printed after the price as a plain number, without `%`
+// (Carrefour: `LATTE 1,85 04,00`, `2 X 0,65 04,00`). Group 1 is the row
+// without it; group 2 the rate.
+final _trailingRateRe = RegExp(r'^(.*\d[.,]\d{2}-?)\s+(0?\d{1,2})[.,]00\s*%?$');
+const _vatRates = {4, 5, 10, 22};
+
+// Column heading announcing a VAT column: `PREZZO %IVA`, `% IVA`.
+final _vatColumnRe = RegExp(r'%\s*IVA\b');
 final _onlyAmountRe = RegExp('^($_amount)(?:\\s*$_vatCode)?\$');
 
 final _itemRe = RegExp(
@@ -57,6 +66,12 @@ final _quantityRe = RegExp(
 
 final _totalRe = RegExp(r'^T[O0]TALE\b(?!\s+(?:IVA|ARTICOLI|PEZZI|PZ)\b)');
 final _subtotalRe = RegExp(r'^SUB\s?-?\s?T[O0]TALE');
+
+// Summary of the discounts already printed under each item (`Totale Sconti
+// Ottenuti -3,92`): neither the total nor another discount.
+final _discountSummaryRe = RegExp(
+  r'^T[O0]TALE\s+(?:SCONT|RISPARMI)|^(?:HAI\s+)?RISPARMIAT',
+);
 final _discountRe = RegExp(
   r'\b(?:SCONTO|SC\.|OFFERTA|PROMO|RIDUZIONE|BUONO|COUPON)',
 );
@@ -77,7 +92,10 @@ final _addressRe = RegExp(
   r'^(?:VIA|V\.LE|VIALE|PIAZZA|P\.ZZA|P\.ZA|PZA|CORSO|C\.SO|LARGO|STRADA|'
   r'LOC\.|LOCALITA)\s',
 );
-final _postcodeRe = RegExp(r'^\d{5}\s+[A-Z]');
+final _postcodeRe = RegExp(r'^\d{5}\s*-?\s*[A-Z]');
+
+// A town on its own row under the address (`VIA ROMA 12` / `MILANO`).
+final _townRe = RegExp(r"^[A-Z][A-Z' ]{1,30}$");
 final _phoneRe = RegExp(r'\bTEL\b|TELEFONO');
 final _dateRe = RegExp(
   r'(?<!\d)(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4}|\d{2})(?!\d)'
@@ -155,6 +173,10 @@ class _Parse {
   int? _total;
   var _totalOnNextRow = false;
 
+  /// Whether the headings announced a VAT column (`PREZZO %IVA`), so a plain
+  /// `10,00` after a price is a rate, not an amount.
+  var _vatColumn = false;
+
   /// Whether the previous meaningful row was a product row, so a following
   /// quantity row may belong to it.
   var _lastRowWasItem = false;
@@ -216,6 +238,8 @@ class _Parse {
       }
     }
     if (_section == _Section.footer) return;
+    if (_vatColumnRe.hasMatch(row)) _vatColumn = true;
+    if (_discountSummaryRe.hasMatch(row)) return;
 
     if (_totalRe.hasMatch(row)) {
       _resolveQuantity(null);
@@ -242,8 +266,9 @@ class _Parse {
     _readItemRow(raw, row);
   }
 
-  void _readItemRow(String raw, String row) {
-    if (_skipRe.hasMatch(row)) return;
+  void _readItemRow(String raw, String fullRow) {
+    if (_skipRe.hasMatch(fullRow)) return;
+    final row = _withoutVatRate(fullRow);
 
     if (_subtotalRe.hasMatch(row)) {
       _resolveQuantity(null);
@@ -280,6 +305,22 @@ class _Parse {
     _pendingName = row;
     _pendingNameRaw = raw;
     _lastRowWasItem = false;
+  }
+
+  /// Drops a VAT rate printed as a plain number after the price, which would
+  /// otherwise be read as the price. `04,00` (leading zero) is never a price;
+  /// `4,00` · `10,00` · `22,00` only count as rates when the headings
+  /// announced a VAT column.
+  String _withoutVatRate(String row) {
+    final match = _trailingRateRe.firstMatch(row);
+    if (match == null) return row;
+    final rateText = match[2]!;
+    final rate = int.parse(rateText);
+    if (!_vatRates.contains(rate)) return row;
+    if (!_vatColumn && !(rateText.length == 2 && rateText.startsWith('0'))) {
+      return row;
+    }
+    return match[1]!;
   }
 
   void _readQuantity(String raw, RegExpMatch match) {
@@ -395,7 +436,11 @@ class _Parse {
     for (final (i, row) in _header.indexed) {
       if (!_addressRe.hasMatch(row)) continue;
       final next = i + 1 < _header.length ? _header[i + 1] : null;
-      return next != null && _postcodeRe.hasMatch(next) ? '$row, $next' : row;
+      final joins =
+          next != null &&
+          (_postcodeRe.hasMatch(next) ||
+              (_townRe.hasMatch(next) && !_phoneRe.hasMatch(next)));
+      return joins ? '$row, $next' : row;
     }
     return null;
   }

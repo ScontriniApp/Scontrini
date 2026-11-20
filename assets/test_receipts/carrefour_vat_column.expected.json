@@ -1,0 +1,95 @@
+{
+  "storeName": "CARREFOUR MARKET",
+  "vatNumber": "02924950963",
+  "address": "VIA ROMA 12, MILANO",
+  "totalCents": 5047,
+  "items": [
+    {
+      "rawName": "LATTE GRANAROLO DA A",
+      "unitPriceCents": 185,
+      "lineTotalCents": 185
+    },
+    {
+      "rawName": "BURRO SENZA LATTOSIO",
+      "unitPriceCents": 209,
+      "lineTotalCents": 209
+    },
+    {
+      "rawName": "FINOCCHI VASSOIO TAG",
+      "unitPriceCents": 350,
+      "lineTotalCents": 350
+    },
+    {
+      "rawName": "SAC COMPOSTABILE",
+      "unitPriceCents": 2,
+      "lineTotalCents": 2
+    },
+    {
+      "rawName": "UVA BIANCA S/SEMI GR",
+      "unitPriceCents": 195,
+      "lineTotalCents": 195
+    },
+    {
+      "rawName": "PANINI AL LATTE C/GO",
+      "unitPriceCents": 250,
+      "lineTotalCents": 250
+    },
+    {
+      "rawName": "BRIE PRESIDENT",
+      "unitPriceCents": 428,
+      "lineTotalCents": 428
+    },
+    {
+      "rawName": "UOVA RUSPANTOVO MEDI",
+      "unitPriceCents": 289,
+      "lineTotalCents": 289
+    },
+    {
+      "rawName": "CODE MAZZANCOLLE TRO",
+      "unitPriceCents": 501,
+      "lineTotalCents": 501
+    },
+    {
+      "rawName": "TAGLIATA DI POLLO GR",
+      "unitPriceCents": 549,
+      "lineTotalCents": 549
+    },
+    {
+      "rawName": "32 MEZZI RIGATONI BR",
+      "unitPriceCents": 65,
+      "lineTotalCents": 130,
+      "quantity": 2
+    },
+    {
+      "rawName": "OLIO EVO 100% ITA BA",
+      "unitPriceCents": 1197,
+      "lineTotalCents": 1197,
+      "discountCents": 348
+    },
+    {
+      "rawName": "PASSATA POMODORO SIC",
+      "unitPriceCents": 139,
+      "lineTotalCents": 278,
+      "quantity": 2
+    },
+    {
+      "rawName": "SUCCO ACE SANTAL",
+      "unitPriceCents": 179,
+      "lineTotalCents": 179,
+      "discountCents": 44
+    },
+    {
+      "rawName": "OLIVE VER GIG GR500",
+      "unitPriceCents": 498,
+      "lineTotalCents": 498
+    },
+    {
+      "rawName": "MOZZ. LATTE ITAL.100",
+      "unitPriceCents": 199,
+      "lineTotalCents": 199
+    }
+  ],
+  "warnings": [
+    "missingDate"
+  ]
+}

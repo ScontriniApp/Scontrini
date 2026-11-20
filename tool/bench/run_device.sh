@@ -72,7 +72,8 @@ fi
 # writes `ready`, and waits for `go` before reading the receipts.
 # --no-uninstall: uninstalling would delete the report before it is pulled.
 adb_ shell rm -rf "$remote"
-"$flutter" test integration_test/bench/device_bench_test.dart \
+# BENCH_FLUTTER_ARGS: extra flags for flutter test (e.g. -v to debug a run).
+"$flutter" test ${BENCH_FLUTTER_ARGS:-} integration_test/bench/device_bench_test.dart \
   ${device:+-d "$device"} --no-uninstall --dart-define=BENCH=true &
 test_pid=$!
 

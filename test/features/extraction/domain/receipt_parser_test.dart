@@ -11,6 +11,68 @@ import 'package:scontrini/features/extraction/domain/receipt_parser.dart';
 const _parser = ReceiptParser();
 
 void main() {
+  group('VAT rate printed as a plain number after the price', () {
+    test('a VAT column announced in the headings is not read as price', () {
+      final receipt = _parser.parseLines([
+        'NEGOZIO',
+        'DESCRIZIONE PREZZO %Iva',
+        'PANINI AL LATTE 2,50 10,00',
+        'SAC COMPOSTABILE 0,02 22,00',
+        'TOTALE COMPLESSIVO 2,52',
+      ]);
+      expect([for (final i in receipt.items) i.lineTotalCents], [250, 2]);
+      expect(
+        [for (final i in receipt.items) i.rawName],
+        ['PANINI AL LATTE', 'SAC COMPOSTABILE'],
+      );
+    });
+
+    test('a leading-zero rate (04,00) is never a price', () {
+      final receipt = _parser.parseLines([
+        'NEGOZIO',
+        'DESCRIZIONE',
+        'LATTE 1,85 04,00',
+        'TOTALE 1,85',
+      ]);
+      expect(receipt.items.single.lineTotalCents, 185);
+    });
+
+    test('without a VAT column, a 10,00 line total stays a price', () {
+      final receipt = _parser.parseLines([
+        'NEGOZIO',
+        'DESCRIZIONE',
+        '4 PASTA 2,50 10,00',
+        'TOTALE 10,00',
+      ]);
+      expect(receipt.items.single.lineTotalCents, 1000);
+    });
+  });
+
+  test('a discount summary is neither the total nor a discount', () {
+    final receipt = _parser.parseLines([
+      'NEGOZIO',
+      'DESCRIZIONE',
+      'OLIO EVO 11,97',
+      'Sconto SPESAMICA -3,48',
+      'Totale Sconti Ottenuti -3,48',
+      'TOTALE COMPLESSIVO 8,49',
+    ]);
+    expect(receipt.totalCents, 849);
+    expect(receipt.items.single.discountCents, 348);
+    expect(receipt.discountCents, 0);
+    expect(receipt.isBalanced, isTrue);
+  });
+
+  test('the town on the row after the address joins it', () {
+    final receipt = _parser.parseLines([
+      'CARREFOUR MARKET',
+      'Via Roma 12',
+      'Milano',
+      'P.IVA 02924950963',
+    ]);
+    expect(receipt.address, 'VIA ROMA 12, MILANO');
+  });
+
   group('dates', () {
     DateTime? dateOf(String row) =>
         _parser.parseLines(['NEGOZIO', row]).purchaseDate;
