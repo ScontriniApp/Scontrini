@@ -1,3 +1,4 @@
+import 'package:scontrini/features/analytics/domain/models/product_unit.dart';
 import 'package:scontrini/features/analytics/domain/models/purchase_history.dart';
 
 /// Helpers for building small in-code [PurchaseHistory] fixtures.
@@ -27,16 +28,20 @@ PurchaseItem item(
   double quantity = 1,
   int? productId,
   int? categoryId,
+  ProductUnit? unit,
   String rawName = 'ITEM',
 }) => PurchaseItem(
   id: _nextId++,
   rawName: rawName,
-  unitPriceCents: (lineTotalCents / quantity).round(),
+  unitPriceCents: quantity == 0
+      ? lineTotalCents
+      : (lineTotalCents / quantity).round(),
   lineTotalCents: lineTotalCents,
   quantity: quantity,
   discountCents: discountCents,
   productId: productId,
   categoryId: categoryId,
+  unit: unit,
 );
 
 PurchaseHistory history(List<PurchaseReceipt> receipts) => PurchaseHistory(

@@ -85,6 +85,11 @@ abstract class PurchaseItem with _$PurchaseItem {
     /// Pieces, or kg/l for weighed items.
     @Default(1) double quantity,
 
+    /// Unit of [quantity]: the row's own (`receipt_items.unit`, schema v2),
+    /// else the product's. `null` when unknown. The DAO applies the fallback.
+    /// Prices are only compared between rows of the same unit.
+    ProductUnit? unit,
+
     /// Discount attached to this line, positive.
     @Default(0) int discountCents,
 

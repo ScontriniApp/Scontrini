@@ -615,7 +615,10 @@ mixin _$PurchaseItem {
  int get unitPriceCents;/// Line amount before [discountCents]. Negative for returns and deposit
 /// refunds.
  int get lineTotalCents;/// Pieces, or kg/l for weighed items.
- double get quantity;/// Discount attached to this line, positive.
+ double get quantity;/// Unit of [quantity]: the row's own (`receipt_items.unit`, schema v2),
+/// else the product's. `null` when unknown. The DAO applies the fallback.
+/// Prices are only compared between rows of the same unit.
+ ProductUnit? get unit;/// Discount attached to this line, positive.
  int get discountCents;/// Canonical product; `null` when the line was never matched. Such items
 /// count towards spending and categories but not prices or frequency.
  int? get productId;/// Resolved category: the item's own, else the product's. `null` means
@@ -632,20 +635,20 @@ $PurchaseItemCopyWith<PurchaseItem> get copyWith => _$PurchaseItemCopyWithImpl<P
 @override
 bool operator ==(Object other) {
   final _this = this as PurchaseItem;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PurchaseItem&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.rawName, _this.rawName) || other.rawName == _this.rawName)&&(identical(other.unitPriceCents, _this.unitPriceCents) || other.unitPriceCents == _this.unitPriceCents)&&(identical(other.lineTotalCents, _this.lineTotalCents) || other.lineTotalCents == _this.lineTotalCents)&&(identical(other.quantity, _this.quantity) || other.quantity == _this.quantity)&&(identical(other.discountCents, _this.discountCents) || other.discountCents == _this.discountCents)&&(identical(other.productId, _this.productId) || other.productId == _this.productId)&&(identical(other.categoryId, _this.categoryId) || other.categoryId == _this.categoryId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PurchaseItem&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.rawName, _this.rawName) || other.rawName == _this.rawName)&&(identical(other.unitPriceCents, _this.unitPriceCents) || other.unitPriceCents == _this.unitPriceCents)&&(identical(other.lineTotalCents, _this.lineTotalCents) || other.lineTotalCents == _this.lineTotalCents)&&(identical(other.quantity, _this.quantity) || other.quantity == _this.quantity)&&(identical(other.unit, _this.unit) || other.unit == _this.unit)&&(identical(other.discountCents, _this.discountCents) || other.discountCents == _this.discountCents)&&(identical(other.productId, _this.productId) || other.productId == _this.productId)&&(identical(other.categoryId, _this.categoryId) || other.categoryId == _this.categoryId));
 }
 
 
 @override
 int get hashCode {
   final _this = this as PurchaseItem;
-  return Object.hash(runtimeType,_this.id,_this.rawName,_this.unitPriceCents,_this.lineTotalCents,_this.quantity,_this.discountCents,_this.productId,_this.categoryId);
+  return Object.hash(runtimeType,_this.id,_this.rawName,_this.unitPriceCents,_this.lineTotalCents,_this.quantity,_this.unit,_this.discountCents,_this.productId,_this.categoryId);
 }
 
 @override
 String toString() {
   final _this = this as PurchaseItem;
-  return 'PurchaseItem(id: ${_this.id}, rawName: ${_this.rawName}, unitPriceCents: ${_this.unitPriceCents}, lineTotalCents: ${_this.lineTotalCents}, quantity: ${_this.quantity}, discountCents: ${_this.discountCents}, productId: ${_this.productId}, categoryId: ${_this.categoryId})';
+  return 'PurchaseItem(id: ${_this.id}, rawName: ${_this.rawName}, unitPriceCents: ${_this.unitPriceCents}, lineTotalCents: ${_this.lineTotalCents}, quantity: ${_this.quantity}, unit: ${_this.unit}, discountCents: ${_this.discountCents}, productId: ${_this.productId}, categoryId: ${_this.categoryId})';
 }
 
 
@@ -656,7 +659,7 @@ abstract mixin class $PurchaseItemCopyWith<$Res>  {
   factory $PurchaseItemCopyWith(PurchaseItem value, $Res Function(PurchaseItem) _then) = _$PurchaseItemCopyWithImpl;
 @useResult
 $Res call({
- int id, String rawName, int unitPriceCents, int lineTotalCents, double quantity, int discountCents, int? productId, int? categoryId
+ int id, String rawName, int unitPriceCents, int lineTotalCents, double quantity, ProductUnit? unit, int discountCents, int? productId, int? categoryId
 });
 
 
@@ -673,14 +676,15 @@ class _$PurchaseItemCopyWithImpl<$Res>
 
 /// Create a copy of PurchaseItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? rawName = null,Object? unitPriceCents = null,Object? lineTotalCents = null,Object? quantity = null,Object? discountCents = null,Object? productId = freezed,Object? categoryId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? rawName = null,Object? unitPriceCents = null,Object? lineTotalCents = null,Object? quantity = null,Object? unit = freezed,Object? discountCents = null,Object? productId = freezed,Object? categoryId = freezed,}) {
   return _then(PurchaseItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,rawName: null == rawName ? _self.rawName : rawName // ignore: cast_nullable_to_non_nullable
 as String,unitPriceCents: null == unitPriceCents ? _self.unitPriceCents : unitPriceCents // ignore: cast_nullable_to_non_nullable
 as int,lineTotalCents: null == lineTotalCents ? _self.lineTotalCents : lineTotalCents // ignore: cast_nullable_to_non_nullable
 as int,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
-as double,discountCents: null == discountCents ? _self.discountCents : discountCents // ignore: cast_nullable_to_non_nullable
+as double,unit: freezed == unit ? _self.unit : unit // ignore: cast_nullable_to_non_nullable
+as ProductUnit?,discountCents: null == discountCents ? _self.discountCents : discountCents // ignore: cast_nullable_to_non_nullable
 as int,productId: freezed == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as int?,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as int?,
@@ -768,10 +772,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String rawName,  int unitPriceCents,  int lineTotalCents,  double quantity,  int discountCents,  int? productId,  int? categoryId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String rawName,  int unitPriceCents,  int lineTotalCents,  double quantity,  ProductUnit? unit,  int discountCents,  int? productId,  int? categoryId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PurchaseItem() when $default != null:
-return $default(_that.id,_that.rawName,_that.unitPriceCents,_that.lineTotalCents,_that.quantity,_that.discountCents,_that.productId,_that.categoryId);case _:
+return $default(_that.id,_that.rawName,_that.unitPriceCents,_that.lineTotalCents,_that.quantity,_that.unit,_that.discountCents,_that.productId,_that.categoryId);case _:
   return orElse();
 
 }
@@ -789,10 +793,10 @@ return $default(_that.id,_that.rawName,_that.unitPriceCents,_that.lineTotalCents
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String rawName,  int unitPriceCents,  int lineTotalCents,  double quantity,  int discountCents,  int? productId,  int? categoryId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String rawName,  int unitPriceCents,  int lineTotalCents,  double quantity,  ProductUnit? unit,  int discountCents,  int? productId,  int? categoryId)  $default,) {final _that = this;
 switch (_that) {
 case _PurchaseItem():
-return $default(_that.id,_that.rawName,_that.unitPriceCents,_that.lineTotalCents,_that.quantity,_that.discountCents,_that.productId,_that.categoryId);case _:
+return $default(_that.id,_that.rawName,_that.unitPriceCents,_that.lineTotalCents,_that.quantity,_that.unit,_that.discountCents,_that.productId,_that.categoryId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -809,10 +813,10 @@ return $default(_that.id,_that.rawName,_that.unitPriceCents,_that.lineTotalCents
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String rawName,  int unitPriceCents,  int lineTotalCents,  double quantity,  int discountCents,  int? productId,  int? categoryId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String rawName,  int unitPriceCents,  int lineTotalCents,  double quantity,  ProductUnit? unit,  int discountCents,  int? productId,  int? categoryId)?  $default,) {final _that = this;
 switch (_that) {
 case _PurchaseItem() when $default != null:
-return $default(_that.id,_that.rawName,_that.unitPriceCents,_that.lineTotalCents,_that.quantity,_that.discountCents,_that.productId,_that.categoryId);case _:
+return $default(_that.id,_that.rawName,_that.unitPriceCents,_that.lineTotalCents,_that.quantity,_that.unit,_that.discountCents,_that.productId,_that.categoryId);case _:
   return null;
 
 }
@@ -824,7 +828,7 @@ return $default(_that.id,_that.rawName,_that.unitPriceCents,_that.lineTotalCents
 
 
 class _PurchaseItem extends PurchaseItem {
-  const _PurchaseItem({required this.id, required this.rawName, required this.unitPriceCents, required this.lineTotalCents, this.quantity = 1, this.discountCents = 0, this.productId, this.categoryId}): super._();
+  const _PurchaseItem({required this.id, required this.rawName, required this.unitPriceCents, required this.lineTotalCents, this.quantity = 1, this.unit, this.discountCents = 0, this.productId, this.categoryId}): super._();
   
 
 @override final  int id;
@@ -837,6 +841,10 @@ class _PurchaseItem extends PurchaseItem {
 @override final  int lineTotalCents;
 /// Pieces, or kg/l for weighed items.
 @override@JsonKey() final  double quantity;
+/// Unit of [quantity]: the row's own (`receipt_items.unit`, schema v2),
+/// else the product's. `null` when unknown. The DAO applies the fallback.
+/// Prices are only compared between rows of the same unit.
+@override final  ProductUnit? unit;
 /// Discount attached to this line, positive.
 @override@JsonKey() final  int discountCents;
 /// Canonical product; `null` when the line was never matched. Such items
@@ -856,18 +864,18 @@ _$PurchaseItemCopyWith<_PurchaseItem> get copyWith => __$PurchaseItemCopyWithImp
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PurchaseItem&&(identical(other.id, id) || other.id == id)&&(identical(other.rawName, rawName) || other.rawName == rawName)&&(identical(other.unitPriceCents, unitPriceCents) || other.unitPriceCents == unitPriceCents)&&(identical(other.lineTotalCents, lineTotalCents) || other.lineTotalCents == lineTotalCents)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.discountCents, discountCents) || other.discountCents == discountCents)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PurchaseItem&&(identical(other.id, id) || other.id == id)&&(identical(other.rawName, rawName) || other.rawName == rawName)&&(identical(other.unitPriceCents, unitPriceCents) || other.unitPriceCents == unitPriceCents)&&(identical(other.lineTotalCents, lineTotalCents) || other.lineTotalCents == lineTotalCents)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.discountCents, discountCents) || other.discountCents == discountCents)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,rawName,unitPriceCents,lineTotalCents,quantity,discountCents,productId,categoryId);
+    return Object.hash(runtimeType,id,rawName,unitPriceCents,lineTotalCents,quantity,unit,discountCents,productId,categoryId);
 }
 
 @override
 String toString() {
-    return 'PurchaseItem(id: $id, rawName: $rawName, unitPriceCents: $unitPriceCents, lineTotalCents: $lineTotalCents, quantity: $quantity, discountCents: $discountCents, productId: $productId, categoryId: $categoryId)';
+    return 'PurchaseItem(id: $id, rawName: $rawName, unitPriceCents: $unitPriceCents, lineTotalCents: $lineTotalCents, quantity: $quantity, unit: $unit, discountCents: $discountCents, productId: $productId, categoryId: $categoryId)';
 }
 
 
@@ -878,7 +886,7 @@ abstract mixin class _$PurchaseItemCopyWith<$Res> implements $PurchaseItemCopyWi
   factory _$PurchaseItemCopyWith(_PurchaseItem value, $Res Function(_PurchaseItem) _then) = __$PurchaseItemCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String rawName, int unitPriceCents, int lineTotalCents, double quantity, int discountCents, int? productId, int? categoryId
+ int id, String rawName, int unitPriceCents, int lineTotalCents, double quantity, ProductUnit? unit, int discountCents, int? productId, int? categoryId
 });
 
 
@@ -895,14 +903,15 @@ class __$PurchaseItemCopyWithImpl<$Res>
 
 /// Create a copy of PurchaseItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? rawName = null,Object? unitPriceCents = null,Object? lineTotalCents = null,Object? quantity = null,Object? discountCents = null,Object? productId = freezed,Object? categoryId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? rawName = null,Object? unitPriceCents = null,Object? lineTotalCents = null,Object? quantity = null,Object? unit = freezed,Object? discountCents = null,Object? productId = freezed,Object? categoryId = freezed,}) {
   return _then(_PurchaseItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,rawName: null == rawName ? _self.rawName : rawName // ignore: cast_nullable_to_non_nullable
 as String,unitPriceCents: null == unitPriceCents ? _self.unitPriceCents : unitPriceCents // ignore: cast_nullable_to_non_nullable
 as int,lineTotalCents: null == lineTotalCents ? _self.lineTotalCents : lineTotalCents // ignore: cast_nullable_to_non_nullable
 as int,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
-as double,discountCents: null == discountCents ? _self.discountCents : discountCents // ignore: cast_nullable_to_non_nullable
+as double,unit: freezed == unit ? _self.unit : unit // ignore: cast_nullable_to_non_nullable
+as ProductUnit?,discountCents: null == discountCents ? _self.discountCents : discountCents // ignore: cast_nullable_to_non_nullable
 as int,productId: freezed == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as int?,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as int?,
