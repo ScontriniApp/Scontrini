@@ -23,6 +23,11 @@ abstract class ParsedItem with _$ParsedItem {
 
     /// Discounts printed right after this item, as a positive amount.
     @Default(0) int discountCents,
+
+    /// VAT rate printed for this item, in percent (4, 5, 10, 22), or 0 when
+    /// it is not subject to VAT (e.g. `*NS` newspapers). `null` when the
+    /// receipt doesn't say.
+    int? vatPercent,
     @Default(<ParseWarning>[]) List<ParseWarning> warnings,
   }) = _ParsedItem;
 

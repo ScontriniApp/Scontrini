@@ -1,0 +1,127 @@
+{
+  "storeName": "IPER TRISCOUNT",
+  "vatNumber": "10987654325",
+  "address": "VIA DON L. STURZO 101-103-105, 00100 - ROMA",
+  "totalCents": 2594,
+  "discountCents": 300,
+  "items": [
+    {
+      "rawName": "RISOTTO STAR MILAN",
+      "unitPriceCents": 79,
+      "lineTotalCents": 79
+    },
+    {
+      "rawName": "PASTA CECCATO 500G FARF",
+      "unitPriceCents": 49,
+      "lineTotalCents": 49,
+      "discountCents": 16
+    },
+    {
+      "rawName": "PASTA CECCATO 500G PENN",
+      "unitPriceCents": 49,
+      "lineTotalCents": 49,
+      "discountCents": 16
+    },
+    {
+      "rawName": "PASTA CECCATO 500G FUSI",
+      "unitPriceCents": 49,
+      "lineTotalCents": 49,
+      "discountCents": 16
+    },
+    {
+      "rawName": "LOACKER WAFER 175G",
+      "unitPriceCents": 99,
+      "lineTotalCents": 198,
+      "quantity": 2
+    },
+    {
+      "rawName": "LOACKER WAFER 175G",
+      "unitPriceCents": 99,
+      "lineTotalCents": 99
+    },
+    {
+      "rawName": "WILKINSON EXTREM.6PZ",
+      "unitPriceCents": 399,
+      "lineTotalCents": 399
+    },
+    {
+      "rawName": "LOACKER WAFER 150G",
+      "unitPriceCents": 99,
+      "lineTotalCents": 99
+    },
+    {
+      "rawName": "P.COTTO SOPRA MONTE",
+      "unitPriceCents": 100,
+      "lineTotalCents": 100
+    },
+    {
+      "rawName": "P.COTTO SOPRA MONTE",
+      "unitPriceCents": 101,
+      "lineTotalCents": 101
+    },
+    {
+      "rawName": "CACIOTTA DELIZIA",
+      "unitPriceCents": 363,
+      "lineTotalCents": 363
+    },
+    {
+      "rawName": "M&M'S PEANUTS 220G",
+      "unitPriceCents": 199,
+      "lineTotalCents": 199
+    },
+    {
+      "rawName": "GALBANI STRACCHINO 230G",
+      "unitPriceCents": 199,
+      "lineTotalCents": 199
+    },
+    {
+      "rawName": "GRANMIX FORM GRATT",
+      "unitPriceCents": 149,
+      "lineTotalCents": 149
+    },
+    {
+      "rawName": "BUITONI CAPPELLETTI",
+      "unitPriceCents": 99,
+      "lineTotalCents": 99
+    },
+    {
+      "rawName": "BUITONI TORTELLONI",
+      "unitPriceCents": 99,
+      "lineTotalCents": 99
+    },
+    {
+      "rawName": "MATO MATO SQUIZ 390G",
+      "unitPriceCents": 99,
+      "lineTotalCents": 198,
+      "quantity": 2
+    },
+    {
+      "rawName": "EXQUISA MOUSSE&FRUIT",
+      "unitPriceCents": 59,
+      "lineTotalCents": 118,
+      "quantity": 2
+    },
+    {
+      "rawName": "GRAN MIX GUSTOSO 100G",
+      "unitPriceCents": 99,
+      "lineTotalCents": 99
+    },
+    {
+      "rawName": "MULLER MIX 150G",
+      "unitPriceCents": 59,
+      "lineTotalCents": 118,
+      "quantity": 2
+    },
+    {
+      "rawName": "EXQUISA CRE/FRU.130G",
+      "unitPriceCents": 79,
+      "lineTotalCents": 79
+    }
+  ],
+  "warnings": [
+    "missingDate"
+  ],
+  "unparsedLines": [
+    "----- INIZIO SACCHETTO -----"
+  ]
+}

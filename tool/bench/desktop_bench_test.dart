@@ -95,6 +95,10 @@ void main() {
       for (final c in glmCached.values)
         if (!glmNames.contains(c.name)) c.withGroup(_glmGroup),
       for (final c in glmToRead) c.withGroup(_glmGroup),
+      // PaddleOCR output from tool/bench/paddle_ocr.py, one folder per model.
+      for (final dir in _paddleCaches(_ocr))
+        for (final c in discoverCases(dir.path, {InputKind.ocrJson}))
+          c.withGroup('photos · PaddleOCR ${_paddleModel(dir)}'),
     ].where((c) => c.name.contains(_only)).toList();
     if (cases.isEmpty) {
       markTestSkipped('Nothing to run: no PDFs, photos or saved OCR output.');
@@ -204,6 +208,21 @@ Future<OcrDocument> _onDesktop(Future<OcrDocument> Function() read) async {
     rethrow;
   }
 }
+
+/// `<ocr cache>/paddle_<model>/` folders written by paddle_ocr.py.
+List<Directory> _paddleCaches(String ocrDir) {
+  final root = Directory(ocrDir);
+  if (!root.existsSync()) return const [];
+  return root
+      .listSync()
+      .whereType<Directory>()
+      .where((d) => p.basename(d.path).startsWith('paddle_'))
+      .toList()
+    ..sort((a, b) => a.path.compareTo(b.path));
+}
+
+String _paddleModel(Directory dir) =>
+    p.basename(dir.path).substring('paddle_'.length);
 
 String _stamp(DateTime t) =>
     t.toIso8601String().substring(0, 19).replaceAll(':', '-');

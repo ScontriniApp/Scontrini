@@ -15,6 +15,7 @@ _ParsedItem _$ParsedItemFromJson(Map<String, dynamic> json) => _ParsedItem(
       $enumDecodeNullable(_$QuantityUnitEnumMap, json['unit']) ??
       QuantityUnit.piece,
   discountCents: (json['discountCents'] as num?)?.toInt() ?? 0,
+  vatPercent: (json['vatPercent'] as num?)?.toInt(),
   warnings:
       (json['warnings'] as List<dynamic>?)
           ?.map((e) => $enumDecode(_$ParseWarningEnumMap, e))
@@ -31,6 +32,7 @@ Map<String, dynamic> _$ParsedItemToJson(
   'quantity': instance.quantity,
   'unit': _$QuantityUnitEnumMap[instance.unit]!,
   'discountCents': instance.discountCents,
+  'vatPercent': instance.vatPercent,
   'warnings': instance.warnings.map((e) => _$ParseWarningEnumMap[e]!).toList(),
 };
 

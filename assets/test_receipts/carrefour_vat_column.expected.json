@@ -7,86 +7,102 @@
     {
       "rawName": "LATTE GRANAROLO DA A",
       "unitPriceCents": 185,
-      "lineTotalCents": 185
+      "lineTotalCents": 185,
+      "vatPercent": 4
     },
     {
       "rawName": "BURRO SENZA LATTOSIO",
       "unitPriceCents": 209,
-      "lineTotalCents": 209
+      "lineTotalCents": 209,
+      "vatPercent": 4
     },
     {
       "rawName": "FINOCCHI VASSOIO TAG",
       "unitPriceCents": 350,
-      "lineTotalCents": 350
+      "lineTotalCents": 350,
+      "vatPercent": 4
     },
     {
       "rawName": "SAC COMPOSTABILE",
       "unitPriceCents": 2,
-      "lineTotalCents": 2
+      "lineTotalCents": 2,
+      "vatPercent": 22
     },
     {
       "rawName": "UVA BIANCA S/SEMI GR",
       "unitPriceCents": 195,
-      "lineTotalCents": 195
+      "lineTotalCents": 195,
+      "vatPercent": 4
     },
     {
       "rawName": "PANINI AL LATTE C/GO",
       "unitPriceCents": 250,
-      "lineTotalCents": 250
+      "lineTotalCents": 250,
+      "vatPercent": 10
     },
     {
       "rawName": "BRIE PRESIDENT",
       "unitPriceCents": 428,
-      "lineTotalCents": 428
+      "lineTotalCents": 428,
+      "vatPercent": 4
     },
     {
       "rawName": "UOVA RUSPANTOVO MEDI",
       "unitPriceCents": 289,
-      "lineTotalCents": 289
+      "lineTotalCents": 289,
+      "vatPercent": 10
     },
     {
       "rawName": "CODE MAZZANCOLLE TRO",
       "unitPriceCents": 501,
-      "lineTotalCents": 501
+      "lineTotalCents": 501,
+      "vatPercent": 10
     },
     {
       "rawName": "TAGLIATA DI POLLO GR",
       "unitPriceCents": 549,
-      "lineTotalCents": 549
+      "lineTotalCents": 549,
+      "vatPercent": 10
     },
     {
       "rawName": "32 MEZZI RIGATONI BR",
       "unitPriceCents": 65,
       "lineTotalCents": 130,
-      "quantity": 2
+      "quantity": 2,
+      "vatPercent": 4
     },
     {
       "rawName": "OLIO EVO 100% ITA BA",
       "unitPriceCents": 1197,
       "lineTotalCents": 1197,
-      "discountCents": 348
+      "discountCents": 348,
+      "vatPercent": 4
     },
     {
       "rawName": "PASSATA POMODORO SIC",
       "unitPriceCents": 139,
       "lineTotalCents": 278,
-      "quantity": 2
+      "quantity": 2,
+      "vatPercent": 4
     },
     {
       "rawName": "SUCCO ACE SANTAL",
       "unitPriceCents": 179,
       "lineTotalCents": 179,
-      "discountCents": 44
+      "discountCents": 44,
+      "vatPercent": 22
     },
     {
       "rawName": "OLIVE VER GIG GR500",
       "unitPriceCents": 498,
-      "lineTotalCents": 498
+      "lineTotalCents": 498,
+      "vatPercent": 4
     },
     {
       "rawName": "MOZZ. LATTE ITAL.100",
       "unitPriceCents": 199,
-      "lineTotalCents": 199
+      "lineTotalCents": 199,
+      "vatPercent": 4
     }
   ],
   "warnings": [

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:scontrini/core/utils/money.dart';
 import 'package:scontrini/features/extraction/domain/models/ocr_document.dart';
 import 'package:scontrini/features/extraction/domain/models/parse_warning.dart';
@@ -30,19 +32,22 @@ class ReceiptParser {
   /// Parses rows of text, one printed row per entry.
   ///
   /// The column layout read from the headings decides which number on a row
-  /// is the price. If that reading doesn't add up to the printed total but
-  /// a reading without it does, the second one wins: the arithmetic is the
-  /// referee when the headings were misread.
+  /// is the price. If that reading doesn't add up to the printed total, the
+  /// other readings are tried (no layout, VAT column after the price, VAT
+  /// column before it) and the first that adds up wins: the arithmetic is
+  /// the referee when the headings were misread or not read at all.
   ParsedReceipt parseLines(List<String> lines) {
-    final withLayout = _Parse();
-    final receipt = withLayout.run(lines);
-    if (!withLayout.layoutApplied ||
-        receipt.totalCents == null ||
-        receipt.isBalanced) {
-      return receipt;
+    final receipt = _Parse().run(lines);
+    if (receipt.totalCents == null || receipt.isBalanced) return receipt;
+    for (final alternative in [
+      _Parse(useLayout: false),
+      _Parse(useLayout: false, vatSide: _VatSide.afterPrice),
+      _Parse(useLayout: false, vatSide: _VatSide.beforePrice),
+    ]) {
+      final other = alternative.run(lines);
+      if (other.isBalanced) return other;
     }
-    final plain = _Parse(useLayout: false).run(lines);
-    return plain.isBalanced ? plain : receipt;
+    return receipt;
   }
 }
 
@@ -79,21 +84,48 @@ final _onlyAmountRe = RegExp('^($_amount)(?:\\s*$_vatCode)?\$');
 
 final _itemRe = RegExp(
   r'^(?<name>.*?[A-Z].*?)\s+'
-  r'(?:\d{1,2}(?:,\d{1,2})?\s?%\s+)?' // VAT column before the price
+  // VAT before the price: a code (Esselunga `*c`) or a rate (PAM `10,00%`).
+  r'(?:(?<vatBefore>\*[A-Z]{1,2}|\d{1,2}(?:,\d{1,2})?\s?%)\s+)?'
   '(?<price>$_amount)'
-  '(?:\\s*$_vatCode)?\$',
+  '(?:\\s*(?<vatAfter>$_vatCode))?\$',
 );
 
 final _quantityRe = RegExp(
-  r'^(?<qty>\d+(?:[.,]\d{1,3})?)\s*(?<unit>KG|L|PZ)?\s*[X*]\s*'
+  r'^(?:NET(?:TO)?\s+)?(?<qty>\d+(?:[.,]\d{1,3})?)\s*(?<unit>KG|L|PZ)?\s*'
+  r'[X*]\s*'
   '(?<unitPrice>$_amount)'
-  r'(?:\s*/?\s*(?<perUnit>KG|L|PZ)\b)?'
+  r'(?:\s*(?:EUR|€)?\s*/\s*(?<perUnit>KG|L|PZ)\b|\s*EUR\b)?'
   '(?:\\s*=?\\s*(?<total>$_amount))?'
-  '(?:\\s*$_vatCode)?\$',
+  '(?:\\s*(?<vat>$_vatCode))?\$',
+);
+
+// Esselunga prints the weight row before the item: `KG. 0,18 14,39`
+// (weight, price per kg).
+final _weightRe = RegExp(
+  '^KG\\.?\\s*(?<qty>\\d+[.,]\\d{1,3})\\s+(?<unitPrice>$_amount)\$',
+);
+
+// VAT legend under the total: `*a = IVA 04%`, `A = 4%`, `*NS = NON SOGGETTA`.
+final _legendRateRe = RegExp(
+  r'^\*?([A-Z]{1,2})\s*=\s*(?:IVA\s*)?(\d{1,2})(?:[.,]\d+)?\s*%',
+);
+final _legendExemptRe = RegExp(
+  r'^\*?([A-Z]{1,2})\s*=\s*(?:NON\s+SOGG|ESENT|ESCLUS|FUORI\s+CAMPO)',
+);
+
+// A service column in front of the name on most rows of a receipt: PAM
+// `T MACINATO`, Interspar `*RANA`.
+final _namePrefixRe = RegExp(r'^(?:\*\s*|[A-Z]\s+)(?=\S)');
+
+// Header rows that are never the store name.
+final _notStoreNameRe = RegExp(
+  r'CODICE A BARRE|GRAZIE|ARRIVEDERCI|BENVENUT|SCONTRINO|^CASSA\b|'
+  '^(?:[A-Z] ){3,}',
 );
 
 final _totalRe = RegExp(r'^T[O0]TALE\b(?!\s+(?:IVA|ARTICOLI|PEZZI|PZ)\b)');
-final _subtotalRe = RegExp(r'^SUB\s?-?\s?T[O0]TALE');
+// SUBTOTALE, SUB-TOTALE, SUBTOTAL.
+final _subtotalRe = RegExp(r'^SUB\s?-?\s?T[O0]TAL');
 
 // Summary of the discounts already printed under each item (`Totale Sconti
 // Ottenuti -3,92`): neither the total nor another discount.
@@ -103,6 +135,10 @@ final _discountSummaryRe = RegExp(
 final _discountRe = RegExp(
   r'\b(?:SCONTO|SC\.|OFFERTA|PROMO|RIDUZIONE|BUONO|COUPON)',
 );
+
+// A voucher on the whole receipt, not on the item above it (Esselunga
+// `BUONO SPESA 8,00-S`, printed just before the total).
+final _voucherRe = RegExp(r'^BUONO\s+(?:SPESA|SCONTO)\b');
 final _sectionStartRe = RegExp('DOCUMENTO COMMERCIALE|^DESCRIZIONE');
 final _skipRe = RegExp(
   r'DOCUMENTO COMMERCIALE|VENDITA O PRESTAZIONE|^DESCRIZIONE|^IVA\b|'
@@ -113,12 +149,12 @@ final _letterRe = RegExp('[A-Z]');
 // P.IVA · P. IVA · P.I.V.A. · P.I. · PARTITA IVA, then 11 digits (OCR may
 // space them out).
 final _vatNumberRe = RegExp(
-  r'(?:\bP\.?\s*I\.?\s*V\.?\s*A\b\.?|\bP\.\s*I\.|PARTITA\s+I\.?V\.?A\.?)'
+  r'(?:\bP\.?\s*I\.?\s*V\.?\s*A\b\.?|\bP\.\s*I\b\.?|PARTITA\s+I\.?V\.?A\.?)'
   r'\s*[:.]?\s*(?:IT\s*)?(\d[\d ]{9,14}\d)',
 );
 final _addressRe = RegExp(
   r'^(?:VIA|V\.LE|VIALE|PIAZZA|P\.ZZA|P\.ZA|PZA|CORSO|C\.SO|LARGO|STRADA|'
-  r'LOC\.|LOCALITA)\s',
+  r'LOC\.|LOCALITA|C\.DA|CONTRADA|FRAZ\.|FRAZIONE)\s',
 );
 final _postcodeRe = RegExp(r'^\d{5}\s*-?\s*[A-Z]');
 
@@ -150,6 +186,8 @@ String _normalize(String row) => row
 enum _Section { header, items, footer }
 
 enum _Column { quantity, description, price, vat }
+
+enum _VatSide { afterPrice, beforePrice }
 
 /// Column headings as printed above the items, by the column they name.
 const _headings = <String, _Column>{
@@ -228,30 +266,73 @@ class _ColumnLayout {
 }
 
 class _Quantity {
-  new(this.raw, this.quantity, this.unit, this.unitPriceCents);
+  new(
+    this.raw,
+    this.quantity,
+    this.unit,
+    this.unitPriceCents, {
+    this.decimals = 0,
+    this.vat,
+  });
 
   final String raw;
   final double quantity;
   final QuantityUnit unit;
   final int unitPriceCents;
 
+  /// Decimals printed in the quantity: a weight printed as 0,18 may really
+  /// be anything from 0,175 to 0,185.
+  final int decimals;
+
+  /// VAT printed on the quantity row (Carrefour `2 X 0,65 04,00`), for the
+  /// item it belongs to.
+  final _Vat? vat;
+
   int get computedTotalCents => (quantity * unitPriceCents).round();
 
-  /// Allows 1 cent of rounding on weighed items.
-  bool fits(int lineTotalCents) =>
-      (computedTotalCents - lineTotalCents).abs() <= 1;
+  /// Allows 1 cent of rounding, or what the rounding of a printed weight
+  /// can account for.
+  bool fits(int lineTotalCents) {
+    final weightSlack = decimals == 0
+        ? 0
+        : (unitPriceCents * 0.5 / math.pow(10, decimals)).ceil();
+    return (computedTotalCents - lineTotalCents).abs() <=
+        math.max(1, weightSlack);
+  }
+}
+
+/// VAT as printed next to an item: a rate, or a code resolved later with
+/// the legend at the bottom of the receipt (`*a = IVA 04%`).
+class _Vat {
+  new({this.percent, this.code});
+
+  final int? percent;
+  final String? code;
+
+  /// Reads `*C`, `B`, `10,00%`, `4 %`. Returns `null` for anything else.
+  static _Vat? parse(String? text) {
+    if (text == null) return null;
+    final t = text.replaceAll(' ', '');
+    final rate = RegExp(r'^(\d{1,2})(?:[.,]\d{1,2})?%$').firstMatch(t);
+    if (rate != null) return _Vat(percent: int.parse(rate[1]!));
+    final code = RegExp(r'^\*?([A-Z]{1,2})\d?$').firstMatch(t);
+    if (code != null) return _Vat(code: code[1]);
+    return null;
+  }
 }
 
 class _ItemDraft {
-  new(this.rawName, this.lineTotalCents);
+  new(this.rawName, this.lineTotalCents, {this.vat});
 
-  final String rawName;
+  String rawName;
   final int lineTotalCents;
   _Quantity? quantity;
   int discountCents = 0;
+  _Vat? vat;
 
-  ParsedItem build() {
+  ParsedItem build(Map<String, int> legend) {
     final q = quantity;
+    final v = vat ?? q?.vat;
     return ParsedItem(
       rawName: rawName,
       lineTotalCents: lineTotalCents,
@@ -259,6 +340,7 @@ class _ItemDraft {
       quantity: q?.quantity ?? 1,
       unit: q?.unit ?? QuantityUnit.piece,
       discountCents: discountCents,
+      vatPercent: v?.percent ?? (v?.code == null ? null : legend[v!.code]),
       warnings: [
         if (q != null && !q.fits(lineTotalCents))
           ParseWarning.lineTotalMismatch,
@@ -269,7 +351,19 @@ class _ItemDraft {
 
 /// State of one parse, read row by row.
 class _Parse {
-  new({this.useLayout = true});
+  new({this.useLayout = true, this.vatSide});
+
+  /// Side of the VAT column assumed without headings (see
+  /// [ReceiptParser.parseLines]).
+  final _VatSide? vatSide;
+
+  bool get _vatAfterPrice =>
+      vatSide == _VatSide.afterPrice ||
+      (layoutApplied && _layout.vatAfterPrice);
+
+  bool get _vatBeforePrice =>
+      vatSide == _VatSide.beforePrice ||
+      (layoutApplied && _layout.vatBeforePrice);
 
   final _header = <String>[];
   final _items = <_ItemDraft>[];
@@ -310,19 +404,25 @@ class _Parse {
   String? _pendingName;
   String? _pendingNameRaw;
 
+  /// VAT codes from the legend (`*a = IVA 04%` → `A: 4`), usually printed
+  /// under the total.
+  final _legend = <String, int>{};
+
   ParsedReceipt run(List<String> lines) {
     final rows = <String>[];
     for (final raw in lines) {
       final row = _normalize(raw);
       if (row.isEmpty) continue;
       rows.add(row);
+      _readLegend(row);
       _read(raw.trim(), row);
     }
     _resolveQuantity(null);
     _flushName();
+    _dropNamePrefixColumn();
 
     final receipt = ParsedReceipt(
-      items: [for (final item in _items) item.build()],
+      items: [for (final item in _items) item.build(_legend)],
       storeName: _storeName(),
       vatNumber: _vatNumber(rows),
       address: _address(),
@@ -340,6 +440,28 @@ class _Parse {
           ParseWarning.totalMismatch,
       ],
     );
+  }
+
+  void _readLegend(String row) {
+    final rate = _legendRateRe.firstMatch(row);
+    if (rate != null) {
+      _legend[rate[1]!] = int.parse(rate[2]!);
+      return;
+    }
+    final exempt = _legendExemptRe.firstMatch(row);
+    if (exempt != null) _legend[exempt[1]!] = 0;
+  }
+
+  /// Removes a service column printed in front of most item names (PAM
+  /// `T `/`X `, Interspar `*`). Only when most items have one, so a name
+  /// that really starts with a single letter is left alone.
+  void _dropNamePrefixColumn() {
+    if (_items.length < 2) return;
+    final prefixed = _items.where((i) => _namePrefixRe.hasMatch(i.rawName));
+    if (prefixed.length * 2 < _items.length) return;
+    for (final item in prefixed) {
+      item.rawName = item.rawName.replaceFirst(_namePrefixRe, '');
+    }
   }
 
   void _read(String raw, String row) {
@@ -388,7 +510,7 @@ class _Parse {
 
   void _readItemRow(String raw, String fullRow) {
     if (_skipRe.hasMatch(fullRow)) return;
-    final row = _withoutVatRate(fullRow);
+    final (row, rate) = _withoutVatRate(fullRow);
 
     if (_subtotalRe.hasMatch(row)) {
       _resolveQuantity(null);
@@ -398,9 +520,9 @@ class _Parse {
       return;
     }
 
-    final quantity = _quantityRe.firstMatch(row);
+    final quantity = _quantityRe.firstMatch(row) ?? _weightRe.firstMatch(row);
     if (quantity != null) {
-      _readQuantity(raw, quantity);
+      _readQuantity(raw, quantity, rate);
       return;
     }
 
@@ -417,9 +539,13 @@ class _Parse {
       if (price == null) {
         _unparsed.add(raw);
       } else if (price < 0 || _discountRe.hasMatch(name)) {
-        _addDiscount(price.abs());
+        _addDiscount(price.abs(), onReceipt: _voucherRe.hasMatch(name));
       } else {
-        _addItem(name, price);
+        final vat =
+            rate ??
+            _Vat.parse(item.namedGroup('vatBefore')) ??
+            _Vat.parse(item.namedGroup('vatAfter'));
+        _addItem(name, price, vat);
       }
       return;
     }
@@ -440,19 +566,26 @@ class _Parse {
   /// the price is dropped, with `IVA PREZZO` only one before it, so a real
   /// price that happens to be 4,00 or 10,00 is never lost. Without headings
   /// only a leading-zero rate (`04,00`) is dropped, since no price is
-  /// printed that way.
-  String _withoutVatRate(String row) {
+  /// printed that way. Returns the row without the rate, and the rate.
+  (String, _Vat?) _withoutVatRate(String row) {
     final after = _rateAfterRe.firstMatch(row);
-    if (after != null &&
-        (after[2]!.isNotEmpty || (layoutApplied && _layout.vatAfterPrice))) {
-      return after[1]!;
+    if (after != null && (after[2]!.isNotEmpty || _vatAfterPrice)) {
+      return (after[1]!, _rateIn(row.substring(after[1]!.length)));
     }
     final before = _rateBeforeRe.firstMatch(row);
-    if (before != null &&
-        (before[2]!.isNotEmpty || (layoutApplied && _layout.vatBeforePrice))) {
-      return '${before[1]} ${before[3]}';
+    if (before != null && (before[2]!.isNotEmpty || _vatBeforePrice)) {
+      final rateText = row.substring(
+        before[1]!.length,
+        row.length - before[3]!.length,
+      );
+      return ('${before[1]} ${before[3]}', _rateIn(rateText));
     }
-    return row;
+    return (row, null);
+  }
+
+  static _Vat? _rateIn(String text) {
+    final m = RegExp(r'(\d{1,2})[.,%\s]').firstMatch('${text.trim()} ');
+    return m == null ? null : _Vat(percent: int.parse(m[1]!));
   }
 
   /// `2 PANE BAULETTO 1,29 2,58` under a `QTA' DESCRIZIONE PREZZO TOTALE`
@@ -489,9 +622,11 @@ class _Parse {
     return true;
   }
 
-  void _readQuantity(String raw, RegExpMatch match) {
+  void _readQuantity(String raw, RegExpMatch match, _Vat? rate) {
+    String? group(String name) =>
+        match.groupNames.contains(name) ? match.namedGroup(name) : null;
     final qtyText = match.namedGroup('qty')!.replaceAll(',', '.');
-    final unitText = match.namedGroup('unit') ?? match.namedGroup('perUnit');
+    final unitText = group('unit') ?? group('perUnit');
     final unit = switch (unitText) {
       'KG' => QuantityUnit.kilogram,
       'L' => QuantityUnit.litre,
@@ -504,7 +639,14 @@ class _Parse {
       _unparsed.add(raw);
       return;
     }
-    final quantity = _Quantity(raw, quantityValue, unit, unitPrice);
+    final quantity = _Quantity(
+      raw,
+      quantityValue,
+      unit,
+      unitPrice,
+      decimals: qtyText.contains('.') ? qtyText.split('.').last.length : 0,
+      vat: rate ?? _Vat.parse(group('vat')),
+    );
 
     // The product name was on the row above, and this row carries the price.
     final name = _pendingName;
@@ -530,18 +672,20 @@ class _Parse {
     _lastRowWasItem = false;
   }
 
-  void _addItem(String name, int priceCents) {
+  void _addItem(String name, int priceCents, _Vat? vat) {
     _flushName();
-    final item = _ItemDraft(name, priceCents);
+    final item = _ItemDraft(name, priceCents, vat: vat);
     _resolveQuantity(item);
     _items.add(item);
     _lastRowWasItem = true;
   }
 
-  void _addDiscount(int cents) {
+  /// A discount goes to the item above it, unless it comes after the
+  /// subtotal or is a voucher on the whole receipt (`BUONO SPESA`).
+  void _addDiscount(int cents, {bool onReceipt = false}) {
     _resolveQuantity(null);
     _flushName();
-    if (_subtotalSeen || _items.isEmpty) {
+    if (onReceipt || _subtotalSeen || _items.isEmpty) {
       _receiptDiscount += cents;
     } else {
       _items.last.discountCents += cents;
@@ -590,10 +734,12 @@ class _Parse {
           _postcodeRe.hasMatch(row) ||
           _phoneRe.hasMatch(row) ||
           _dateRe.hasMatch(row) ||
-          _skipRe.hasMatch(row)) {
+          _skipRe.hasMatch(row) ||
+          _notStoreNameRe.hasMatch(row)) {
         continue;
       }
-      return row;
+      // Decorations around the name: `* ESSELUNGA S.P.A. *`, `**** PAM ****`.
+      return row.replaceAll(RegExp(r'^[*\-=\s]+|[*\-=\s]+$'), '');
     }
     return null;
   }

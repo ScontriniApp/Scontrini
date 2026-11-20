@@ -51,6 +51,21 @@ has not read yet, saves the text in `data/ocr_cache/glm/`, and prints the tokens
 LM Studio; `BENCH_GLM=refresh` reads everything again. Don't shrink the images: at 2048 px a long
 receipt became unreadable, so the limit is 4096 (`BENCH_GLM_MAX_SIDE`).
 
+**PaddleOCR on the PC (no device, same models as on Android).** `paddle_ocr.py` reads the photos
+with PP-OCR ONNX models through RapidOCR and onnxruntime, the same runtime the app would use on
+Android, so the score on the PC is the score on the phone:
+
+```bash
+python -m venv .tooling/paddle-venv                      # once, outside git
+.tooling/paddle-venv/Scripts/python -m pip install rapidocr onnxruntime
+.tooling/paddle-venv/Scripts/python tool/bench/paddle_ocr.py --model v6-medium   # or v5-mobile, v6-tiny, v6-small
+flutter test tool/bench/desktop_bench_test.dart
+```
+
+Output goes to `data/ocr_cache/paddle_<model>/` (models are downloaded on first use into the venv)
+and shows up as the group "photos · PaddleOCR <model>". The line boxes keep the real text height of
+the slanted quad: the upright rectangle around a long slanted line made `RowBuilder` merge rows.
+
 ## What it measures
 
 One summary per group (PDF, photos · ML Kit, photos · GLM-OCR), printed and saved in full in

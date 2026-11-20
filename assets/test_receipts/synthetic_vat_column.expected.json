@@ -6,9 +6,33 @@
   "totalCents": 497,
   "discountCents": 100,
   "items": [
-    {"rawName": "LATTE INTERO 1L", "unitPriceCents": 129, "lineTotalCents": 129},
-    {"rawName": "BANANE", "quantity": 0.456, "unit": "kg", "unitPriceCents": 199, "lineTotalCents": 91},
-    {"rawName": "PASTA SPAGHETTI", "quantity": 2, "unitPriceCents": 89, "lineTotalCents": 178, "discountCents": 50},
-    {"rawName": "DETERSIVO PIATTI", "unitPriceCents": 249, "lineTotalCents": 249}
+    {
+      "rawName": "LATTE INTERO 1L",
+      "unitPriceCents": 129,
+      "lineTotalCents": 129,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "BANANE",
+      "quantity": 0.456,
+      "unit": "kg",
+      "unitPriceCents": 199,
+      "lineTotalCents": 91,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "PASTA SPAGHETTI",
+      "quantity": 2,
+      "unitPriceCents": 89,
+      "lineTotalCents": 178,
+      "discountCents": 50,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "DETERSIVO PIATTI",
+      "unitPriceCents": 249,
+      "lineTotalCents": 249,
+      "vatPercent": 22
+    }
   ]
 }

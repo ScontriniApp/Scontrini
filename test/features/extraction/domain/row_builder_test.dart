@@ -124,4 +124,57 @@ void main() {
       [(0, 'TOTALE'), (1, 'GRAZIE')],
     );
   });
+
+  /// Twelve rows of name + price + VAT, each box reporting angle 0 (as
+  /// short OCR boxes do), but placed on a page whose rows slope by
+  /// [slopeAt] (degrees, as a function of the row).
+  List<OcrLine> receiptRows(double Function(int row) slopeAt) => [
+    for (var row = 0; row < 12; row++)
+      for (final (text, left) in [
+        ('PRODOTTO $row', 20.0),
+        ('${row + 1},50', 640.0),
+        ('04,00', 820.0),
+      ])
+        () {
+          final line = _line(text, row, left);
+          final shift =
+              (line.box.left + line.box.width / 2) *
+              math.tan(slopeAt(row) * math.pi / 180);
+          return line.copyWith(
+            box: TextBox(
+              left: line.box.left,
+              top: line.box.top + shift,
+              right: line.box.right,
+              bottom: line.box.bottom + shift,
+            ),
+          );
+        }(),
+  ];
+
+  List<String> expectedRows() => [
+    for (var row = 0; row < 12; row++) 'PRODOTTO $row ${row + 1},50 04,00',
+  ];
+
+  test('finds a page rotation that the box angles do not report', () {
+    // 3° over ~800 px: the price column sits more than half a row lower.
+    expect(_texts(_doc([receiptRows((_) => 3)])), expectedRows());
+  });
+
+  test('follows a curved receipt whose slope changes down the page', () {
+    expect(
+      _texts(_doc([receiptRows((row) => -1.5 + row * 0.25)])),
+      expectedRows(),
+    );
+  });
+
+  test('drops short text printed on the mat beside the receipt', () {
+    final lines = [
+      ...receiptRows((_) => 0),
+      const OcrLine(
+        text: 'UT',
+        box: TextBox(left: -200, top: 140, right: -120, bottom: 170),
+      ),
+    ];
+    expect(_texts(_doc([lines])), expectedRows());
+  });
 }

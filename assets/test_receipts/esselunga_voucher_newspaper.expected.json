@@ -1,0 +1,169 @@
+{
+  "storeName": "ESSELUNGA S.P.A.",
+  "vatNumber": "04916380159",
+  "address": "VIA GIUSEPPE VERDI 5 - MILANO",
+  "purchaseDate": "2026-09-23T17:05:00.000",
+  "totalCents": 5389,
+  "items": [
+    {
+      "rawName": "NP GIORNALI",
+      "unitPriceCents": 220,
+      "lineTotalCents": 220,
+      "vatPercent": 0
+    },
+    {
+      "rawName": "SPONTEX PANNISPUGNA 4",
+      "unitPriceCents": 90,
+      "lineTotalCents": 90,
+      "vatPercent": 22
+    },
+    {
+      "rawName": "LINES PETALO ALI",
+      "unitPriceCents": 399,
+      "lineTotalCents": 399,
+      "discountCents": 200,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "GARNIER MSK",
+      "unitPriceCents": 359,
+      "lineTotalCents": 359,
+      "discountCents": 72,
+      "vatPercent": 22
+    },
+    {
+      "rawName": "LINES PETALO LUNGO",
+      "unitPriceCents": 399,
+      "lineTotalCents": 399,
+      "discountCents": 200,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "ESSEL.YOG.STRACCIATX2",
+      "unitPriceCents": 79,
+      "lineTotalCents": 79,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "ESSEL.YOG.STRACCIATX2",
+      "unitPriceCents": 79,
+      "lineTotalCents": 79,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "COUSCOUS INT.G400 ITA",
+      "unitPriceCents": 248,
+      "lineTotalCents": 248,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "FRUCTIS LISCI KER SPR",
+      "unitPriceCents": 899,
+      "lineTotalCents": 899,
+      "discountCents": 270,
+      "vatPercent": 22
+    },
+    {
+      "rawName": "SPIRALE INOX 2+1",
+      "unitPriceCents": 219,
+      "lineTotalCents": 219,
+      "vatPercent": 22
+    },
+    {
+      "rawName": "ELMEX SPAZZOLINO",
+      "unitPriceCents": 409,
+      "lineTotalCents": 409,
+      "discountCents": 82,
+      "vatPercent": 22
+    },
+    {
+      "rawName": "ELMEX SPAZZOLINO",
+      "unitPriceCents": 409,
+      "lineTotalCents": 409,
+      "discountCents": 82,
+      "vatPercent": 22
+    },
+    {
+      "rawName": "ELMEX SPAZZOLINO",
+      "unitPriceCents": 409,
+      "lineTotalCents": 409,
+      "discountCents": 82,
+      "vatPercent": 22
+    },
+    {
+      "rawName": "ELMEX SPAZZOLINO",
+      "unitPriceCents": 409,
+      "lineTotalCents": 409,
+      "discountCents": 82,
+      "vatPercent": 22
+    },
+    {
+      "rawName": "LINES COTONE P/S DIS",
+      "unitPriceCents": 199,
+      "lineTotalCents": 199,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "LINES COTONE P/S DIS",
+      "unitPriceCents": 199,
+      "lineTotalCents": 199,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "PAVESI GOCCIOLE EXTRA",
+      "unitPriceCents": 299,
+      "lineTotalCents": 299,
+      "discountCents": 45,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "ESSEL.FOND.EX.75AMARO",
+      "unitPriceCents": 149,
+      "lineTotalCents": 149,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "ESSEL.FOND.EX.75AMARO",
+      "unitPriceCents": 149,
+      "lineTotalCents": 149,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "BI.DENT.ELMEX CARIE",
+      "unitPriceCents": 769,
+      "lineTotalCents": 769,
+      "vatPercent": 22
+    },
+    {
+      "rawName": "SQUEEZE ACACIA BIO",
+      "unitPriceCents": 599,
+      "lineTotalCents": 599,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "CIPOLLE DORATE",
+      "unitPriceCents": 128,
+      "lineTotalCents": 128,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "MELANZANE",
+      "unitPriceCents": 87,
+      "lineTotalCents": 87,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "NP SACCHETTO COMPOST.LE",
+      "unitPriceCents": 1,
+      "lineTotalCents": 1,
+      "vatPercent": 22
+    },
+    {
+      "rawName": "SPINACINO",
+      "unitPriceCents": 98,
+      "lineTotalCents": 98,
+      "vatPercent": 4
+    }
+  ],
+  "discountCents": 800
+}

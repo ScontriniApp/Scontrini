@@ -124,6 +124,20 @@ void main() {
       expect(receipt.isBalanced, isTrue);
     });
 
+    test('without headings, the arithmetic finds the VAT column', () {
+      // The headings were not read; only the total says that 10,00 is the
+      // VAT rate after the price and not the price.
+      final receipt = _parser.parseLines([
+        'NEGOZIO',
+        'PANINI AL LATTE 2,50 10,00',
+        'UOVA RUSPANTOVO 2,89 10,00',
+        'TOTALE COMPLESSIVO 5,39',
+      ]);
+      expect([for (final i in receipt.items) i.lineTotalCents], [250, 289]);
+      expect([for (final i in receipt.items) i.vatPercent], [10, 10]);
+      expect(receipt.isBalanced, isTrue);
+    });
+
     test('misread headings lose to the arithmetic', () {
       // The headings say VAT after the price, but the rows have it before:
       // only the reading without the layout adds up to the total.

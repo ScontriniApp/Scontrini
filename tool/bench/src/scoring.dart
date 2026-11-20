@@ -169,6 +169,7 @@ const itemFields = [
   'quantity',
   'unit',
   'unitPrice',
+  'vat',
 ];
 
 /// Comparison of a parsed receipt with its ground truth.
@@ -299,6 +300,10 @@ ParseScore scoreParse(ParsedReceipt expected, ParsedReceipt actual) {
         'unitPrice':
             'unit price ${_cents(got.unitPriceCents)} '
             '(expected ${_cents(want.unitPriceCents)})',
+      if (want.vatPercent != got.vatPercent)
+        'vat':
+            'VAT ${got.vatPercent ?? '-'}% '
+            '(expected ${want.vatPercent ?? '-'}%)',
     };
     if (errors.isEmpty) {
       correctItems++;

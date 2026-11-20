@@ -1,0 +1,91 @@
+{
+  "storeName": "ESSELUNGA S.P.A.",
+  "vatNumber": "04916380159",
+  "address": "VIA GIUSEPPE VERDI 5 - MILANO",
+  "purchaseDate": "2026-11-01T19:32:00.000",
+  "totalCents": 2414,
+  "items": [
+    {
+      "rawName": "VIT. FETTINE SOTTILI",
+      "unitPriceCents": 480,
+      "lineTotalCents": 480,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "ESSEL.GRECO INT BIANC",
+      "unitPriceCents": 265,
+      "lineTotalCents": 265,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "CALVE' CHEDDAR 240GR",
+      "unitPriceCents": 169,
+      "lineTotalCents": 169,
+      "discountCents": 40,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "MACINATA POLLO FILENI",
+      "unitPriceCents": 419,
+      "lineTotalCents": 419,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "ESSEL. DADO CLASS. 20",
+      "unitPriceCents": 139,
+      "lineTotalCents": 139,
+      "discountCents": 28,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "ESSEL.YOG.STRACCIATX2",
+      "unitPriceCents": 79,
+      "lineTotalCents": 79,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "ESSEL.YOG.STRACCIATX2",
+      "unitPriceCents": 79,
+      "lineTotalCents": 79,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "GIRELLA CACAO",
+      "unitPriceCents": 209,
+      "lineTotalCents": 209,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "CACIOTTA TOSCANA",
+      "unitPriceCents": 280,
+      "lineTotalCents": 280,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "BANANE",
+      "unitPriceCents": 99,
+      "lineTotalCents": 99,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "NP SACCHETTO COMPOST.LE",
+      "unitPriceCents": 1,
+      "lineTotalCents": 1,
+      "vatPercent": 22
+    },
+    {
+      "rawName": "FOCACCINE POMODORINI",
+      "unitPriceCents": 1439,
+      "lineTotalCents": 253,
+      "quantity": 0.18,
+      "unit": "kg",
+      "vatPercent": 10
+    },
+    {
+      "rawName": "SHOPPER",
+      "unitPriceCents": 10,
+      "lineTotalCents": 10,
+      "vatPercent": 22
+    }
+  ]
+}
