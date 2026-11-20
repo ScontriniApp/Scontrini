@@ -269,6 +269,24 @@ void main() {
     expect(item.warnings, isEmpty);
   });
 
+  test('EUR after the amounts and an OCR × in the quantity row', () {
+    final receipt = _parser.parseLines([
+      'SCONTRINO 7-52654-712',
+      'APPLE MACBOOK PRO 12,99 EUR',
+      'CLVR CRE CHRIST PARTY 11,98 EUR',
+      '2 × 5,99 EUR',
+      'TOTALE 24,97 EUR',
+    ]);
+
+    expect(receipt.items.map((i) => i.rawName), [
+      'APPLE MACBOOK PRO',
+      'CLVR CRE CHRIST PARTY',
+    ]);
+    expect(receipt.items.last.quantity, 2);
+    expect(receipt.items.last.unitPriceCents, 599);
+    expect(receipt.totalCents, 2497);
+  });
+
   test('never throws on garbage', () {
     final receipt = _parser.parseLines(['', '%%%', '12', '-,--', 'X X 1,2,3']);
     expect(receipt.items, isEmpty);

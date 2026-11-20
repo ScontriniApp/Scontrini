@@ -66,6 +66,25 @@ Output goes to `data/ocr_cache/paddle_<model>/` (models are downloaded on first 
 and shows up as the group "photos · PaddleOCR <model>". The line boxes keep the real text height of
 the slanted quad: the upright rectangle around a long slanted line made `RowBuilder` merge rows.
 
+**Synthetic photo set (stress test for OCR engines).** No free dataset of real Italian receipt
+photos exists, so `import_synthetic.py` turns the Italian receipts of
+[synthetic-receipts-ocr](https://huggingface.co/datasets/albertobarnabo/synthetic-receipts-ocr)
+(Apache-2.0; rendered receipts with perspective, lighting, blur, noise, thermal fade, JPEG) into a
+separate bench set. Its layout is made up ("SCONTRINO", "DI CUI IVA", no per-item VAT): it measures
+how an engine reads damaged photos, never tune the parser to it.
+
+```bash
+.tooling/paddle-venv/Scripts/python -m pip install pyarrow              # once
+# download data/eval-00000-of-00002.parquet (128 MB, ~155 Italian receipts) into data/dataset_sintetico/
+.tooling/paddle-venv/Scripts/python -I tool/bench/import_synthetic.py data/dataset_sintetico/eval-00000-of-00002.parquet
+.tooling/paddle-venv/Scripts/python tool/bench/paddle_ocr.py --model v6-medium \
+    --photos data/dataset_sintetico/foto --out data/dataset_sintetico/ocr_cache/paddle_v6-medium
+flutter test tool/bench/desktop_bench_test.dart --dart-define=BENCH_PDFS=data/none \
+    --dart-define=BENCH_OCR=data/dataset_sintetico/ocr_cache \
+    --dart-define=BENCH_TRUTH=data/dataset_sintetico/ground_truth \
+    --dart-define=BENCH_PHOTOS=data/dataset_sintetico/foto   # + BENCH_GLM=true for GLM-OCR
+```
+
 ## What it measures
 
 One summary per group (PDF, photos · ML Kit, photos · GLM-OCR), printed and saved in full in

@@ -92,7 +92,8 @@ final _itemRe = RegExp(
 
 final _quantityRe = RegExp(
   r'^(?:NET(?:TO)?\s+)?(?<qty>\d+(?:[.,]\d{1,3})?)\s*(?<unit>KG|L|PZ)?\s*'
-  r'[X*]\s*'
+  // `×` is how some OCR engines read a printed `x`.
+  r'[X*×]\s*'
   '(?<unitPrice>$_amount)'
   r'(?:\s*(?:EUR|€)?\s*/\s*(?<perUnit>KG|L|PZ)\b|\s*EUR\b)?'
   '(?:\\s*=?\\s*(?<total>$_amount))?'
@@ -167,8 +168,9 @@ final _dateRe = RegExp(
   r'(?:\s*(?:ORE|ORA|H)?\s*:?\s+(\d{1,2})\s?[:.]\s?(\d{2})(?!\d))?',
 );
 
-/// Uppercases, drops the euro sign, joins amounts that OCR split
-/// (`1 ,29`, `1, 29`) and collapses whitespace.
+/// Uppercases, drops the euro sign and an `EUR` printed after an amount
+/// (`12,99 EUR`), joins amounts that OCR split (`1 ,29`, `1, 29`) and
+/// collapses whitespace.
 String _normalize(String row) => row
     .toUpperCase()
     .replaceAll('€', ' ')
@@ -179,6 +181,10 @@ String _normalize(String row) => row
     .replaceAllMapped(
       RegExp(r'(\d)\s+([.,])(\d{2})(?!\d)'),
       (m) => '${m[1]}${m[2]}${m[3]}',
+    )
+    .replaceAllMapped(
+      RegExp(r'([.,]\d{2}-?)\s*EUR\b'),
+      (m) => '${m[1]} ',
     )
     .replaceAll(RegExp(r'\s+'), ' ')
     .trim();
