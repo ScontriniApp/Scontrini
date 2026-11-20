@@ -28,7 +28,22 @@ class ReceiptParser {
       parseLines([for (final row in rowBuilder.build(document)) row.text]);
 
   /// Parses rows of text, one printed row per entry.
-  ParsedReceipt parseLines(List<String> lines) => _Parse().run(lines);
+  ///
+  /// The column layout read from the headings decides which number on a row
+  /// is the price. If that reading doesn't add up to the printed total but
+  /// a reading without it does, the second one wins: the arithmetic is the
+  /// referee when the headings were misread.
+  ParsedReceipt parseLines(List<String> lines) {
+    final withLayout = _Parse();
+    final receipt = withLayout.run(lines);
+    if (!withLayout.layoutApplied ||
+        receipt.totalCents == null ||
+        receipt.isBalanced) {
+      return receipt;
+    }
+    final plain = _Parse(useLayout: false).run(lines);
+    return plain.isBalanced ? plain : receipt;
+  }
 }
 
 // An amount as printed: 1,29 · 1.29 · -0,50 · 0,50- · 1.234,56.
@@ -39,14 +54,27 @@ const _vatCode = r'(?:\d{1,2}(?:,\d{1,2})?\s?%|[A-Z]{1,2}\d?|\*)';
 
 final _amountRe = RegExp(_amount);
 
-// A VAT rate printed after the price as a plain number, without `%`
-// (Carrefour: `LATTE 1,85 04,00`, `2 X 0,65 04,00`). Group 1 is the row
-// without it; group 2 the rate.
-final _trailingRateRe = RegExp(r'^(.*\d[.,]\d{2}-?)\s+(0?\d{1,2})[.,]00\s*%?$');
-const _vatRates = {4, 5, 10, 22};
+// An Italian VAT rate (4, 5, 10, 22) as printed in a VAT column: 04,00 ·
+// 10,00 · 22,00% · 4% · 10 %. Group 1 is the leading zero, if any.
+const _rate = r'(0?)(?:4|5|10|22)(?:[.,]00\s?%?|\s?%)';
 
-// Column heading announcing a VAT column: `PREZZO %IVA`, `% IVA`.
-final _vatColumnRe = RegExp(r'%\s*IVA\b');
+// A rate as the last column, after the price (Carrefour `LATTE 1,85 04,00`).
+// Group 1: the row without it; group 2: the leading zero.
+final _rateAfterRe = RegExp('^(.*\\d[.,]\\d{2}-?)\\s+$_rate\$');
+
+// A rate right before the price (`CAFFE 10,00 4,00`). Group 1: what comes
+// before it; group 2: the leading zero; group 3: the price and what follows.
+final _rateBeforeRe = RegExp(
+  '^(.*\\S)\\s+$_rate\\s+((?:$_amount)(?:\\s*$_vatCode)?)\$',
+);
+
+// Unit price and line total in two columns, with the quantity in a column of
+// its own before the name (Conad: `2 PANE BAULETTO 1,29 2,58`). OCR may lose
+// the quantity: then it comes from total ÷ unit price.
+final _unitAndTotalRe = RegExp(
+  r'^(?:(?<qty>\d{1,3})\s+)?(?<name>.*?[A-Z].*?)\s+'
+  '(?<unitPrice>$_amount)\\s+(?<total>$_amount)\$',
+);
 final _onlyAmountRe = RegExp('^($_amount)(?:\\s*$_vatCode)?\$');
 
 final _itemRe = RegExp(
@@ -121,6 +149,84 @@ String _normalize(String row) => row
 
 enum _Section { header, items, footer }
 
+enum _Column { quantity, description, price, vat }
+
+/// Column headings as printed above the items, by the column they name.
+const _headings = <String, _Column>{
+  'QTA': _Column.quantity,
+  "QTA'": _Column.quantity,
+  'Q.TA': _Column.quantity,
+  'QUANTITA': _Column.quantity,
+  "QUANTITA'": _Column.quantity,
+  'DESCRIZIONE': _Column.description,
+  'ARTICOLO': _Column.description,
+  'PREZZO': _Column.price,
+  'EURO': _Column.price,
+  'EUR': _Column.price,
+  'IMPORTO': _Column.price,
+  'TOTALE': _Column.price,
+  'IVA': _Column.vat,
+  '%IVA': _Column.vat,
+  'ALIQ': _Column.vat,
+  'ALIQ.': _Column.vat,
+  'ALIQUOTA': _Column.vat,
+};
+
+/// Order of the item columns, read from the headings
+/// (`DESCRIZIONE PREZZO %IVA`, `IVA EURO`, `QTA' DESCRIZIONE PREZZO TOTALE`).
+/// Headings split over consecutive rows add up.
+class _ColumnLayout {
+  final _columns = <_Column>[];
+
+  bool get isKnown => _columns.isNotEmpty;
+
+  /// Reads [row] as a row of headings. Returns `false`, changing nothing,
+  /// when it is anything else.
+  bool add(String row) {
+    final words = row
+        .replaceAll(RegExp('[()€]'), ' ')
+        .replaceAll(RegExp(r'%\s+IVA\b'), '%IVA')
+        .split(' ')
+        // OCR often turns QTA' into QTA* or QTA.: compare the bare word.
+        .map((w) => w.replaceAll(RegExp(r"[':*.,;]+$"), ''))
+        .where((w) => w.isNotEmpty)
+        .toList();
+    if (words.isEmpty) return false;
+    final columns = [for (final w in words) _headings[w]];
+    if (columns.contains(null)) return false;
+    // A single word is a heading only if it can't be anything else.
+    if (words.length == 1 &&
+        columns.single != _Column.description &&
+        columns.single != _Column.quantity) {
+      return false;
+    }
+    _columns.addAll(columns.nonNulls);
+    return true;
+  }
+
+  int _first(_Column column) => _columns.indexOf(column);
+
+  /// The VAT column comes after the price (Carrefour).
+  bool get vatAfterPrice =>
+      _first(_Column.vat) >= 0 &&
+      _first(_Column.price) >= 0 &&
+      _columns.lastIndexOf(_Column.vat) > _first(_Column.price);
+
+  /// The VAT column comes before the price (PAM, Esselunga).
+  bool get vatBeforePrice =>
+      _first(_Column.vat) >= 0 &&
+      _first(_Column.price) >= 0 &&
+      _first(_Column.vat) < _first(_Column.price);
+
+  /// The quantity has its own column before the name, and unit price and
+  /// line total have one each (Conad: `QTA' DESCRIZIONE PREZZO TOTALE`).
+  bool get quantityAndTotalColumns =>
+      _first(_Column.quantity) >= 0 &&
+      (_first(_Column.description) < 0 ||
+          _first(_Column.quantity) < _first(_Column.description)) &&
+      _columns.where((c) => c == _Column.price).length >= 2;
+}
+
 class _Quantity {
   new(this.raw, this.quantity, this.unit, this.unitPriceCents);
 
@@ -163,6 +269,8 @@ class _ItemDraft {
 
 /// State of one parse, read row by row.
 class _Parse {
+  new({this.useLayout = true});
+
   final _header = <String>[];
   final _items = <_ItemDraft>[];
   final _unparsed = <String>[];
@@ -173,9 +281,15 @@ class _Parse {
   int? _total;
   var _totalOnNextRow = false;
 
-  /// Whether the headings announced a VAT column (`PREZZO %IVA`), so a plain
-  /// `10,00` after a price is a rate, not an amount.
-  var _vatColumn = false;
+  /// Column order from the headings. Ignored when [useLayout] is false.
+  final _layout = _ColumnLayout();
+
+  /// Whether the column layout read from the headings is applied. The
+  /// parser runs again without it when it doesn't add up (see
+  /// [ReceiptParser.parseLines]).
+  final bool useLayout;
+
+  bool get layoutApplied => useLayout && _layout.isKnown;
 
   /// Whether the previous meaningful row was a product row, so a following
   /// quantity row may belong to it.
@@ -238,8 +352,14 @@ class _Parse {
       }
     }
     if (_section == _Section.footer) return;
-    if (_vatColumnRe.hasMatch(row)) _vatColumn = true;
     if (_discountSummaryRe.hasMatch(row)) return;
+
+    // Column headings, before the first item. `TOTALE EURO` on its own is the
+    // total, not a heading.
+    if (_items.isEmpty && !_totalRe.hasMatch(row) && _layout.add(row)) {
+      if (_section == _Section.header) _section = _Section.items;
+      return;
+    }
 
     if (_totalRe.hasMatch(row)) {
       _resolveQuantity(null);
@@ -284,6 +404,12 @@ class _Parse {
       return;
     }
 
+    if (layoutApplied &&
+        _layout.quantityAndTotalColumns &&
+        _readUnitAndTotal(raw, row)) {
+      return;
+    }
+
     final item = _itemRe.firstMatch(row);
     if (item != null) {
       final price = Money.parseCents(item.namedGroup('price')!);
@@ -307,20 +433,60 @@ class _Parse {
     _lastRowWasItem = false;
   }
 
-  /// Drops a VAT rate printed as a plain number after the price, which would
-  /// otherwise be read as the price. `04,00` (leading zero) is never a price;
-  /// `4,00` · `10,00` · `22,00` only count as rates when the headings
-  /// announced a VAT column.
+  /// Drops a VAT rate printed next to the price, which would otherwise be
+  /// read as the price (after it) or end up in the name (before it).
+  ///
+  /// The side comes from the headings: with `PREZZO %IVA` only a rate after
+  /// the price is dropped, with `IVA PREZZO` only one before it, so a real
+  /// price that happens to be 4,00 or 10,00 is never lost. Without headings
+  /// only a leading-zero rate (`04,00`) is dropped, since no price is
+  /// printed that way.
   String _withoutVatRate(String row) {
-    final match = _trailingRateRe.firstMatch(row);
-    if (match == null) return row;
-    final rateText = match[2]!;
-    final rate = int.parse(rateText);
-    if (!_vatRates.contains(rate)) return row;
-    if (!_vatColumn && !(rateText.length == 2 && rateText.startsWith('0'))) {
-      return row;
+    final after = _rateAfterRe.firstMatch(row);
+    if (after != null &&
+        (after[2]!.isNotEmpty || (layoutApplied && _layout.vatAfterPrice))) {
+      return after[1]!;
     }
-    return match[1]!;
+    final before = _rateBeforeRe.firstMatch(row);
+    if (before != null &&
+        (before[2]!.isNotEmpty || (layoutApplied && _layout.vatBeforePrice))) {
+      return '${before[1]} ${before[3]}';
+    }
+    return row;
+  }
+
+  /// `2 PANE BAULETTO 1,29 2,58` under a `QTA' DESCRIZIONE PREZZO TOTALE`
+  /// heading. Only taken when quantity × unit price gives the line total;
+  /// otherwise the row is read as usual. If OCR lost the quantity, it is
+  /// total ÷ unit price when that is a whole number.
+  bool _readUnitAndTotal(String raw, String row) {
+    final match = _unitAndTotalRe.firstMatch(row);
+    if (match == null) return false;
+    final unitPrice = Money.parseCents(match.namedGroup('unitPrice')!);
+    final total = Money.parseCents(match.namedGroup('total')!);
+    if (unitPrice == null || total == null || unitPrice <= 0 || total <= 0) {
+      return false;
+    }
+    final qtyText = match.namedGroup('qty');
+    final quantity = qtyText != null
+        ? int.parse(qtyText)
+        : (total % unitPrice == 0 ? total ~/ unitPrice : 0);
+    if (quantity <= 0) return false;
+    final q = _Quantity(
+      raw,
+      quantity.toDouble(),
+      QuantityUnit.piece,
+      unitPrice,
+    );
+    if (!q.fits(total)) return false;
+
+    _resolveQuantity(null);
+    _flushName();
+    _items.add(
+      _ItemDraft(match.namedGroup('name')!.trim(), total)..quantity = q,
+    );
+    _lastRowWasItem = true;
+    return true;
   }
 
   void _readQuantity(String raw, RegExpMatch match) {

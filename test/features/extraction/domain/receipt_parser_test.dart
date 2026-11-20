@@ -48,6 +48,96 @@ void main() {
     });
   });
 
+  group('column layout from the headings', () {
+    test('VAT before the price: the rate is not read as the price', () {
+      final receipt = _parser.parseLines([
+        'NEGOZIO',
+        'DESCRIZIONE IVA PREZZO',
+        'CAFFE MACINATO 10,00 4,00',
+        'ZUCCHERO 4,00 1,20',
+        'TOTALE 5,20',
+      ]);
+      expect(
+        [for (final i in receipt.items) i.rawName],
+        ['CAFFE MACINATO', 'ZUCCHERO'],
+      );
+      expect([for (final i in receipt.items) i.lineTotalCents], [400, 120]);
+      expect(receipt.isBalanced, isTrue);
+    });
+
+    test('VAT after the price: the same row reads the other way', () {
+      final receipt = _parser.parseLines([
+        'NEGOZIO',
+        'DESCRIZIONE PREZZO %IVA',
+        'CAFFE MACINATO 10,00 4,00',
+        'TOTALE 10,00',
+      ]);
+      expect(receipt.items.single.lineTotalCents, 1000);
+      expect(receipt.items.single.rawName, 'CAFFE MACINATO');
+    });
+
+    test('headings split over two rows add up', () {
+      final receipt = _parser.parseLines([
+        'NEGOZIO',
+        'DESCRIZIONE',
+        'PREZZO %Iva',
+        'PANINI 2,50 10,00',
+        'TOTALE 2,50',
+      ]);
+      expect(receipt.items.single.lineTotalCents, 250);
+    });
+
+    test('quantity in its own first column (QTA)', () {
+      final receipt = _parser.parseLines([
+        'CONAD',
+        "QTA' DESCRIZIONE PREZZO TOTALE",
+        '2 PANE BAULETTO 1,29 2,58',
+        '16 NUTELLA 750G 5,49 87,84',
+        '1 BANANE 1,79 1,79',
+        'TOTALE COMPLESSIVO 92,21',
+      ]);
+      expect(
+        [for (final i in receipt.items) i.rawName],
+        ['PANE BAULETTO', 'NUTELLA 750G', 'BANANE'],
+      );
+      expect([for (final i in receipt.items) i.quantity], [2, 16, 1]);
+      expect(
+        [for (final i in receipt.items) i.unitPriceCents],
+        [129, 549, 179],
+      );
+      expect(receipt.isBalanced, isTrue);
+    });
+
+    test('a quantity lost by OCR comes from total / unit price', () {
+      final receipt = _parser.parseLines([
+        'CONAD',
+        'QTA* DESCRIZIONE PREZZO TOTALE',
+        'PASSATA DI POMODORO 700G 0,99 1,98',
+        'PETTO DI POLLO 5,99 5,99',
+        'TOTALE COMPLESSIVO 7,97',
+      ]);
+      expect(
+        [for (final i in receipt.items) i.rawName],
+        ['PASSATA DI POMODORO 700G', 'PETTO DI POLLO'],
+      );
+      expect([for (final i in receipt.items) i.quantity], [2, 1]);
+      expect(receipt.isBalanced, isTrue);
+    });
+
+    test('misread headings lose to the arithmetic', () {
+      // The headings say VAT after the price, but the rows have it before:
+      // only the reading without the layout adds up to the total.
+      final receipt = _parser.parseLines([
+        'NEGOZIO',
+        'DESCRIZIONE PREZZO %IVA',
+        'PANE 1,20 4,00',
+        'TOTALE 4,00',
+      ]);
+      expect(receipt.items.single.lineTotalCents, 400);
+      expect(receipt.isBalanced, isTrue);
+    });
+  });
+
   test('a discount summary is neither the total nor a discount', () {
     final receipt = _parser.parseLines([
       'NEGOZIO',
