@@ -8,8 +8,10 @@
 //     exported from the app on a phone ("Esporta come test" +
 //     tool/pull_fixtures.sh, in assets/test_receipts/incoming);
 //   - saved GLM-OCR output (data/ocr_cache/glm/*.ocr.json), and with
-//     BENCH_GLM=true it reads the photos not read yet with GLM-OCR through
-//     LM Studio (`lms load glm-ocr`, `lms server start`) and saves them.
+//     BENCH_GLM=true it reads the photos not read yet with the app's own
+//     GlmOcr (llama.cpp through llamadart) and saves them. Needs the
+//     environment variable
+//     LLAMADART_NATIVE_LIB_DIR=<repo>/build/native_assets/windows.
 //
 // Options (all optional), as --dart-define=NAME=value:
 //   BENCH_PDFS    folder with the PDFs        (default data/scontrini/scontrini)
@@ -17,7 +19,9 @@
 //   BENCH_PHOTOS  photo folders, comma-separated, for GLM-OCR
 //                 (default data/scontrini_foto_reali,data/foto_render)
 //   BENCH_GLM     true: read new photos with GLM-OCR; `refresh`: read all again
-//   BENCH_GLM_MAX_SIDE  longest image side sent to GLM-OCR (default 4096)
+//   BENCH_GLM_MODEL_DIR folder with GLM-OCR-Q8_0.gguf + mmproj (default:
+//                 LM Studio's ~/.lmstudio/models/ggml-org/GLM-OCR-GGUF)
+//   BENCH_GLM_GPU GPU index for GLM-OCR (Vulkan); -1 = CPU, the default
 //   BENCH_TRUTH   ground truth folder         (default data/ground_truth)
 //   BENCH_OUT     where reports are written   (default data/bench_runs)
 //   BENCH_ONLY    run only cases whose name contains this text
@@ -26,15 +30,17 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:llamadart/llamadart.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdfrx/pdfrx.dart';
+import 'package:scontrini/features/extraction/data/glm_ocr.dart';
 import 'package:scontrini/features/extraction/data/mlkit_ocr.dart';
 import 'package:scontrini/features/extraction/data/pdf_text_reader.dart';
 import 'package:scontrini/features/extraction/domain/models/ocr_document.dart';
+import 'package:scontrini/features/extraction/domain/models/text_source.dart';
 
 import 'src/bench_case.dart';
 import 'src/bench_runner.dart';
-import 'src/glm_ocr_reader.dart';
 import 'src/keyword_classifier.dart';
 import 'src/report.dart';
 
@@ -51,10 +57,8 @@ const _photos = String.fromEnvironment(
   defaultValue: 'data/scontrini_foto_reali,data/foto_render',
 );
 const _glm = String.fromEnvironment('BENCH_GLM');
-const _glmMaxSide = int.fromEnvironment(
-  'BENCH_GLM_MAX_SIDE',
-  defaultValue: 4096,
-);
+const _glmModelDir = String.fromEnvironment('BENCH_GLM_MODEL_DIR');
+const _glmGpu = int.fromEnvironment('BENCH_GLM_GPU', defaultValue: -1);
 const _truth = String.fromEnvironment(
   'BENCH_TRUTH',
   defaultValue: 'data/ground_truth',
@@ -114,8 +118,8 @@ void main() {
       MlKitOcr(),
       () async => Directory.systemTemp,
     );
-    final glm = GlmOcrReader(maxSide: _glmMaxSide);
-    final glmUsage = <String, GlmUsage>{};
+    final glm = glmToRead.isEmpty ? null : _glmOcr();
+    final glmTimes = <String, Duration>{};
 
     final startedAt = DateTime.now();
     final results = await runBench(
@@ -128,7 +132,7 @@ void main() {
           jsonDecode(File(c.files.single).readAsStringSync())
               as Map<String, Object?>,
         ),
-        InputKind.image => await _readWithGlm(glm, c, glmCache, glmUsage),
+        InputKind.image => await _readWithGlm(glm!, c, glmCache, glmTimes),
       },
     );
 
@@ -158,21 +162,48 @@ void main() {
         ).summary(),
       );
     }
-    if (glmUsage.isNotEmpty) stdout.write(_usageSummary(glmUsage));
+    await glm?.close();
+    if (glmTimes.isNotEmpty) stdout.write(_timeSummary(glmTimes));
     stdout
       ..writeln()
       ..writeln('Full report: ${file.path}');
   });
 }
 
+/// The app's GLM-OCR reader, with the model files LM Studio downloaded.
+GlmOcr _glmOcr() {
+  final home =
+      Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'] ?? '';
+  final dir = _glmModelDir.isNotEmpty
+      ? _glmModelDir
+      : p.join(home, '.lmstudio', 'models', 'ggml-org', 'GLM-OCR-GGUF');
+  final files = GlmOcrModelFiles.inDirectory(dir);
+  if (!files.exist) throw StateError('GLM-OCR model files not found in $dir');
+  if (_glmGpu < 0) return GlmOcr(files);
+  return GlmOcr(
+    files,
+    params: GlmOcr.defaultParams.copyWith(
+      gpuLayers: -1,
+      preferredBackend: GpuBackend.vulkan,
+      mainGpu: _glmGpu,
+      // One GPU only: split with an integrated GPU it was slower than the CPU.
+      splitMode: ModelSplitMode.none,
+    ),
+  );
+}
+
 Future<OcrDocument> _readWithGlm(
-  GlmOcrReader glm,
+  GlmOcr glm,
   BenchCase c,
   String cacheDir,
-  Map<String, GlmUsage> usage,
+  Map<String, Duration> times,
 ) async {
-  final (document, cost) = await glm.read(c.files);
-  usage[c.name] = cost;
+  final watch = Stopwatch()..start();
+  final document = OcrDocument(
+    source: TextSource.ocr,
+    pages: [for (final path in c.files) await glm.recognizeFile(path)],
+  );
+  times[c.name] = watch.elapsed;
   // Saved like ML Kit's output, so later runs replay it without the model.
   final file = File(p.join(cacheDir, '${c.name}.ocr.json'));
   await file.parent.create(recursive: true);
@@ -180,17 +211,14 @@ Future<OcrDocument> _readWithGlm(
   return document;
 }
 
-String _usageSummary(Map<String, GlmUsage> usage) {
+String _timeSummary(Map<String, Duration> times) {
   final b = StringBuffer()
     ..writeln()
-    ..writeln('GLM-OCR COST (this PC; on a phone the time grows with the')
-    ..writeln('generated tokens)');
-  for (final MapEntry(:key, :value) in usage.entries) {
+    ..writeln('GLM-OCR TIME on this PC (the first photo includes loading)');
+  for (final MapEntry(:key, :value) in times.entries) {
     b.writeln(
       '  ${key.padRight(32)}'
-      '${'${value.promptTokens}'.padLeft(6)} image+prompt tokens'
-      '${'${value.completionTokens}'.padLeft(6)} generated'
-      '${(value.milliseconds / 1000).toStringAsFixed(1).padLeft(7)} s',
+      '${(value.inMilliseconds / 1000).toStringAsFixed(1).padLeft(7)} s',
     );
   }
   return b.toString();

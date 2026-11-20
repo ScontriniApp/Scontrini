@@ -37,19 +37,27 @@ a real phone ("Esporta come test" + `tool/pull_fixtures.sh`) are replayed the sa
 `assets/test_receipts/incoming/`. So work on the row builder and the parser happens on the PC only;
 the device is needed again only for new photos or to test a different OCR setup.
 
-**Another OCR engine on the PC: GLM-OCR (experiment).** A 0.9B vision-language OCR model, run by
-LM Studio on the PC to compare it with ML Kit on the same photos before trying it on a phone:
+**GLM-OCR on the PC, with the app's own code.** The app reads photos with GLM-OCR (a 0.9B
+vision-language OCR model) through `GlmOcr` (`lib/features/extraction/data/glm_ocr.dart`, llama.cpp
+via `llamadart`). The benchmark runs that same class on the PC, image preparation included, so its
+score is the app's score:
 
-```bash
-lms load glm-ocr && lms server start      # once; model: ggml-org/GLM-OCR-GGUF, Q8_0, 1.43 GB
-flutter test tool/bench/desktop_bench_test.dart --dart-define=BENCH_GLM=true
+```powershell
+# once: the model files (ggml-org/GLM-OCR-GGUF, Q8_0: 950 MB + 484 MB mmproj), e.g. via LM Studio
+$env:LLAMADART_NATIVE_LIB_DIR = (Resolve-Path build/native_assets/windows).Path
+flutter test tool/bench/desktop_bench_test.dart --dart-define=BENCH_GLM=true --dart-define=BENCH_GLM_GPU=1
 ```
 
+- `LLAMADART_NATIVE_LIB_DIR`: under `flutter test` on Windows llamadart doesn't find its own DLLs
+  (downloaded by its build hook into `build/native_assets/windows`) without it.
+- `BENCH_GLM_MODEL_DIR`: folder with `GLM-OCR-Q8_0.gguf` and `mmproj-GLM-OCR-Q8_0.gguf` (default:
+  LM Studio's `~/.lmstudio/models/ggml-org/GLM-OCR-GGUF`).
+- `BENCH_GLM_GPU`: Vulkan GPU index, `-1` (default) for CPU. On the test laptop the RTX is `1`:
+  ~4 s per photo, against ~27 s on the CPU; split with the integrated Radeon it took 49 s.
+
 It reads the photos in `data/scontrini_foto_reali` and `data/foto_render` (`BENCH_PHOTOS`) that it
-has not read yet, saves the text in `data/ocr_cache/glm/`, and prints the tokens used per photo
-(on a phone the time grows with the generated tokens). Later runs replay the saved text without
-LM Studio; `BENCH_GLM=refresh` reads everything again. Don't shrink the images: at 2048 px a long
-receipt became unreadable, so the limit is 4096 (`BENCH_GLM_MAX_SIDE`).
+has not read yet, saves the text in `data/ocr_cache/glm/` and prints the time per photo. Later runs
+replay the saved text without the model; `BENCH_GLM=refresh` reads everything again.
 
 **PaddleOCR on the PC (no device, same models as on Android).** `paddle_ocr.py` reads the photos
 with PP-OCR ONNX models through RapidOCR and onnxruntime, the same runtime the app would use on

@@ -1,16 +1,18 @@
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:scontrini/features/extraction/domain/image_text_reader.dart';
 import 'package:scontrini/features/extraction/domain/models/ocr_line.dart';
 import 'package:scontrini/features/extraction/domain/models/ocr_page.dart';
 import 'package:scontrini/features/extraction/domain/models/text_box.dart';
 import 'package:scontrini/features/extraction/domain/word_spacing.dart';
 
 /// On-device OCR with ML Kit (Latin script). Nothing leaves the phone.
-class MlKitOcr {
+class MlKitOcr implements ImageTextReader {
   new({this.spacing = const WordSpacing()});
 
   final WordSpacing spacing;
   final _recognizer = TextRecognizer();
 
+  @override
   Future<OcrPage> recognizeFile(String imagePath) async {
     final result = await _recognizer.processImage(
       InputImage.fromFilePath(imagePath),
