@@ -22,9 +22,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navAnalytics => 'Analytics';
 
   @override
-  String get navInsights => 'Tips';
-
-  @override
   String get addReceipt => 'Add';
 
   @override
@@ -54,9 +51,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get analyticsEmpty => 'Charts and statistics will appear here.';
-
-  @override
-  String get insightsEmpty => 'Personalised tips will appear here.';
 
   @override
   String get settingsEmpty => 'Categories, backup and security.';
@@ -134,4 +128,132 @@ class AppLocalizationsEn extends AppLocalizations {
   String exportFixtureDone(String name) {
     return 'Saved: $name';
   }
+
+  @override
+  String get navPantry => 'Pantry';
+
+  @override
+  String get pantryEmpty =>
+      'Your pantry is empty.\nAdd products from a receipt or by hand.';
+
+  @override
+  String get pantryShowClosed => 'Show finished and thrown away';
+
+  @override
+  String get pantryHideClosed => 'Hide finished and thrown away';
+
+  @override
+  String get pantryAdd => 'Add product';
+
+  @override
+  String get pantryUncategorised => 'Uncategorised';
+
+  @override
+  String pantryRemaining(String remaining, String initial) {
+    return '$remaining of $initial';
+  }
+
+  @override
+  String get pantrySourceManualPurchase => 'Bought, no receipt';
+
+  @override
+  String get pantrySourceInitialStock => 'Already at home';
+
+  @override
+  String get pantrySourceGift => 'Gift';
+
+  @override
+  String get pantryStatusConsumed => 'Finished';
+
+  @override
+  String get pantryStatusDiscarded => 'Thrown away';
+
+  @override
+  String get pantryConsumeAll => 'Mark as finished';
+
+  @override
+  String get pantryDiscard => 'Throw away';
+
+  @override
+  String get pantryReasonExpired => 'Expired';
+
+  @override
+  String get pantryReasonSpoiled => 'Spoiled';
+
+  @override
+  String get pantryReasonOther => 'Other reason';
+
+  @override
+  String get pantryUndo => 'Undo';
+
+  @override
+  String get pantryUndoLast => 'Undo last action';
+
+  @override
+  String get pantryNothingToUndo => 'Nothing to undo';
+
+  @override
+  String get pantryDelete => 'Remove from pantry';
+
+  @override
+  String pantryDeleteConfirm(String name) {
+    return 'Remove $name? Its usage history will be lost.';
+  }
+
+  @override
+  String pantryConsumedMessage(String name, String amount) {
+    return '$name: used $amount';
+  }
+
+  @override
+  String pantryDiscardedMessage(String name) {
+    return '$name thrown away';
+  }
+
+  @override
+  String pantryFinishedMessage(String name) {
+    return '$name finished';
+  }
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get delete => 'Remove';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get pantryFieldName => 'Name';
+
+  @override
+  String get pantryFieldQuantity => 'Quantity';
+
+  @override
+  String get pantryFieldPrice => 'Price paid (optional)';
+
+  @override
+  String get pantryFieldCategory => 'Category';
+
+  @override
+  String get pantryFieldSource => 'Source';
+
+  @override
+  String get pantryInvalidName => 'Enter a name';
+
+  @override
+  String get pantryInvalidQuantity => 'Enter a quantity above zero';
+
+  @override
+  String get pantryInvalidPrice => 'Invalid price';
+
+  @override
+  String get unitPieces => 'pcs';
+
+  @override
+  String get unitKilograms => 'kg';
+
+  @override
+  String get unitLitres => 'l';
 }

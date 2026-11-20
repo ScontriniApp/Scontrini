@@ -122,12 +122,6 @@ abstract class AppLocalizations {
   /// **'Analisi'**
   String get navAnalytics;
 
-  /// No description provided for @navInsights.
-  ///
-  /// In it, this message translates to:
-  /// **'Consigli'**
-  String get navInsights;
-
   /// No description provided for @addReceipt.
   ///
   /// In it, this message translates to:
@@ -187,12 +181,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Grafici e statistiche appariranno qui.'**
   String get analyticsEmpty;
-
-  /// No description provided for @insightsEmpty.
-  ///
-  /// In it, this message translates to:
-  /// **'I consigli personalizzati appariranno qui.'**
-  String get insightsEmpty;
 
   /// No description provided for @settingsEmpty.
   ///
@@ -331,6 +319,240 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Salvato: {name}'**
   String exportFixtureDone(String name);
+
+  /// No description provided for @navPantry.
+  ///
+  /// In it, this message translates to:
+  /// **'Dispensa'**
+  String get navPantry;
+
+  /// No description provided for @pantryEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'La dispensa è vuota.\nAggiungi prodotti da uno scontrino o a mano.'**
+  String get pantryEmpty;
+
+  /// No description provided for @pantryShowClosed.
+  ///
+  /// In it, this message translates to:
+  /// **'Mostra finiti e buttati'**
+  String get pantryShowClosed;
+
+  /// No description provided for @pantryHideClosed.
+  ///
+  /// In it, this message translates to:
+  /// **'Nascondi finiti e buttati'**
+  String get pantryHideClosed;
+
+  /// No description provided for @pantryAdd.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi prodotto'**
+  String get pantryAdd;
+
+  /// No description provided for @pantryUncategorised.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza categoria'**
+  String get pantryUncategorised;
+
+  /// No description provided for @pantryRemaining.
+  ///
+  /// In it, this message translates to:
+  /// **'{remaining} di {initial}'**
+  String pantryRemaining(String remaining, String initial);
+
+  /// No description provided for @pantrySourceManualPurchase.
+  ///
+  /// In it, this message translates to:
+  /// **'Comprato, senza scontrino'**
+  String get pantrySourceManualPurchase;
+
+  /// No description provided for @pantrySourceInitialStock.
+  ///
+  /// In it, this message translates to:
+  /// **'Già in casa'**
+  String get pantrySourceInitialStock;
+
+  /// No description provided for @pantrySourceGift.
+  ///
+  /// In it, this message translates to:
+  /// **'Regalo'**
+  String get pantrySourceGift;
+
+  /// No description provided for @pantryStatusConsumed.
+  ///
+  /// In it, this message translates to:
+  /// **'Finito'**
+  String get pantryStatusConsumed;
+
+  /// No description provided for @pantryStatusDiscarded.
+  ///
+  /// In it, this message translates to:
+  /// **'Buttato'**
+  String get pantryStatusDiscarded;
+
+  /// No description provided for @pantryConsumeAll.
+  ///
+  /// In it, this message translates to:
+  /// **'Segna come finito'**
+  String get pantryConsumeAll;
+
+  /// No description provided for @pantryDiscard.
+  ///
+  /// In it, this message translates to:
+  /// **'Butta via'**
+  String get pantryDiscard;
+
+  /// No description provided for @pantryReasonExpired.
+  ///
+  /// In it, this message translates to:
+  /// **'Scaduto'**
+  String get pantryReasonExpired;
+
+  /// No description provided for @pantryReasonSpoiled.
+  ///
+  /// In it, this message translates to:
+  /// **'Andato a male'**
+  String get pantryReasonSpoiled;
+
+  /// No description provided for @pantryReasonOther.
+  ///
+  /// In it, this message translates to:
+  /// **'Altro motivo'**
+  String get pantryReasonOther;
+
+  /// No description provided for @pantryUndo.
+  ///
+  /// In it, this message translates to:
+  /// **'Annulla'**
+  String get pantryUndo;
+
+  /// No description provided for @pantryUndoLast.
+  ///
+  /// In it, this message translates to:
+  /// **'Annulla l\'ultima azione'**
+  String get pantryUndoLast;
+
+  /// No description provided for @pantryNothingToUndo.
+  ///
+  /// In it, this message translates to:
+  /// **'Niente da annullare'**
+  String get pantryNothingToUndo;
+
+  /// No description provided for @pantryDelete.
+  ///
+  /// In it, this message translates to:
+  /// **'Elimina dalla dispensa'**
+  String get pantryDelete;
+
+  /// No description provided for @pantryDeleteConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Eliminare {name}? Il suo storico di consumo andrà perso.'**
+  String pantryDeleteConfirm(String name);
+
+  /// No description provided for @pantryConsumedMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'{name}: usato {amount}'**
+  String pantryConsumedMessage(String name, String amount);
+
+  /// No description provided for @pantryDiscardedMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'{name} buttato'**
+  String pantryDiscardedMessage(String name);
+
+  /// No description provided for @pantryFinishedMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'{name} finito'**
+  String pantryFinishedMessage(String name);
+
+  /// No description provided for @cancel.
+  ///
+  /// In it, this message translates to:
+  /// **'Annulla'**
+  String get cancel;
+
+  /// No description provided for @delete.
+  ///
+  /// In it, this message translates to:
+  /// **'Elimina'**
+  String get delete;
+
+  /// No description provided for @save.
+  ///
+  /// In it, this message translates to:
+  /// **'Salva'**
+  String get save;
+
+  /// No description provided for @pantryFieldName.
+  ///
+  /// In it, this message translates to:
+  /// **'Nome'**
+  String get pantryFieldName;
+
+  /// No description provided for @pantryFieldQuantity.
+  ///
+  /// In it, this message translates to:
+  /// **'Quantità'**
+  String get pantryFieldQuantity;
+
+  /// No description provided for @pantryFieldPrice.
+  ///
+  /// In it, this message translates to:
+  /// **'Prezzo pagato (facoltativo)'**
+  String get pantryFieldPrice;
+
+  /// No description provided for @pantryFieldCategory.
+  ///
+  /// In it, this message translates to:
+  /// **'Categoria'**
+  String get pantryFieldCategory;
+
+  /// No description provided for @pantryFieldSource.
+  ///
+  /// In it, this message translates to:
+  /// **'Provenienza'**
+  String get pantryFieldSource;
+
+  /// No description provided for @pantryInvalidName.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci un nome'**
+  String get pantryInvalidName;
+
+  /// No description provided for @pantryInvalidQuantity.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci una quantità maggiore di zero'**
+  String get pantryInvalidQuantity;
+
+  /// No description provided for @pantryInvalidPrice.
+  ///
+  /// In it, this message translates to:
+  /// **'Prezzo non valido'**
+  String get pantryInvalidPrice;
+
+  /// No description provided for @unitPieces.
+  ///
+  /// In it, this message translates to:
+  /// **'pz'**
+  String get unitPieces;
+
+  /// No description provided for @unitKilograms.
+  ///
+  /// In it, this message translates to:
+  /// **'kg'**
+  String get unitKilograms;
+
+  /// No description provided for @unitLitres.
+  ///
+  /// In it, this message translates to:
+  /// **'l'**
+  String get unitLitres;
 }
 
 class _AppLocalizationsDelegate

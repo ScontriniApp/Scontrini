@@ -2,7 +2,8 @@ import 'package:drift/drift.dart';
 import 'package:scontrini/core/database/default_categories.dart';
 import 'package:scontrini/core/database/tables/tables.dart';
 
-export 'package:scontrini/core/database/tables/tables.dart' show ReceiptStatus;
+export 'package:scontrini/core/database/tables/tables.dart'
+    show PantryEventKind, PantryEventReason, PantrySource, ReceiptStatus;
 
 part 'app_database.g.dart';
 
@@ -15,19 +16,36 @@ part 'app_database.g.dart';
     CategoryKeywords,
     Receipts,
     ReceiptItems,
+    PantryLots,
+    PantryEvents,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   new(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await m.createAll();
       await _seedCategories();
+    },
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        // Pantry: lots, their event log, and the links to receipts/products.
+        // Receipts: transaction hash. SQLite cannot add a UNIQUE column, so
+        // the receipts table is rebuilt.
+        await m.alterTable(
+          TableMigration(receipts, newColumns: [receipts.transactionHash]),
+        );
+        await m.createTable(pantryLots);
+        await m.createTable(pantryEvents);
+        await m.addColumn(products, products.trackInPantry);
+        await m.addColumn(receiptItems, receiptItems.unit);
+        await m.addColumn(receiptItems, receiptItems.pantryLotId);
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');

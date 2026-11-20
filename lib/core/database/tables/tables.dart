@@ -1,4 +1,7 @@
 import 'package:drift/drift.dart';
+import 'package:scontrini/core/database/tables/pantry_enums.dart';
+
+export 'package:scontrini/core/database/tables/pantry_enums.dart';
 
 /// Lifecycle of a receipt: drafts come out of OCR and become confirmed once
 /// the user has reviewed them. Only confirmed receipts feed the analytics.
@@ -36,6 +39,10 @@ class Products extends Table {
 
   /// Unit of measure: `kg`, `l` or `pz`.
   TextColumn get unit => text().nullable()();
+
+  /// Whether the pantry triage offers this product (false for bags,
+  /// newspapers and the like).
+  BoolColumn get trackInPantry => boolean().withDefault(const Constant(true))();
 }
 
 /// Maps a raw (normalised) name read from a receipt to a canonical product.
@@ -72,6 +79,12 @@ class Receipts extends Table {
   /// Original OCR output, kept so receipts can be re-parsed later.
   TextColumn get rawOcrText => text().nullable()();
   TextColumn get status => textEnum<ReceiptStatus>()();
+
+  /// SHA-256 of the receipt's identity (store, date/time, total), set when
+  /// the receipt is confirmed and recomputed if those fields are corrected.
+  /// Unique, so the same receipt cannot be confirmed twice. Null for drafts.
+  /// See `transactionHash()` in `features/receipts/domain/`.
+  TextColumn get transactionHash => text().nullable().unique()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
@@ -87,9 +100,87 @@ class ReceiptItems extends Table {
 
   /// Pieces, or kg/l for weighed items.
   RealColumn get quantity => real().withDefault(const Constant(1))();
+
+  /// Unit of [quantity]: `pz`, `kg` or `l`.
+  TextColumn get unit => text().withDefault(const Constant('pz'))();
   IntColumn get unitPriceCents => integer()();
   IntColumn get lineTotalCents => integer()();
   IntColumn get discountCents => integer().withDefault(const Constant(0))();
   IntColumn get categoryId =>
       integer().nullable().references(Categories, #id)();
+
+  /// Pantry lot this row went into, if the user added it during triage.
+  /// Several rows of the same product share one lot.
+  IntColumn get pantryLotId => integer().nullable().references(
+    PantryLots,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
+}
+
+/// What one origin (a receipt or a manual entry) put in the pantry for one
+/// product. The remaining quantity is not stored: it is the sum of the
+/// lot's [PantryEvents] deltas.
+@DataClassName('PantryLotRow')
+class PantryLots extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// Set exactly when [source] is `receipt`. Deleting the receipt deletes
+  /// the lot and its events.
+  IntColumn get receiptId => integer().nullable().references(
+    Receipts,
+    #id,
+    onDelete: KeyAction.cascade,
+  )();
+  IntColumn get productId => integer().nullable().references(
+    Products,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
+  IntColumn get categoryId => integer().nullable().references(
+    Categories,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
+  TextColumn get name => text()();
+
+  /// `pz`, `kg` or `l`.
+  TextColumn get unit => text().withDefault(const Constant('pz'))();
+  TextColumn get source => textEnum<PantrySource>()();
+
+  /// Purchased quantity. Changes only when the purchase is corrected.
+  RealColumn get initialQuantity => real()();
+
+  /// What was paid for the lot after discounts, when known.
+  IntColumn get priceCents => integer().nullable()();
+
+  /// Stored in UTC.
+  DateTimeColumn get addedAt => dateTime()();
+
+  @override
+  List<String> get customConstraints => [
+    "CHECK ((source = 'receipt') = (receipt_id IS NOT NULL))",
+    'CHECK (initial_quantity >= 0)',
+  ];
+}
+
+/// Append-only log of pantry movements. Events are never edited; a mistake
+/// is cancelled with a [PantryEventKind.revert] event.
+@DataClassName('PantryEventRow')
+class PantryEvents extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get lotId =>
+      integer().references(PantryLots, #id, onDelete: KeyAction.cascade)();
+  TextColumn get kind => textEnum<PantryEventKind>()();
+  TextColumn get reason => textEnum<PantryEventReason>().nullable()();
+
+  /// Change actually applied to the remaining quantity, already clamped so
+  /// the remaining quantity never goes below 0. A revert carries the
+  /// opposite of the event it cancels.
+  RealColumn get delta => real()();
+  IntColumn get revertsEventId =>
+      integer().nullable().references(PantryEvents, #id)();
+
+  /// Stored in UTC.
+  DateTimeColumn get at => dateTime()();
 }

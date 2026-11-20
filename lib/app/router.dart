@@ -6,7 +6,7 @@ import 'package:scontrini/features/analytics/presentation/dashboard_screen.dart'
 import 'package:scontrini/features/capture/domain/receipt_source.dart';
 import 'package:scontrini/features/capture/presentation/capture_screen.dart';
 import 'package:scontrini/features/extraction/presentation/extraction_screen.dart';
-import 'package:scontrini/features/insights/presentation/insights_screen.dart';
+import 'package:scontrini/features/pantry/presentation/pantry_screen.dart';
 import 'package:scontrini/features/receipts/presentation/receipts_screen.dart';
 import 'package:scontrini/features/settings/presentation/settings_screen.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
@@ -15,7 +15,7 @@ abstract final class Routes {
   static const dashboard = '/';
   static const receipts = '/receipts';
   static const analytics = '/analytics';
-  static const insights = '/insights';
+  static const pantry = '/pantry';
   static const capture = '/capture';
 
   /// Needs the captured `ReceiptSource` as `extra`.
@@ -63,8 +63,8 @@ GoRouter _createRouter() => GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: Routes.insights,
-              builder: (_, _) => const InsightsScreen(),
+              path: Routes.pantry,
+              builder: (_, _) => const PantryScreen(),
             ),
           ],
         ),
@@ -121,9 +121,9 @@ class _AppShell extends StatelessWidget {
             label: l10n.navAnalytics,
           ),
           NavigationDestination(
-            icon: const Icon(Icons.lightbulb_outline),
-            selectedIcon: const Icon(Icons.lightbulb),
-            label: l10n.navInsights,
+            icon: const Icon(Icons.kitchen_outlined),
+            selectedIcon: const Icon(Icons.kitchen),
+            label: l10n.navPantry,
           ),
         ],
       ),
