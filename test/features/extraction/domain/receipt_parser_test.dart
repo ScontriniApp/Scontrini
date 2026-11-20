@@ -287,6 +287,22 @@ void main() {
     expect(receipt.totalCents, 2497);
   });
 
+  test('accented letters and zeros inside words are OCR misreadings', () {
+    // Real PaddleOCR output on a Carrefour photo, and synthetic receipts.
+    final receipt = _parser.parseLines([
+      'PASSATA POMODÓRO SIC 2,78',
+      'NKN NIKK0R 85MM 1,00',
+      'MUTTI POLPA GR500 0,99',
+      'TOTALE 4,77',
+    ]);
+
+    expect(receipt.items.map((i) => i.rawName), [
+      'PASSATA POMODORO SIC',
+      'NKN NIKKOR 85MM',
+      'MUTTI POLPA GR500',
+    ]);
+  });
+
   test('never throws on garbage', () {
     final receipt = _parser.parseLines(['', '%%%', '12', '-,--', 'X X 1,2,3']);
     expect(receipt.items, isEmpty);

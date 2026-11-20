@@ -182,12 +182,42 @@ String _normalize(String row) => row
       RegExp(r'(\d)\s+([.,])(\d{2})(?!\d)'),
       (m) => '${m[1]}${m[2]}${m[3]}',
     )
-    .replaceAllMapped(
-      RegExp(r'([.,]\d{2}-?)\s*EUR\b'),
-      (m) => '${m[1]} ',
-    )
+    .replaceAllMapped(RegExp(r'([.,]\d{2}-?)\s*EUR\b'), (m) => '${m[1]} ')
     .replaceAll(RegExp(r'\s+'), ' ')
-    .trim();
+    .trim()
+    .replaceAllMapped(_accentedRe, (m) => _unaccented[m[0]]!)
+    .replaceAllMapped(
+      RegExp('(?<=[A-Z])[0Ø]+(?=[A-Z])'),
+      (m) => 'O' * m[0]!.length,
+    )
+    .replaceAll('Ø', '0');
+
+// Receipts print plain letters (`CAFFE'`), so an accented letter is an OCR
+// misreading (`POMODÓRO`); likewise a zero between letters is an O
+// (`NIKK0R`, `H00K`).
+const _unaccented = {
+  'À': 'A',
+  'Á': 'A',
+  'Â': 'A',
+  'Ä': 'A',
+  'È': 'E',
+  'É': 'E',
+  'Ê': 'E',
+  'Ë': 'E',
+  'Ì': 'I',
+  'Í': 'I',
+  'Î': 'I',
+  'Ï': 'I',
+  'Ò': 'O',
+  'Ó': 'O',
+  'Ô': 'O',
+  'Ö': 'O',
+  'Ù': 'U',
+  'Ú': 'U',
+  'Û': 'U',
+  'Ü': 'U',
+};
+final _accentedRe = RegExp('[${_unaccented.keys.join()}]');
 
 enum _Section { header, items, footer }
 
