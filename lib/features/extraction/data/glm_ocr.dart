@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:image/image.dart' as img;
 import 'package:llamadart/llamadart.dart';
 import 'package:path/path.dart' as p;
 import 'package:scontrini/features/extraction/domain/image_text_reader.dart';
 import 'package:scontrini/features/extraction/domain/model_text_page.dart';
 import 'package:scontrini/features/extraction/domain/models/ocr_page.dart';
 import 'package:scontrini/features/extraction/domain/ocr_image_preparation.dart';
+import 'package:scontrini/features/extraction/domain/receipt_strips.dart';
 
 /// The two GGUF files of GLM-OCR (ggml-org/GLM-OCR-GGUF, Q8_0): the
 /// language model and the vision projector.
@@ -41,18 +43,31 @@ class GlmOcr implements ImageTextReader {
   new(
     this.files, {
     this.preparation = const OcrImagePreparation(),
-    this.params = defaultParams,
+    this.strips,
+    ModelParams? params,
     this.idleTimeout = const Duration(minutes: 2),
-  });
+  }) : params = params ?? defaultParams;
+
+  /// How tall photos are cut before reading; `null` reads them whole.
+  final ReceiptStrips? strips;
 
   /// CPU, with room for a tall receipt's image tokens in one batch (the
   /// projector's output must fit a single micro-batch).
-  static const defaultParams = ModelParams(
+  ///
+  /// llama.cpp's automatic thread count is 4. Reading is mostly generating
+  /// text, which scales with the cores: use all but two (6 on an 8-core
+  /// phone, leaving the small cores to the UI), at most 8.
+  static ModelParams get defaultParams => ModelParams(
     contextSize: 8192,
     batchSize: 4096,
     microBatchSize: 4096,
-    gpuLayers: 0,
+    device: ComputeDevice.cpu,
+    numberOfThreads: threads,
+    numberOfThreadsBatch: threads,
   );
+
+  /// Threads for [defaultParams].
+  static int get threads => (Platform.numberOfProcessors - 2).clamp(1, 8);
 
   /// The model's own prompt for plain text output; no system message, the
   /// model was not trained with one.
@@ -68,25 +83,41 @@ class GlmOcr implements ImageTextReader {
 
   /// Starts loading the model now (for example while the user is still
   /// taking the photo), so the first [recognizeFile] doesn't wait for it.
-  Future<void> warmUp() => _load();
+  /// Unloaded again after [idleTimeout] if no photo comes.
+  Future<void> warmUp() async {
+    await _load();
+    if (_running == 0) {
+      _idle?.cancel();
+      _idle = Timer(idleTimeout, close);
+    }
+  }
 
   @override
-  Future<OcrPage> recognizeFile(String imagePath) async {
+  Future<OcrPage> recognizeFile(String imagePath) async =>
+      modelTextToPage((await readStrips(imagePath).toList()).join('\n'));
+
+  /// The text of each strip of the photo (see [strips]), top to bottom, as
+  /// soon as it is read: the first rows can be shown, or triaged, while the
+  /// rest of the receipt is still being read.
+  Stream<String> readStrips(String imagePath) async* {
     _idle?.cancel();
     _running++;
     try {
-      final image = preparation.prepare(await File(imagePath).readAsBytes());
+      final image = preparation.prepareImage(
+        await File(imagePath).readAsBytes(),
+      );
       final engine = await _load();
-      final text = await engine.create([
-        LlamaChatMessage.withContent(
-          role: LlamaChatRole.user,
-          content: [
-            LlamaImageContent(bytes: image),
-            const LlamaTextContent(prompt),
-          ],
-        ),
-      ], params: const GenerationParams(temp: 0)).text();
-      return modelTextToPage(text);
+      for (final strip in strips?.split(image) ?? [image]) {
+        yield await engine.create([
+          LlamaChatMessage.withContent(
+            role: LlamaChatRole.user,
+            content: [
+              LlamaImageContent(bytes: img.encodePng(strip)),
+              const LlamaTextContent(prompt),
+            ],
+          ),
+        ], params: const GenerationParams(temp: 0)).text();
+      }
     } finally {
       if (--_running == 0) _idle = Timer(idleTimeout, close);
     }

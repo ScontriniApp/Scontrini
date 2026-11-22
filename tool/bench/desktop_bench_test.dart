@@ -22,6 +22,8 @@
 //   BENCH_GLM_MODEL_DIR folder with GLM-OCR-Q8_0.gguf + mmproj (default:
 //                 LM Studio's ~/.lmstudio/models/ggml-org/GLM-OCR-GGUF)
 //   BENCH_GLM_GPU GPU index for GLM-OCR (Vulkan); -1 = CPU, the default
+//   BENCH_GLM_WIDTH one width all photos are scaled to (default: the app rule)
+//   BENCH_GLM_STRIP cut photos into strips at most this tall (default: whole)
 //   BENCH_TRUTH   ground truth folder         (default data/ground_truth)
 //   BENCH_OUT     where reports are written   (default data/bench_runs)
 //   BENCH_ONLY    run only cases whose name contains this text
@@ -38,6 +40,8 @@ import 'package:scontrini/features/extraction/data/mlkit_ocr.dart';
 import 'package:scontrini/features/extraction/data/pdf_text_reader.dart';
 import 'package:scontrini/features/extraction/domain/models/ocr_document.dart';
 import 'package:scontrini/features/extraction/domain/models/text_source.dart';
+import 'package:scontrini/features/extraction/domain/ocr_image_preparation.dart';
+import 'package:scontrini/features/extraction/domain/receipt_strips.dart';
 
 import 'src/bench_case.dart';
 import 'src/bench_runner.dart';
@@ -59,6 +63,8 @@ const _photos = String.fromEnvironment(
 const _glm = String.fromEnvironment('BENCH_GLM');
 const _glmModelDir = String.fromEnvironment('BENCH_GLM_MODEL_DIR');
 const _glmGpu = int.fromEnvironment('BENCH_GLM_GPU', defaultValue: -1);
+const _glmWidth = String.fromEnvironment('BENCH_GLM_WIDTH');
+const _glmStrip = String.fromEnvironment('BENCH_GLM_STRIP');
 const _truth = String.fromEnvironment(
   'BENCH_TRUTH',
   defaultValue: 'data/ground_truth',
@@ -119,7 +125,7 @@ void main() {
       () async => Directory.systemTemp,
     );
     final glm = glmToRead.isEmpty ? null : _glmOcr();
-    final glmTimes = <String, Duration>{};
+    final glmTimes = <String, (Duration, List<int>)>{};
 
     final startedAt = DateTime.now();
     final results = await runBench(
@@ -179,10 +185,28 @@ GlmOcr _glmOcr() {
       : p.join(home, '.lmstudio', 'models', 'ggml-org', 'GLM-OCR-GGUF');
   final files = GlmOcrModelFiles.inDirectory(dir);
   if (!files.exist) throw StateError('GLM-OCR model files not found in $dir');
-  if (_glmGpu < 0) return GlmOcr(files);
+  final width = int.tryParse(_glmWidth);
+  final preparation = width == null
+      ? const OcrImagePreparation()
+      : OcrImagePreparation(
+          minWidth: width,
+          enlargeTo: width,
+          maxWidth: width,
+          shrinkTo: width,
+        );
+  final stripHeight = int.tryParse(_glmStrip);
+  final strips = stripHeight == null
+      ? null
+      : ReceiptStrips(maxStripHeight: stripHeight);
+  if (_glmGpu < 0) {
+    return GlmOcr(files, preparation: preparation, strips: strips);
+  }
   return GlmOcr(
     files,
+    preparation: preparation,
+    strips: strips,
     params: GlmOcr.defaultParams.copyWith(
+      device: ComputeDevice.gpu,
       gpuLayers: -1,
       preferredBackend: GpuBackend.vulkan,
       mainGpu: _glmGpu,
@@ -196,14 +220,17 @@ Future<OcrDocument> _readWithGlm(
   GlmOcr glm,
   BenchCase c,
   String cacheDir,
-  Map<String, Duration> times,
+  Map<String, (Duration, List<int>)> times,
 ) async {
   final watch = Stopwatch()..start();
   final document = OcrDocument(
     source: TextSource.ocr,
     pages: [for (final path in c.files) await glm.recognizeFile(path)],
   );
-  times[c.name] = watch.elapsed;
+  times[c.name] = (
+    watch.elapsed,
+    [for (final path in c.files) ..._imageTokens(glm, path)],
+  );
   // Saved like ML Kit's output, so later runs replay it without the model.
   final file = File(p.join(cacheDir, '${c.name}.ocr.json'));
   await file.parent.create(recursive: true);
@@ -211,16 +238,37 @@ Future<OcrDocument> _readWithGlm(
   return document;
 }
 
-String _timeSummary(Map<String, Duration> times) {
+/// Image tokens GLM-OCR spends on each strip of [path]: one per 28×28 px
+/// (14 px patches merged 2×2). Matches LM Studio's counts within a few
+/// percent; on a phone, encoding them is most of the time.
+List<int> _imageTokens(GlmOcr glm, String path) {
+  final image = glm.preparation.prepareImage(File(path).readAsBytesSync());
+  return [
+    for (final (top, bottom) in glm.strips?.cut(image) ?? [(0, image.height)])
+      (image.width / 28).ceil() * ((bottom - top) / 28).ceil(),
+  ];
+}
+
+String _timeSummary(Map<String, (Duration, List<int>)> times) {
   final b = StringBuffer()
     ..writeln()
-    ..writeln('GLM-OCR TIME on this PC (the first photo includes loading)');
-  for (final MapEntry(:key, :value) in times.entries) {
+    ..writeln(
+      'GLM-OCR on this PC, width ${_glmWidth.isEmpty ? 'rule' : _glmWidth}, '
+      'strips ${_glmStrip.isEmpty ? 'off' : '≤ $_glmStrip px'} '
+      '(the first photo includes loading the model)',
+    );
+  var tokens = 0;
+  for (final MapEntry(:key, value: (time, strips)) in times.entries) {
+    final imageTokens = strips.fold(0, (a, b) => a + b);
+    tokens += imageTokens;
     b.writeln(
       '  ${key.padRight(32)}'
-      '${(value.inMilliseconds / 1000).toStringAsFixed(1).padLeft(7)} s',
+      '${(time.inMilliseconds / 1000).toStringAsFixed(1).padLeft(7)} s'
+      '${'$imageTokens'.padLeft(7)} image tokens'
+      '${strips.length > 1 ? ' in ${strips.join(' + ')}' : ''}',
     );
   }
+  b.writeln('  ${'total'.padRight(39)}${'$tokens'.padLeft(7)} image tokens');
   return b.toString();
 }
 

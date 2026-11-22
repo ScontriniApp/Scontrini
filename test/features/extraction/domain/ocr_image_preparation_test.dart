@@ -6,27 +6,29 @@ void main() {
   const prep = OcrImagePreparation();
 
   group('scale', () {
-    test('a small web photo is enlarged to the target width', () {
-      expect(prep.scaleFor(447, 447), closeTo(1200 / 447, 1e-9));
+    test('a small web photo is enlarged', () {
+      expect(prep.scaleFor(447, 447), closeTo(1000 / 447, 1e-9));
     });
 
-    test('a phone photo is shrunk to the target width', () {
-      expect(prep.scaleFor(3000, 4000), closeTo(0.4, 1e-9));
+    test('a camera photo is shrunk', () {
+      expect(prep.scaleFor(3000, 4000), closeTo(700 / 3000, 1e-9));
+      // Real Carrefour photos: still 31/31 at this size.
+      expect(prep.scaleFor(1080, 1920), closeTo(700 / 1080, 1e-9));
     });
 
-    test('a photo near the target size is left alone', () {
-      // Real Carrefour photos, read perfectly as they are.
-      expect(prep.scaleFor(1080, 1920), 1);
+    test('a photo between the two thresholds is left alone', () {
+      expect(prep.scaleFor(762, 738), 1);
+      expect(prep.scaleFor(944, 2345), 1);
     });
 
     test('a long receipt is never enlarged past the longest side', () {
-      // 591 px wide renders: 1200 px wide would be 7370 px tall.
+      // 591 px wide renders: 1000 px wide would be 6140 px tall.
       expect(prep.scaleFor(591, 3629), 1);
       expect(prep.scaleFor(400, 3000), closeTo(4096 / 3000, 1e-9));
     });
 
     test('a long side over the limit is always shrunk', () {
-      expect(prep.scaleFor(1100, 5000), closeTo(4096 / 5000, 1e-9));
+      expect(prep.scaleFor(800, 5000), closeTo(4096 / 5000, 1e-9));
     });
   });
 
@@ -35,7 +37,7 @@ void main() {
       ..clear(img.ColorRgb8(200, 30, 30));
     final prepared = img.decodePng(prep.prepare(img.encodeJpg(photo)))!;
 
-    expect((prepared.width, prepared.height), (1200, 1600));
+    expect((prepared.width, prepared.height), (700, 933));
     final pixel = prepared.getPixel(10, 10);
     expect(pixel.r, pixel.g);
     expect(pixel.g, pixel.b);

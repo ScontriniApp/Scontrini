@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -5,6 +7,7 @@ import 'package:scontrini/app/router.dart';
 import 'package:scontrini/features/capture/data/capture_providers.dart';
 import 'package:scontrini/features/capture/data/receipt_capture_service.dart';
 import 'package:scontrini/features/capture/domain/receipt_source.dart';
+import 'package:scontrini/features/extraction/data/extraction_providers.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 /// Phase 1: choose how to acquire a receipt.
@@ -14,6 +17,15 @@ class CaptureScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+
+    // GLM-OCR takes seconds to load: start while the user frames the photo.
+    // Nothing happens if its model isn't installed; it unloads when idle.
+    void warmUpPhotoReader() => unawaited(
+      ref
+          .read(glmOcrProvider)
+          .then((glm) => glm?.warmUp())
+          .onError((error, _) => debugPrint('GLM-OCR warm-up failed: $error')),
+    );
 
     Future<void> capture(
       Future<ReceiptSource?> Function(ReceiptCaptureService service) action,
@@ -40,12 +52,18 @@ class CaptureScreen extends ConsumerWidget {
           _CaptureOption(
             icon: Icons.document_scanner_outlined,
             label: l10n.captureScan,
-            onTap: () => capture((s) => s.scan()),
+            onTap: () {
+              warmUpPhotoReader();
+              unawaited(capture((s) => s.scan()));
+            },
           ),
           _CaptureOption(
             icon: Icons.photo_library_outlined,
             label: l10n.captureGallery,
-            onTap: () => capture((s) => s.pickImages()),
+            onTap: () {
+              warmUpPhotoReader();
+              unawaited(capture((s) => s.pickImages()));
+            },
           ),
           _CaptureOption(
             icon: Icons.picture_as_pdf_outlined,
