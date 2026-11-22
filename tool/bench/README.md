@@ -55,6 +55,9 @@ flutter test tool/bench/desktop_bench_test.dart --dart-define=BENCH_GLM=true --d
 - `BENCH_GLM_WIDTH`: one width for every photo instead of the app's rule; `BENCH_GLM_STRIP`: read
   photos in strips at most this many pixels tall. The summary prints the image tokens per strip
   (one per 28×28 px): on a phone, encoding them is a large part of the time.
+- `BENCH_GLM_MODEL`: another model file, e.g. a Q4 requantization
+  (`llama-quantize --allow-requantize GLM-OCR-Q8_0.gguf GLM-OCR-Q4_K_M.gguf Q4_K_M`), with
+  `mmproj-GLM-OCR-Q8_0.gguf` next to it.
 - `BENCH_GLM_GPU`: Vulkan GPU index, `-1` (default) for CPU. On the test laptop the RTX is `1`:
   ~4 s per photo, against ~27 s on the CPU; split with the integrated Radeon it took 49 s.
 

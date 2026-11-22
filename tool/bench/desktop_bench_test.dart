@@ -21,6 +21,8 @@
 //   BENCH_GLM     true: read new photos with GLM-OCR; `refresh`: read all again
 //   BENCH_GLM_MODEL_DIR folder with GLM-OCR-Q8_0.gguf + mmproj (default:
 //                 LM Studio's ~/.lmstudio/models/ggml-org/GLM-OCR-GGUF)
+//   BENCH_GLM_MODEL another GLM-OCR model file (e.g. a Q4 quantization), with
+//                 mmproj-GLM-OCR-Q8_0.gguf next to it
 //   BENCH_GLM_GPU GPU index for GLM-OCR (Vulkan); -1 = CPU, the default
 //   BENCH_GLM_WIDTH one width all photos are scaled to (default: the app rule)
 //   BENCH_GLM_STRIP cut photos into strips at most this tall (default: whole)
@@ -62,6 +64,7 @@ const _photos = String.fromEnvironment(
 );
 const _glm = String.fromEnvironment('BENCH_GLM');
 const _glmModelDir = String.fromEnvironment('BENCH_GLM_MODEL_DIR');
+const _glmModel = String.fromEnvironment('BENCH_GLM_MODEL');
 const _glmGpu = int.fromEnvironment('BENCH_GLM_GPU', defaultValue: -1);
 const _glmWidth = String.fromEnvironment('BENCH_GLM_WIDTH');
 const _glmStrip = String.fromEnvironment('BENCH_GLM_STRIP');
@@ -183,7 +186,15 @@ GlmOcr _glmOcr() {
   final dir = _glmModelDir.isNotEmpty
       ? _glmModelDir
       : p.join(home, '.lmstudio', 'models', 'ggml-org', 'GLM-OCR-GGUF');
-  final files = GlmOcrModelFiles.inDirectory(dir);
+  final files = _glmModel.isEmpty
+      ? GlmOcrModelFiles.inDirectory(dir)
+      : GlmOcrModelFiles(
+          model: _glmModel,
+          projector: p.join(
+            p.dirname(_glmModel),
+            GlmOcrModelFiles.projectorFileName,
+          ),
+        );
   if (!files.exist) throw StateError('GLM-OCR model files not found in $dir');
   final width = int.tryParse(_glmWidth);
   final preparation = width == null
