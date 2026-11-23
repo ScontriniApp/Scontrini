@@ -121,7 +121,10 @@ void main() {
   test('keywordCategory matches at the start of a word', () {
     expect(keywordCategory('CAROTE NATUR.'), 'Frutta e verdura');
     expect(keywordCategory('ESSEL.LATTE FR.PS 500'), 'Latticini e uova');
-    expect(keywordCategory('GRANBISCOTTO BIP'), isNull);
+    expect(keywordCategory('GRANBISCOTTO BIP'), 'Pane e pasta');
+    // SALE (salt) never fires inside another word.
+    expect(keywordCategory('INSALATA'), 'Frutta e verdura');
+    expect(keywordCategory('ARTICOLO 123'), isNull);
   });
 
   test('discoverCases groups photo pages and pairs names', () {

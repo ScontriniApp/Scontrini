@@ -19,7 +19,7 @@ class ReceiptRepository {
   ///
   /// A receipt whose date wasn't read is dated now (the capture). A total
   /// that wasn't read is the rows' sum. Rows get a category from the
-  /// keywords table (a keyword at the start of a word of the name).
+  /// keywords table (`CategoryClassifier`).
   Future<int> saveConfirmed(
     ParsedReceipt receipt, {
     String? sourcePath,
@@ -52,7 +52,7 @@ class ReceiptRepository {
             transactionHash: Value(hash),
           ),
         );
-    final keywords = await _keywords();
+    final classifier = await _db.categoryClassifier();
     for (final item in receipt.items) {
       await _db
           .into(_db.receiptItems)
@@ -65,7 +65,7 @@ class ReceiptRepository {
               unitPriceCents: item.unitPriceCents,
               lineTotalCents: item.lineTotalCents,
               discountCents: Value(item.discountCents),
-              categoryId: Value(_category(item.rawName, keywords)),
+              categoryId: Value(classifier.classify(item.rawName)),
             ),
           );
     }
@@ -101,23 +101,5 @@ class ReceiptRepository {
             address: Value(receipt.address),
           ),
         );
-  }
-
-  Future<List<(RegExp, int)>> _keywords() async => [
-    for (final k in await (_db.select(
-      _db.categoryKeywords,
-    )..orderBy([(k) => OrderingTerm.asc(k.id)])).get())
-      (
-        RegExp('(^|[^A-Z])${RegExp.escape(k.keyword.toUpperCase())}'),
-        k.categoryId,
-      ),
-  ];
-
-  static int? _category(String name, List<(RegExp, int)> keywords) {
-    final upper = name.toUpperCase();
-    for (final (pattern, category) in keywords) {
-      if (pattern.hasMatch(upper)) return category;
-    }
-    return null;
   }
 }

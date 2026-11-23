@@ -101,13 +101,57 @@ void main() {
 
     await openPantry(tester);
 
+    // Sections start closed: name and number of lots only.
     expect(find.text('Latticini e uova'), findsOneWidget);
     expect(find.text('Senza categoria'), findsOneWidget);
+    expect(find.text('LATTE PS'), findsNothing);
+
+    await tester.tap(find.text('Latticini e uova'));
+    await tester.tap(find.text('Senza categoria'));
+    await settle(tester);
     expect(find.text('LATTE PS'), findsOneWidget);
-    expect(find.text('#a3f91c02'), findsOneWidget);
-    expect(find.text('2 pz di 2 pz'), findsOneWidget);
-    expect(find.text('Già in casa'), findsOneWidget);
-    expect(find.byType(Slider), findsNWidgets(2));
+    expect(find.text('#a3f91c02 · 2 pz di 2 pz'), findsOneWidget);
+    expect(find.text('Già in casa · 1 pz di 1 pz'), findsOneWidget);
+    expect(find.text('100%'), findsNWidgets(2));
+    final slider = tester.widget<Slider>(find.byType(Slider).first);
+    expect((slider.value, slider.max), (100, 100));
+
+    // A tap closes the section again.
+    await tester.tap(find.text('Latticini e uova'));
+    await settle(tester);
+    expect(find.text('LATTE PS'), findsNothing);
+
+    await closeApp(tester);
+  });
+
+  testWidgets('search shows matching lots, sections open', (tester) async {
+    await tester.runAsync(() async {
+      await repo.addManual(
+        name: 'Caffè macinato',
+        quantity: 1,
+        source: PantrySource.initialStock,
+      );
+      await repo.addManual(
+        name: 'Riso',
+        quantity: 1,
+        source: PantrySource.initialStock,
+      );
+    });
+    await openPantry(tester);
+
+    await tester.enterText(find.byType(SearchBar), 'caffe');
+    await settle(tester);
+    expect(find.text('Caffè macinato'), findsOneWidget);
+    expect(find.text('Riso'), findsNothing);
+
+    await tester.enterText(find.byType(SearchBar), 'zucchero');
+    await settle(tester);
+    expect(find.text('Nessun prodotto trovato.'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Cancella ricerca'));
+    await settle(tester);
+    expect(find.text('Senza categoria'), findsOneWidget);
+    expect(find.text('Riso'), findsNothing); // closed again
 
     await closeApp(tester);
   });
@@ -155,6 +199,8 @@ void main() {
       ),
     ))!;
     await openPantry(tester);
+    await tester.tap(find.text('Senza categoria'));
+    await settle(tester);
 
     await tester.tap(find.text('Pane'));
     await settle(tester);

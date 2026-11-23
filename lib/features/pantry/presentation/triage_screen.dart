@@ -52,6 +52,7 @@ class TriageScreen extends StatefulWidget {
   });
 
   final Future<List<TriageCard>> cards;
+
   final Future<void> Function(TriageCard card, TriageDecision decision)
   onDecision;
   final Future<void> Function(TriageCard card, TriageDecision decision) onUndo;

@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:scontrini/core/database/category_classifier.dart';
 import 'package:scontrini/core/database/default_categories.dart';
 import 'package:scontrini/core/database/tables/tables.dart';
 
@@ -49,8 +50,72 @@ class AppDatabase extends _$AppDatabase {
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
+      await syncCategoryKeywords();
+      await categorizeUnclassified();
     },
   );
+
+  /// Makes `category_keywords` match [defaultCategories] (keywords added,
+  /// moved or removed in an update reach existing installs), adding any
+  /// seed category that is missing. User corrections will live in
+  /// `product_aliases`, never in this table.
+  Future<void> syncCategoryKeywords() => transaction(() async {
+    final ids = {for (final c in await select(categories).get()) c.name: c.id};
+    for (final seed in defaultCategories) {
+      ids[seed.name] ??= await into(categories).insert(
+        CategoriesCompanion.insert(
+          name: seed.name,
+          icon: Value(seed.icon),
+          color: Value(seed.color),
+        ),
+      );
+    }
+    await delete(categoryKeywords).go();
+    await batch(
+      (b) => b.insertAll(categoryKeywords, [
+        for (final seed in defaultCategories)
+          for (final keyword in seed.keywords)
+            CategoryKeywordsCompanion.insert(
+              keyword: keyword,
+              categoryId: ids[seed.name]!,
+            ),
+      ]),
+    );
+  });
+
+  /// The keyword classifier over the current `category_keywords`.
+  Future<CategoryClassifier<int>> categoryClassifier() async =>
+      CategoryClassifier({
+        for (final k in await select(categoryKeywords).get())
+          k.keyword: k.categoryId,
+      });
+
+  /// Gives a category to receipt rows and receipt pantry lots that have
+  /// none (saved before the keywords knew them). Rows linked to a product
+  /// take the product's category elsewhere, so they are left alone.
+  Future<void> categorizeUnclassified() => transaction(() async {
+    final classifier = await categoryClassifier();
+    final rows = await (select(
+      receiptItems,
+    )..where((r) => r.categoryId.isNull() & r.productId.isNull())).get();
+    for (final row in rows) {
+      final category = classifier.classify(row.rawName);
+      if (category == null) continue;
+      await (update(receiptItems)..where((r) => r.id.equals(row.id))).write(
+        ReceiptItemsCompanion(categoryId: Value(category)),
+      );
+    }
+    final lots = await (select(
+      pantryLots,
+    )..where((l) => l.categoryId.isNull() & l.productId.isNull())).get();
+    for (final lot in lots) {
+      final category = classifier.classify(lot.name);
+      if (category == null) continue;
+      await (update(pantryLots)..where((l) => l.id.equals(lot.id))).write(
+        PantryLotsCompanion(categoryId: Value(category)),
+      );
+    }
+  });
 
   Future<void> _seedCategories() async {
     for (final seed in defaultCategories) {
