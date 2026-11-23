@@ -53,9 +53,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get analyticsEmpty => 'Grafici e statistiche appariranno qui.';
 
   @override
-  String get settingsEmpty => 'Categorie, backup e sicurezza.';
-
-  @override
   String get captureFailed => 'Impossibile acquisire lo scontrino.';
 
   @override
@@ -257,4 +254,65 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get unitLitres => 'l';
+
+  @override
+  String get settingsPhotoReading => 'Lettura delle foto';
+
+  @override
+  String get glmOcrModelTitle => 'Modello di lettura avanzato';
+
+  @override
+  String get glmOcrModelChecking => 'Verifica…';
+
+  @override
+  String glmOcrModelMissing(String size) {
+    return 'Non installato: le foto si leggono con il riconoscimento di base, meno preciso. Download di $size.';
+  }
+
+  @override
+  String glmOcrModelPartial(String done, String total) {
+    return 'Download interrotto: $done di $total.';
+  }
+
+  @override
+  String glmOcrModelDownloading(String done, String total) {
+    return 'Download: $done di $total';
+  }
+
+  @override
+  String glmOcrModelInstalled(String size) {
+    return 'Installato ($size): le foto si leggono sul telefono con GLM-OCR.';
+  }
+
+  @override
+  String get glmOcrDownload => 'Scarica';
+
+  @override
+  String get glmOcrResume => 'Riprendi';
+
+  @override
+  String get glmOcrDownloadConfirmTitle => 'Scaricare il modello?';
+
+  @override
+  String glmOcrDownloadConfirmBody(String size) {
+    return 'Il modello GLM-OCR ($size) si scarica da Hugging Face: meglio con il Wi-Fi. Gli scontrini non lasciano il telefono, il modello li legge senza connessione.';
+  }
+
+  @override
+  String get glmOcrDeleteConfirmTitle => 'Eliminare il modello?';
+
+  @override
+  String glmOcrDeleteConfirmBody(String size) {
+    return 'Libera $size. Le foto torneranno a essere lette con il riconoscimento di base.';
+  }
+
+  @override
+  String get glmOcrErrorNetwork =>
+      'Download non riuscito: controlla la connessione.';
+
+  @override
+  String get glmOcrErrorCorrupt => 'Il file scaricato è danneggiato: riprova.';
+
+  @override
+  String get glmOcrErrorStorage => 'Spazio insufficiente sul telefono.';
 }

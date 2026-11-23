@@ -182,12 +182,6 @@ abstract class AppLocalizations {
   /// **'Grafici e statistiche appariranno qui.'**
   String get analyticsEmpty;
 
-  /// No description provided for @settingsEmpty.
-  ///
-  /// In it, this message translates to:
-  /// **'Categorie, backup e sicurezza.'**
-  String get settingsEmpty;
-
   /// No description provided for @captureFailed.
   ///
   /// In it, this message translates to:
@@ -553,6 +547,102 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'l'**
   String get unitLitres;
+
+  /// No description provided for @settingsPhotoReading.
+  ///
+  /// In it, this message translates to:
+  /// **'Lettura delle foto'**
+  String get settingsPhotoReading;
+
+  /// No description provided for @glmOcrModelTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Modello di lettura avanzato'**
+  String get glmOcrModelTitle;
+
+  /// No description provided for @glmOcrModelChecking.
+  ///
+  /// In it, this message translates to:
+  /// **'Verifica…'**
+  String get glmOcrModelChecking;
+
+  /// No description provided for @glmOcrModelMissing.
+  ///
+  /// In it, this message translates to:
+  /// **'Non installato: le foto si leggono con il riconoscimento di base, meno preciso. Download di {size}.'**
+  String glmOcrModelMissing(String size);
+
+  /// No description provided for @glmOcrModelPartial.
+  ///
+  /// In it, this message translates to:
+  /// **'Download interrotto: {done} di {total}.'**
+  String glmOcrModelPartial(String done, String total);
+
+  /// No description provided for @glmOcrModelDownloading.
+  ///
+  /// In it, this message translates to:
+  /// **'Download: {done} di {total}'**
+  String glmOcrModelDownloading(String done, String total);
+
+  /// No description provided for @glmOcrModelInstalled.
+  ///
+  /// In it, this message translates to:
+  /// **'Installato ({size}): le foto si leggono sul telefono con GLM-OCR.'**
+  String glmOcrModelInstalled(String size);
+
+  /// No description provided for @glmOcrDownload.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarica'**
+  String get glmOcrDownload;
+
+  /// No description provided for @glmOcrResume.
+  ///
+  /// In it, this message translates to:
+  /// **'Riprendi'**
+  String get glmOcrResume;
+
+  /// No description provided for @glmOcrDownloadConfirmTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Scaricare il modello?'**
+  String get glmOcrDownloadConfirmTitle;
+
+  /// No description provided for @glmOcrDownloadConfirmBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Il modello GLM-OCR ({size}) si scarica da Hugging Face: meglio con il Wi-Fi. Gli scontrini non lasciano il telefono, il modello li legge senza connessione.'**
+  String glmOcrDownloadConfirmBody(String size);
+
+  /// No description provided for @glmOcrDeleteConfirmTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Eliminare il modello?'**
+  String get glmOcrDeleteConfirmTitle;
+
+  /// No description provided for @glmOcrDeleteConfirmBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Libera {size}. Le foto torneranno a essere lette con il riconoscimento di base.'**
+  String glmOcrDeleteConfirmBody(String size);
+
+  /// No description provided for @glmOcrErrorNetwork.
+  ///
+  /// In it, this message translates to:
+  /// **'Download non riuscito: controlla la connessione.'**
+  String get glmOcrErrorNetwork;
+
+  /// No description provided for @glmOcrErrorCorrupt.
+  ///
+  /// In it, this message translates to:
+  /// **'Il file scaricato è danneggiato: riprova.'**
+  String get glmOcrErrorCorrupt;
+
+  /// No description provided for @glmOcrErrorStorage.
+  ///
+  /// In it, this message translates to:
+  /// **'Spazio insufficiente sul telefono.'**
+  String get glmOcrErrorStorage;
 }
 
 class _AppLocalizationsDelegate

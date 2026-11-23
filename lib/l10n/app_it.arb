@@ -14,7 +14,6 @@
   "dashboardEmpty": "Nessuno scontrino ancora.\nAggiungi il primo per vedere le tue spese.",
   "receiptsEmpty": "Lo storico degli acquisti apparirà qui.",
   "analyticsEmpty": "Grafici e statistiche appariranno qui.",
-  "settingsEmpty": "Categorie, backup e sicurezza.",
   "captureFailed": "Impossibile acquisire lo scontrino.",
   "extractionTitle": "Scontrino letto",
   "extractionLoading": "Lettura dello scontrino…",
@@ -137,5 +136,69 @@
   "pantryInvalidPrice": "Prezzo non valido",
   "unitPieces": "pz",
   "unitKilograms": "kg",
-  "unitLitres": "l"
+  "unitLitres": "l",
+  "settingsPhotoReading": "Lettura delle foto",
+  "glmOcrModelTitle": "Modello di lettura avanzato",
+  "glmOcrModelChecking": "Verifica…",
+  "glmOcrModelMissing": "Non installato: le foto si leggono con il riconoscimento di base, meno preciso. Download di {size}.",
+  "@glmOcrModelMissing": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "glmOcrModelPartial": "Download interrotto: {done} di {total}.",
+  "@glmOcrModelPartial": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "glmOcrModelDownloading": "Download: {done} di {total}",
+  "@glmOcrModelDownloading": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "glmOcrModelInstalled": "Installato ({size}): le foto si leggono sul telefono con GLM-OCR.",
+  "@glmOcrModelInstalled": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "glmOcrDownload": "Scarica",
+  "glmOcrResume": "Riprendi",
+  "glmOcrDownloadConfirmTitle": "Scaricare il modello?",
+  "glmOcrDownloadConfirmBody": "Il modello GLM-OCR ({size}) si scarica da Hugging Face: meglio con il Wi-Fi. Gli scontrini non lasciano il telefono, il modello li legge senza connessione.",
+  "@glmOcrDownloadConfirmBody": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "glmOcrDeleteConfirmTitle": "Eliminare il modello?",
+  "glmOcrDeleteConfirmBody": "Libera {size}. Le foto torneranno a essere lette con il riconoscimento di base.",
+  "@glmOcrDeleteConfirmBody": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "glmOcrErrorNetwork": "Download non riuscito: controlla la connessione.",
+  "glmOcrErrorCorrupt": "Il file scaricato è danneggiato: riprova.",
+  "glmOcrErrorStorage": "Spazio insufficiente sul telefono."
 }
