@@ -66,11 +66,25 @@ class GlmOcrModelController extends Notifier<GlmOcrModelState> {
   }
 
   Future<void> _refresh() async {
-    final directory = await _directory;
-    final installed = await _downloader.installed(directory);
-    final downloaded = await _downloader.downloadedBytes(directory);
-    if (!ref.mounted || _download != null) return;
     final total = _downloader.totalBytes;
+    bool installed;
+    int downloaded;
+    try {
+      final directory = await _directory;
+      installed = await _downloader.installed(directory);
+      downloaded = await _downloader.downloadedBytes(directory);
+    } on Object catch (error, stack) {
+      // No app folder (a widget test without path_provider): not installed.
+      developer.log(
+        'GLM-OCR model check failed',
+        name: 'extraction',
+        error: error,
+        stackTrace: stack,
+      );
+      installed = false;
+      downloaded = 0;
+    }
+    if (!ref.mounted || _download != null) return;
     state = installed
         ? GlmOcrModelInstalled(bytes: total)
         : GlmOcrModelMissing(downloaded: downloaded, total: total);

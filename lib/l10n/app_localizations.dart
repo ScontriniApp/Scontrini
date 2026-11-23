@@ -721,6 +721,138 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Impossibile salvare lo scontrino.'**
   String get confirmFailed;
+
+  /// No description provided for @navInsights.
+  ///
+  /// In it, this message translates to:
+  /// **'Consigli'**
+  String get navInsights;
+
+  /// No description provided for @insightsEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'I consigli personalizzati appariranno qui.'**
+  String get insightsEmpty;
+
+  /// No description provided for @settingsEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Categorie, backup e sicurezza.'**
+  String get settingsEmpty;
+
+  /// No description provided for @demoDataTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Dati demo (solo debug)'**
+  String get demoDataTitle;
+
+  /// No description provided for @demoDataLoad.
+  ///
+  /// In it, this message translates to:
+  /// **'Carica dati demo'**
+  String get demoDataLoad;
+
+  /// No description provided for @demoDataLoadHint.
+  ///
+  /// In it, this message translates to:
+  /// **'6 mesi di acquisti inventati. Si sommano agli scontrini veri finché non li rimuovi.'**
+  String get demoDataLoadHint;
+
+  /// No description provided for @demoDataRemove.
+  ///
+  /// In it, this message translates to:
+  /// **'Rimuovi dati demo'**
+  String get demoDataRemove;
+
+  /// No description provided for @demoDataLoaded.
+  ///
+  /// In it, this message translates to:
+  /// **'Caricati {count} scontrini demo'**
+  String demoDataLoaded(int count);
+
+  /// No description provided for @demoDataRemoved.
+  ///
+  /// In it, this message translates to:
+  /// **'Dati demo rimossi'**
+  String get demoDataRemoved;
+
+  /// No description provided for @dashboardMonthSpent.
+  ///
+  /// In it, this message translates to:
+  /// **'Speso a {month}'**
+  String dashboardMonthSpent(String month);
+
+  /// No description provided for @dashboardReceiptCount.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =0{Nessuno scontrino} =1{1 scontrino} other{{count} scontrini}}'**
+  String dashboardReceiptCount(int count);
+
+  /// No description provided for @dashboardUsual.
+  ///
+  /// In it, this message translates to:
+  /// **'Di solito {amount} a questo punto del mese'**
+  String dashboardUsual(String amount);
+
+  /// No description provided for @dashboardNoUsual.
+  ///
+  /// In it, this message translates to:
+  /// **'Il confronto con i mesi scorsi apparirà dal mese prossimo'**
+  String get dashboardNoUsual;
+
+  /// No description provided for @dashboardCategoriesTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Categorie del mese'**
+  String get dashboardCategoriesTitle;
+
+  /// No description provided for @dashboardCategoriesEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna spesa questo mese'**
+  String get dashboardCategoriesEmpty;
+
+  /// No description provided for @dashboardOtherCategories.
+  ///
+  /// In it, this message translates to:
+  /// **'Altre categorie'**
+  String get dashboardOtherCategories;
+
+  /// No description provided for @dashboardInsightsTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Consigli'**
+  String get dashboardInsightsTitle;
+
+  /// No description provided for @dashboardInsightsEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Qui appariranno 2–3 consigli sui tuoi acquisti: prezzi in aumento, occasioni di risparmio, categorie in crescita.'**
+  String get dashboardInsightsEmpty;
+
+  /// No description provided for @dashboardCategoryHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Tocca una categoria per vederne gli articoli'**
+  String get dashboardCategoryHint;
+
+  /// No description provided for @dashboardItemCount.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =0{Nessun articolo} =1{1 articolo} other{{count} articoli}}'**
+  String dashboardItemCount(int count);
+
+  /// No description provided for @dashboardUnassigned.
+  ///
+  /// In it, this message translates to:
+  /// **'{amount} non legati a un articolo (sconti sul totale, righe non lette)'**
+  String dashboardUnassigned(String amount);
+
+  /// No description provided for @dashboardFullPrice.
+  ///
+  /// In it, this message translates to:
+  /// **'prezzo pieno {amount}'**
+  String dashboardFullPrice(String amount);
 }
 
 class _AppLocalizationsDelegate

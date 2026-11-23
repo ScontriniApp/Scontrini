@@ -2,11 +2,14 @@ import 'dart:async';
 
 import 'package:cupertino_ui/cupertino_ui.dart'
     show GlobalCupertinoLocalizations;
+import 'package:drift/native.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'
     show GlobalWidgetsLocalizations;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:scontrini/core/database/app_database.dart';
+import 'package:scontrini/core/database/database_provider.dart';
 import 'package:scontrini/features/extraction/data/extraction_providers.dart';
 import 'package:scontrini/features/extraction/data/glm_ocr.dart';
 import 'package:scontrini/features/extraction/data/model_downloader.dart';
@@ -60,9 +63,15 @@ void main() {
   });
 
   Future<void> open(WidgetTester tester) async {
+    // Settings also shows the demo data section (debug), which reads the
+    // database. Unmount before closing it (teardowns run last first).
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    addTearDown(() => tester.pumpWidget(const SizedBox()));
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          appDatabaseProvider.overrideWithValue(db),
           glmOcrDownloaderProvider.overrideWithValue(downloader),
           glmOcrModelDirectoryProvider.overrideWithValue(Future.value('/m')),
           glmOcrProvider.overrideWith((ref) {

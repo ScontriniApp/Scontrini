@@ -233,5 +233,76 @@
     }
   },
   "confirmAndSort": "Conferma e smista in dispensa",
-  "confirmFailed": "Impossibile salvare lo scontrino."
+  "confirmFailed": "Impossibile salvare lo scontrino.",
+  "navInsights": "Consigli",
+  "insightsEmpty": "I consigli personalizzati appariranno qui.",
+  "settingsEmpty": "Categorie, backup e sicurezza.",
+  "demoDataTitle": "Dati demo (solo debug)",
+  "demoDataLoad": "Carica dati demo",
+  "demoDataLoadHint": "6 mesi di acquisti inventati. Si sommano agli scontrini veri finché non li rimuovi.",
+  "demoDataRemove": "Rimuovi dati demo",
+  "demoDataLoaded": "Caricati {count} scontrini demo",
+  "demoDataRemoved": "Dati demo rimossi",
+  "@demoDataLoaded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardMonthSpent": "Speso a {month}",
+  "@dashboardMonthSpent": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardReceiptCount": "{count, plural, =0{Nessuno scontrino} =1{1 scontrino} other{{count} scontrini}}",
+  "@dashboardReceiptCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardUsual": "Di solito {amount} a questo punto del mese",
+  "@dashboardUsual": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardNoUsual": "Il confronto con i mesi scorsi apparirà dal mese prossimo",
+  "dashboardCategoriesTitle": "Categorie del mese",
+  "dashboardCategoriesEmpty": "Nessuna spesa questo mese",
+  "dashboardOtherCategories": "Altre categorie",
+  "dashboardInsightsTitle": "Consigli",
+  "dashboardInsightsEmpty": "Qui appariranno 2–3 consigli sui tuoi acquisti: prezzi in aumento, occasioni di risparmio, categorie in crescita.",
+  "dashboardCategoryHint": "Tocca una categoria per vederne gli articoli",
+  "dashboardItemCount": "{count, plural, =0{Nessun articolo} =1{1 articolo} other{{count} articoli}}",
+  "@dashboardItemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardUnassigned": "{amount} non legati a un articolo (sconti sul totale, righe non lette)",
+  "@dashboardUnassigned": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardFullPrice": "prezzo pieno {amount}",
+  "@dashboardFullPrice": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -57,7 +57,13 @@ void main() {
 
   Future<void> openCapture(WidgetTester tester) async {
     final db = AppDatabase(NativeDatabase.memory());
-    addTearDown(db.close);
+    // The app opens on the dashboard, which watches the database: unmount
+    // and let Drift's timers run before closing it (as in widget_test.dart).
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(seconds: 1));
+      await db.close();
+    });
     await tester.pumpWidget(
       ProviderScope(
         overrides: [

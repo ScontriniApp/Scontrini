@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:scontrini/features/analytics/presentation/demo_data_section.dart';
 import 'package:scontrini/features/extraction/data/model_downloader.dart';
 import 'package:scontrini/features/extraction/presentation/glm_ocr_model_controller.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
@@ -23,6 +25,8 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const GlmOcrModelTile(),
+          // Demo purchase history, debug builds only.
+          if (kDebugMode) const SafeArea(top: false, child: DemoDataSection()),
         ],
       ),
     );

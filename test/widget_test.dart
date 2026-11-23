@@ -9,7 +9,13 @@ import 'package:scontrini/core/database/database_provider.dart';
 void main() {
   testWidgets('app starts on the dashboard and opens capture', (tester) async {
     final db = AppDatabase(NativeDatabase.memory());
-    addTearDown(db.close);
+    // Unmount first so the dashboard's history stream is cancelled, and let
+    // Drift's pending timers run before closing.
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(seconds: 1));
+      await db.close();
+    });
 
     await tester.pumpWidget(
       ProviderScope(
