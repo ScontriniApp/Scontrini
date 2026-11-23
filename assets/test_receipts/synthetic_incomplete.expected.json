@@ -1,0 +1,7 @@
+{
+  "items": [
+    {"rawName": "PANE COMUNE", "quantity": 2, "unitPriceCents": 65, "lineTotalCents": 120, "warnings": ["lineTotalMismatch"]},
+    {"rawName": "FORMAGGIO", "unitPriceCents": 340, "lineTotalCents": 340}
+  ],
+  "warnings": ["missingStore", "missingDate", "missingTotal"]
+}

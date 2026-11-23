@@ -186,7 +186,7 @@ packages:
     source: hosted
     version: "0.3.5+5"
   crypto:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: crypto
       sha256: e3626ae6270383c9e3a549f34c9e4cd26c09ae6a9adaab2bf4737a00340efdc4
@@ -233,6 +233,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.8.0"
+  dinja:
+    dependency: transitive
+    description:
+      name: dinja
+      sha256: a3addbe07ebb562c062256f7c644ac498ab2ab3d97a85d9f95aafac7f53fa808
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.2"
   drift:
     dependency: "direct main"
     description:
@@ -266,7 +274,7 @@ packages:
     source: hosted
     version: "1.3.3"
   ffi:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: ffi
       sha256: "6d7fd89431262d8f3125e81b50d3847a091d846eafcd4fdb88dd06f36d705a45"
@@ -724,6 +732,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.1"
+  llamadart:
+    dependency: "direct main"
+    description:
+      name: llamadart
+      sha256: f5f0ebb0b8e43795b1496c26d30155f191c39729e509d53be06218c5f1f9d76b
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.20.3"
   logging:
     dependency: transitive
     description:
@@ -796,6 +812,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "9.6.4"
+  onnxruntime_v2:
+    dependency: "direct main"
+    description:
+      name: onnxruntime_v2
+      sha256: a3a1f7baf40c6a77b4d359489643232414a4ee2e934d865dd7d30b758abaeef7
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.23.2+2"
   package_config:
     dependency: transitive
     description:

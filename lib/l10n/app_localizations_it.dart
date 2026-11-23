@@ -22,9 +22,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get navAnalytics => 'Analisi';
 
   @override
-  String get navInsights => 'Consigli';
-
-  @override
   String get addReceipt => 'Aggiungi';
 
   @override
@@ -54,6 +51,316 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get analyticsEmpty => 'Grafici e statistiche appariranno qui.';
+
+  @override
+  String get captureFailed => 'Impossibile acquisire lo scontrino.';
+
+  @override
+  String get extractionTitle => 'Scontrino letto';
+
+  @override
+  String get extractionLoading => 'Lettura dello scontrino…';
+
+  @override
+  String get extractionFailed => 'Impossibile leggere lo scontrino.';
+
+  @override
+  String get retry => 'Riprova';
+
+  @override
+  String get extractionPreviewNotice =>
+      'Controlla i dati: confermando, lo scontrino viene salvato e puoi smistarlo in dispensa.';
+
+  @override
+  String get fieldStore => 'Negozio';
+
+  @override
+  String get fieldDate => 'Data';
+
+  @override
+  String get fieldTotal => 'Totale';
+
+  @override
+  String get fieldItemsTotal => 'Somma articoli';
+
+  @override
+  String extractionItems(int count) {
+    return 'Articoli ($count)';
+  }
+
+  @override
+  String extractionDiscount(String amount) {
+    return 'Sconto $amount';
+  }
+
+  @override
+  String get extractionReceiptDiscount => 'Sconti sul totale';
+
+  @override
+  String get extractionUnparsed => 'Righe non riconosciute';
+
+  @override
+  String get extractionRawText => 'Testo riconosciuto';
+
+  @override
+  String get warningMissingStore => 'Negozio non trovato';
+
+  @override
+  String get warningMissingDate => 'Data non trovata';
+
+  @override
+  String get warningMissingTotal => 'Totale non trovato';
+
+  @override
+  String get warningTotalMismatch =>
+      'La somma degli articoli non corrisponde al totale';
+
+  @override
+  String get warningLineTotalMismatch =>
+      'Quantità × prezzo diverso dall\'importo della riga';
+
+  @override
+  String get exportFixture => 'Esporta come test';
+
+  @override
+  String exportFixtureDone(String name) {
+    return 'Salvato: $name';
+  }
+
+  @override
+  String get navPantry => 'Dispensa';
+
+  @override
+  String get pantryEmpty =>
+      'La dispensa è vuota.\nAggiungi prodotti da uno scontrino o a mano.';
+
+  @override
+  String get pantryShowClosed => 'Mostra finiti e buttati';
+
+  @override
+  String get pantryHideClosed => 'Nascondi finiti e buttati';
+
+  @override
+  String get pantryAdd => 'Aggiungi prodotto';
+
+  @override
+  String get pantryUncategorised => 'Senza categoria';
+
+  @override
+  String pantryRemaining(String remaining, String initial) {
+    return '$remaining di $initial';
+  }
+
+  @override
+  String get pantrySourceManualPurchase => 'Comprato, senza scontrino';
+
+  @override
+  String get pantrySourceInitialStock => 'Già in casa';
+
+  @override
+  String get pantrySourceGift => 'Regalo';
+
+  @override
+  String get pantryStatusConsumed => 'Finito';
+
+  @override
+  String get pantryStatusDiscarded => 'Buttato';
+
+  @override
+  String get pantryConsumeAll => 'Segna come finito';
+
+  @override
+  String get pantryDiscard => 'Butta via';
+
+  @override
+  String get pantryReasonExpired => 'Scaduto';
+
+  @override
+  String get pantryReasonSpoiled => 'Andato a male';
+
+  @override
+  String get pantryReasonOther => 'Altro motivo';
+
+  @override
+  String get pantryUndo => 'Annulla';
+
+  @override
+  String get pantryUndoLast => 'Annulla l\'ultima azione';
+
+  @override
+  String get pantryNothingToUndo => 'Niente da annullare';
+
+  @override
+  String get pantryDelete => 'Elimina dalla dispensa';
+
+  @override
+  String pantryDeleteConfirm(String name) {
+    return 'Eliminare $name? Il suo storico di consumo andrà perso.';
+  }
+
+  @override
+  String pantryConsumedMessage(String name, String amount) {
+    return '$name: usato $amount';
+  }
+
+  @override
+  String pantryDiscardedMessage(String name) {
+    return '$name buttato';
+  }
+
+  @override
+  String pantryFinishedMessage(String name) {
+    return '$name finito';
+  }
+
+  @override
+  String get cancel => 'Annulla';
+
+  @override
+  String get delete => 'Elimina';
+
+  @override
+  String get save => 'Salva';
+
+  @override
+  String get pantryFieldName => 'Nome';
+
+  @override
+  String get pantryFieldQuantity => 'Quantità';
+
+  @override
+  String get pantryFieldPrice => 'Prezzo pagato (facoltativo)';
+
+  @override
+  String get pantryFieldCategory => 'Categoria';
+
+  @override
+  String get pantryFieldSource => 'Provenienza';
+
+  @override
+  String get pantryInvalidName => 'Inserisci un nome';
+
+  @override
+  String get pantryInvalidQuantity => 'Inserisci una quantità maggiore di zero';
+
+  @override
+  String get pantryInvalidPrice => 'Prezzo non valido';
+
+  @override
+  String get unitPieces => 'pz';
+
+  @override
+  String get unitKilograms => 'kg';
+
+  @override
+  String get unitLitres => 'l';
+
+  @override
+  String get settingsPhotoReading => 'Lettura delle foto';
+
+  @override
+  String get glmOcrModelTitle => 'Modello di lettura avanzato';
+
+  @override
+  String get glmOcrModelChecking => 'Verifica…';
+
+  @override
+  String glmOcrModelMissing(String size) {
+    return 'Non installato: le foto si leggono con il riconoscimento standard. GLM-OCR è più preciso ma sui telefoni meno potenti può richiedere minuti per scontrino. Download di $size.';
+  }
+
+  @override
+  String glmOcrModelPartial(String done, String total) {
+    return 'Download interrotto: $done di $total.';
+  }
+
+  @override
+  String glmOcrModelDownloading(String done, String total) {
+    return 'Download: $done di $total';
+  }
+
+  @override
+  String glmOcrModelInstalled(String size) {
+    return 'Installato ($size): le foto si leggono sul telefono con GLM-OCR.';
+  }
+
+  @override
+  String get glmOcrDownload => 'Scarica';
+
+  @override
+  String get glmOcrResume => 'Riprendi';
+
+  @override
+  String get glmOcrDownloadConfirmTitle => 'Scaricare il modello?';
+
+  @override
+  String glmOcrDownloadConfirmBody(String size) {
+    return 'Il modello GLM-OCR ($size) si scarica da Hugging Face: meglio con il Wi-Fi. Gli scontrini non lasciano il telefono, il modello li legge senza connessione.';
+  }
+
+  @override
+  String get glmOcrDeleteConfirmTitle => 'Eliminare il modello?';
+
+  @override
+  String glmOcrDeleteConfirmBody(String size) {
+    return 'Libera $size. Le foto torneranno a essere lette con il riconoscimento standard.';
+  }
+
+  @override
+  String get glmOcrErrorNetwork =>
+      'Download non riuscito: controlla la connessione.';
+
+  @override
+  String get glmOcrErrorCorrupt => 'Il file scaricato è danneggiato: riprova.';
+
+  @override
+  String get glmOcrErrorStorage => 'Spazio insufficiente sul telefono.';
+
+  @override
+  String get extractionStepPreparing => 'Preparo la foto…';
+
+  @override
+  String get extractionStepFindingLines => 'Cerco le righe…';
+
+  @override
+  String get extractionStepReadingLines => 'Leggo le righe…';
+
+  @override
+  String get extractionStepParsing => 'Ricostruisco lo scontrino…';
+
+  @override
+  String get triageTitle => 'Smista in dispensa';
+
+  @override
+  String triageCounter(int current, int total) {
+    return '$current di $total';
+  }
+
+  @override
+  String get triageKeep => 'In dispensa';
+
+  @override
+  String get triageSkip => 'Salta';
+
+  @override
+  String get triageDone => 'Fatto';
+
+  @override
+  String get triageFailed => 'Impossibile caricare i prodotti.';
+
+  @override
+  String triageSummary(int kept, int skipped) {
+    return '$kept in dispensa, $skipped saltati.';
+  }
+
+  @override
+  String get confirmAndSort => 'Conferma e smista in dispensa';
+
+  @override
+  String get confirmFailed => 'Impossibile salvare lo scontrino.';
+
+  @override
+  String get navInsights => 'Consigli';
 
   @override
   String get insightsEmpty => 'I consigli personalizzati appariranno qui.';

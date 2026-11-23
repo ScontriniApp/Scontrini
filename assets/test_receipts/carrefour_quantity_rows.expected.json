@@ -1,0 +1,106 @@
+{
+  "storeName": "CARREFOUR MARKET",
+  "vatNumber": "02924950963",
+  "address": "VIA ROMA 12, MILANO",
+  "totalCents": 3045,
+  "items": [
+    {
+      "rawName": "UVA S.SEMI BICOLOR G",
+      "unitPriceCents": 238,
+      "lineTotalCents": 238,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "DATTERI KENTA 200GR",
+      "unitPriceCents": 70,
+      "lineTotalCents": 140,
+      "quantity": 2,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "SEDANO VERDE SF.",
+      "unitPriceCents": 91,
+      "lineTotalCents": 91,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "SAC COMPOSTABILE",
+      "unitPriceCents": 2,
+      "lineTotalCents": 2,
+      "vatPercent": 22
+    },
+    {
+      "rawName": "STRACCHINO NONNO NAN",
+      "unitPriceCents": 189,
+      "lineTotalCents": 189,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "MOZZ.TRIS SANTA LUCI",
+      "unitPriceCents": 429,
+      "lineTotalCents": 858,
+      "quantity": 2,
+      "discountCents": 360,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "GUANCIALE STAG.A FET",
+      "unitPriceCents": 399,
+      "lineTotalCents": 399,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "POLPA DI POMODORO 34",
+      "unitPriceCents": 45,
+      "lineTotalCents": 180,
+      "quantity": 4,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "PANE DI UNA VOLTA",
+      "unitPriceCents": 64,
+      "lineTotalCents": 64,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "PANE ANTICO SFUSO",
+      "unitPriceCents": 67,
+      "lineTotalCents": 67,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "MACINATA VITELLO",
+      "unitPriceCents": 420,
+      "lineTotalCents": 420,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "SALE IODATO GROSSO C",
+      "unitPriceCents": 53,
+      "lineTotalCents": 106,
+      "quantity": 2,
+      "vatPercent": 22
+    },
+    {
+      "rawName": "SALE IODATO FINO CRF",
+      "unitPriceCents": 53,
+      "lineTotalCents": 53,
+      "vatPercent": 22
+    },
+    {
+      "rawName": "SALSA SOIA KIKKOMAN",
+      "unitPriceCents": 399,
+      "lineTotalCents": 399,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "RISO CARNAROLI CRF",
+      "unitPriceCents": 199,
+      "lineTotalCents": 199,
+      "vatPercent": 4
+    }
+  ],
+  "warnings": [
+    "missingDate"
+  ]
+}

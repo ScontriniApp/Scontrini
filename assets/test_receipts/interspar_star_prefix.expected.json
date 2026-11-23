@@ -1,0 +1,77 @@
+{
+  "storeName": "INTERSPAR",
+  "vatNumber": "12345678903",
+  "address": "C.DA FIUME S/N, NOTO SR",
+  "totalCents": 1624,
+  "items": [
+    {
+      "rawName": "RANA DUETTO FUNGHI T",
+      "unitPriceCents": 275,
+      "lineTotalCents": 275
+    },
+    {
+      "rawName": "RANA DUETTO FUNGHI T",
+      "unitPriceCents": 275,
+      "lineTotalCents": 275
+    },
+    {
+      "rawName": "PATASNELLA PIZZOLI G",
+      "unitPriceCents": 122,
+      "lineTotalCents": 122
+    },
+    {
+      "rawName": "SOTTILETTE KRAFT GR.",
+      "unitPriceCents": 97,
+      "lineTotalCents": 97
+    },
+    {
+      "rawName": "PHILADELPHIA KRAFT",
+      "unitPriceCents": 59,
+      "lineTotalCents": 59
+    },
+    {
+      "rawName": "PHILADELPHIA KRAFT",
+      "unitPriceCents": 59,
+      "lineTotalCents": 59
+    },
+    {
+      "rawName": "PHILADELPHIA KRAFT",
+      "unitPriceCents": 59,
+      "lineTotalCents": 59
+    },
+    {
+      "rawName": "SOTTILETTE KRAFT GR.",
+      "unitPriceCents": 97,
+      "lineTotalCents": 97
+    },
+    {
+      "rawName": "PHILADELPHIA KRAFT",
+      "unitPriceCents": 59,
+      "lineTotalCents": 59
+    },
+    {
+      "rawName": "PHILADELPHIA KRAFT",
+      "unitPriceCents": 59,
+      "lineTotalCents": 59
+    },
+    {
+      "rawName": "PHILADELPHIA KRAFT",
+      "unitPriceCents": 59,
+      "lineTotalCents": 59
+    },
+    {
+      "rawName": "BIRRA BECK'S CL.33X3",
+      "unitPriceCents": 199,
+      "lineTotalCents": 398,
+      "quantity": 2
+    },
+    {
+      "rawName": "SHOPPERS BIO+OX INTE",
+      "unitPriceCents": 6,
+      "lineTotalCents": 6
+    }
+  ],
+  "warnings": [
+    "missingDate"
+  ]
+}

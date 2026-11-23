@@ -4,7 +4,6 @@
   "navHome": "Home",
   "navReceipts": "Storico",
   "navAnalytics": "Analisi",
-  "navInsights": "Consigli",
   "addReceipt": "Aggiungi",
   "settings": "Impostazioni",
   "captureTitle": "Nuovo scontrino",
@@ -15,6 +14,227 @@
   "dashboardEmpty": "Nessuno scontrino ancora.\nAggiungi il primo per vedere le tue spese.",
   "receiptsEmpty": "Lo storico degli acquisti apparirà qui.",
   "analyticsEmpty": "Grafici e statistiche appariranno qui.",
+  "captureFailed": "Impossibile acquisire lo scontrino.",
+  "extractionTitle": "Scontrino letto",
+  "extractionLoading": "Lettura dello scontrino…",
+  "extractionFailed": "Impossibile leggere lo scontrino.",
+  "retry": "Riprova",
+  "extractionPreviewNotice": "Controlla i dati: confermando, lo scontrino viene salvato e puoi smistarlo in dispensa.",
+  "fieldStore": "Negozio",
+  "fieldDate": "Data",
+  "fieldTotal": "Totale",
+  "fieldItemsTotal": "Somma articoli",
+  "extractionItems": "Articoli ({count})",
+  "@extractionItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "extractionDiscount": "Sconto {amount}",
+  "@extractionDiscount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "extractionReceiptDiscount": "Sconti sul totale",
+  "extractionUnparsed": "Righe non riconosciute",
+  "extractionRawText": "Testo riconosciuto",
+  "warningMissingStore": "Negozio non trovato",
+  "warningMissingDate": "Data non trovata",
+  "warningMissingTotal": "Totale non trovato",
+  "warningTotalMismatch": "La somma degli articoli non corrisponde al totale",
+  "warningLineTotalMismatch": "Quantità × prezzo diverso dall'importo della riga",
+  "exportFixture": "Esporta come test",
+  "exportFixtureDone": "Salvato: {name}",
+  "@exportFixtureDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "navPantry": "Dispensa",
+  "pantryEmpty": "La dispensa è vuota.\nAggiungi prodotti da uno scontrino o a mano.",
+  "pantryShowClosed": "Mostra finiti e buttati",
+  "pantryHideClosed": "Nascondi finiti e buttati",
+  "pantryAdd": "Aggiungi prodotto",
+  "pantryUncategorised": "Senza categoria",
+  "pantryRemaining": "{remaining} di {initial}",
+  "@pantryRemaining": {
+    "placeholders": {
+      "remaining": {
+        "type": "String"
+      },
+      "initial": {
+        "type": "String"
+      }
+    }
+  },
+  "pantrySourceManualPurchase": "Comprato, senza scontrino",
+  "pantrySourceInitialStock": "Già in casa",
+  "pantrySourceGift": "Regalo",
+  "pantryStatusConsumed": "Finito",
+  "pantryStatusDiscarded": "Buttato",
+  "pantryConsumeAll": "Segna come finito",
+  "pantryDiscard": "Butta via",
+  "pantryReasonExpired": "Scaduto",
+  "pantryReasonSpoiled": "Andato a male",
+  "pantryReasonOther": "Altro motivo",
+  "pantryUndo": "Annulla",
+  "pantryUndoLast": "Annulla l'ultima azione",
+  "pantryNothingToUndo": "Niente da annullare",
+  "pantryDelete": "Elimina dalla dispensa",
+  "pantryDeleteConfirm": "Eliminare {name}? Il suo storico di consumo andrà perso.",
+  "@pantryDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pantryConsumedMessage": "{name}: usato {amount}",
+  "@pantryConsumedMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "pantryDiscardedMessage": "{name} buttato",
+  "@pantryDiscardedMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pantryFinishedMessage": "{name} finito",
+  "@pantryFinishedMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Annulla",
+  "delete": "Elimina",
+  "save": "Salva",
+  "pantryFieldName": "Nome",
+  "pantryFieldQuantity": "Quantità",
+  "pantryFieldPrice": "Prezzo pagato (facoltativo)",
+  "pantryFieldCategory": "Categoria",
+  "pantryFieldSource": "Provenienza",
+  "pantryInvalidName": "Inserisci un nome",
+  "pantryInvalidQuantity": "Inserisci una quantità maggiore di zero",
+  "pantryInvalidPrice": "Prezzo non valido",
+  "unitPieces": "pz",
+  "unitKilograms": "kg",
+  "unitLitres": "l",
+  "settingsPhotoReading": "Lettura delle foto",
+  "glmOcrModelTitle": "Modello di lettura avanzato",
+  "glmOcrModelChecking": "Verifica…",
+  "glmOcrModelMissing": "Non installato: le foto si leggono con il riconoscimento standard. GLM-OCR è più preciso ma sui telefoni meno potenti può richiedere minuti per scontrino. Download di {size}.",
+  "@glmOcrModelMissing": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "glmOcrModelPartial": "Download interrotto: {done} di {total}.",
+  "@glmOcrModelPartial": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "glmOcrModelDownloading": "Download: {done} di {total}",
+  "@glmOcrModelDownloading": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "glmOcrModelInstalled": "Installato ({size}): le foto si leggono sul telefono con GLM-OCR.",
+  "@glmOcrModelInstalled": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "glmOcrDownload": "Scarica",
+  "glmOcrResume": "Riprendi",
+  "glmOcrDownloadConfirmTitle": "Scaricare il modello?",
+  "glmOcrDownloadConfirmBody": "Il modello GLM-OCR ({size}) si scarica da Hugging Face: meglio con il Wi-Fi. Gli scontrini non lasciano il telefono, il modello li legge senza connessione.",
+  "@glmOcrDownloadConfirmBody": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "glmOcrDeleteConfirmTitle": "Eliminare il modello?",
+  "glmOcrDeleteConfirmBody": "Libera {size}. Le foto torneranno a essere lette con il riconoscimento standard.",
+  "@glmOcrDeleteConfirmBody": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "glmOcrErrorNetwork": "Download non riuscito: controlla la connessione.",
+  "glmOcrErrorCorrupt": "Il file scaricato è danneggiato: riprova.",
+  "glmOcrErrorStorage": "Spazio insufficiente sul telefono.",
+  "extractionStepPreparing": "Preparo la foto…",
+  "extractionStepFindingLines": "Cerco le righe…",
+  "extractionStepReadingLines": "Leggo le righe…",
+  "extractionStepParsing": "Ricostruisco lo scontrino…",
+  "triageTitle": "Smista in dispensa",
+  "triageCounter": "{current} di {total}",
+  "@triageCounter": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "triageKeep": "In dispensa",
+  "triageSkip": "Salta",
+  "triageDone": "Fatto",
+  "triageFailed": "Impossibile caricare i prodotti.",
+  "triageSummary": "{kept} in dispensa, {skipped} saltati.",
+  "@triageSummary": {
+    "placeholders": {
+      "kept": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "confirmAndSort": "Conferma e smista in dispensa",
+  "confirmFailed": "Impossibile salvare lo scontrino.",
+  "navInsights": "Consigli",
   "insightsEmpty": "I consigli personalizzati appariranno qui.",
   "settingsEmpty": "Categorie, backup e sicurezza.",
   "demoDataTitle": "Dati demo (solo debug)",

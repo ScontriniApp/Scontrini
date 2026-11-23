@@ -122,12 +122,6 @@ abstract class AppLocalizations {
   /// **'Analisi'**
   String get navAnalytics;
 
-  /// No description provided for @navInsights.
-  ///
-  /// In it, this message translates to:
-  /// **'Consigli'**
-  String get navInsights;
-
   /// No description provided for @addReceipt.
   ///
   /// In it, this message translates to:
@@ -187,6 +181,552 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Grafici e statistiche appariranno qui.'**
   String get analyticsEmpty;
+
+  /// No description provided for @captureFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Impossibile acquisire lo scontrino.'**
+  String get captureFailed;
+
+  /// No description provided for @extractionTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Scontrino letto'**
+  String get extractionTitle;
+
+  /// No description provided for @extractionLoading.
+  ///
+  /// In it, this message translates to:
+  /// **'Lettura dello scontrino…'**
+  String get extractionLoading;
+
+  /// No description provided for @extractionFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Impossibile leggere lo scontrino.'**
+  String get extractionFailed;
+
+  /// No description provided for @retry.
+  ///
+  /// In it, this message translates to:
+  /// **'Riprova'**
+  String get retry;
+
+  /// No description provided for @extractionPreviewNotice.
+  ///
+  /// In it, this message translates to:
+  /// **'Controlla i dati: confermando, lo scontrino viene salvato e puoi smistarlo in dispensa.'**
+  String get extractionPreviewNotice;
+
+  /// No description provided for @fieldStore.
+  ///
+  /// In it, this message translates to:
+  /// **'Negozio'**
+  String get fieldStore;
+
+  /// No description provided for @fieldDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data'**
+  String get fieldDate;
+
+  /// No description provided for @fieldTotal.
+  ///
+  /// In it, this message translates to:
+  /// **'Totale'**
+  String get fieldTotal;
+
+  /// No description provided for @fieldItemsTotal.
+  ///
+  /// In it, this message translates to:
+  /// **'Somma articoli'**
+  String get fieldItemsTotal;
+
+  /// No description provided for @extractionItems.
+  ///
+  /// In it, this message translates to:
+  /// **'Articoli ({count})'**
+  String extractionItems(int count);
+
+  /// No description provided for @extractionDiscount.
+  ///
+  /// In it, this message translates to:
+  /// **'Sconto {amount}'**
+  String extractionDiscount(String amount);
+
+  /// No description provided for @extractionReceiptDiscount.
+  ///
+  /// In it, this message translates to:
+  /// **'Sconti sul totale'**
+  String get extractionReceiptDiscount;
+
+  /// No description provided for @extractionUnparsed.
+  ///
+  /// In it, this message translates to:
+  /// **'Righe non riconosciute'**
+  String get extractionUnparsed;
+
+  /// No description provided for @extractionRawText.
+  ///
+  /// In it, this message translates to:
+  /// **'Testo riconosciuto'**
+  String get extractionRawText;
+
+  /// No description provided for @warningMissingStore.
+  ///
+  /// In it, this message translates to:
+  /// **'Negozio non trovato'**
+  String get warningMissingStore;
+
+  /// No description provided for @warningMissingDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data non trovata'**
+  String get warningMissingDate;
+
+  /// No description provided for @warningMissingTotal.
+  ///
+  /// In it, this message translates to:
+  /// **'Totale non trovato'**
+  String get warningMissingTotal;
+
+  /// No description provided for @warningTotalMismatch.
+  ///
+  /// In it, this message translates to:
+  /// **'La somma degli articoli non corrisponde al totale'**
+  String get warningTotalMismatch;
+
+  /// No description provided for @warningLineTotalMismatch.
+  ///
+  /// In it, this message translates to:
+  /// **'Quantità × prezzo diverso dall\'importo della riga'**
+  String get warningLineTotalMismatch;
+
+  /// No description provided for @exportFixture.
+  ///
+  /// In it, this message translates to:
+  /// **'Esporta come test'**
+  String get exportFixture;
+
+  /// No description provided for @exportFixtureDone.
+  ///
+  /// In it, this message translates to:
+  /// **'Salvato: {name}'**
+  String exportFixtureDone(String name);
+
+  /// No description provided for @navPantry.
+  ///
+  /// In it, this message translates to:
+  /// **'Dispensa'**
+  String get navPantry;
+
+  /// No description provided for @pantryEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'La dispensa è vuota.\nAggiungi prodotti da uno scontrino o a mano.'**
+  String get pantryEmpty;
+
+  /// No description provided for @pantryShowClosed.
+  ///
+  /// In it, this message translates to:
+  /// **'Mostra finiti e buttati'**
+  String get pantryShowClosed;
+
+  /// No description provided for @pantryHideClosed.
+  ///
+  /// In it, this message translates to:
+  /// **'Nascondi finiti e buttati'**
+  String get pantryHideClosed;
+
+  /// No description provided for @pantryAdd.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi prodotto'**
+  String get pantryAdd;
+
+  /// No description provided for @pantryUncategorised.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza categoria'**
+  String get pantryUncategorised;
+
+  /// No description provided for @pantryRemaining.
+  ///
+  /// In it, this message translates to:
+  /// **'{remaining} di {initial}'**
+  String pantryRemaining(String remaining, String initial);
+
+  /// No description provided for @pantrySourceManualPurchase.
+  ///
+  /// In it, this message translates to:
+  /// **'Comprato, senza scontrino'**
+  String get pantrySourceManualPurchase;
+
+  /// No description provided for @pantrySourceInitialStock.
+  ///
+  /// In it, this message translates to:
+  /// **'Già in casa'**
+  String get pantrySourceInitialStock;
+
+  /// No description provided for @pantrySourceGift.
+  ///
+  /// In it, this message translates to:
+  /// **'Regalo'**
+  String get pantrySourceGift;
+
+  /// No description provided for @pantryStatusConsumed.
+  ///
+  /// In it, this message translates to:
+  /// **'Finito'**
+  String get pantryStatusConsumed;
+
+  /// No description provided for @pantryStatusDiscarded.
+  ///
+  /// In it, this message translates to:
+  /// **'Buttato'**
+  String get pantryStatusDiscarded;
+
+  /// No description provided for @pantryConsumeAll.
+  ///
+  /// In it, this message translates to:
+  /// **'Segna come finito'**
+  String get pantryConsumeAll;
+
+  /// No description provided for @pantryDiscard.
+  ///
+  /// In it, this message translates to:
+  /// **'Butta via'**
+  String get pantryDiscard;
+
+  /// No description provided for @pantryReasonExpired.
+  ///
+  /// In it, this message translates to:
+  /// **'Scaduto'**
+  String get pantryReasonExpired;
+
+  /// No description provided for @pantryReasonSpoiled.
+  ///
+  /// In it, this message translates to:
+  /// **'Andato a male'**
+  String get pantryReasonSpoiled;
+
+  /// No description provided for @pantryReasonOther.
+  ///
+  /// In it, this message translates to:
+  /// **'Altro motivo'**
+  String get pantryReasonOther;
+
+  /// No description provided for @pantryUndo.
+  ///
+  /// In it, this message translates to:
+  /// **'Annulla'**
+  String get pantryUndo;
+
+  /// No description provided for @pantryUndoLast.
+  ///
+  /// In it, this message translates to:
+  /// **'Annulla l\'ultima azione'**
+  String get pantryUndoLast;
+
+  /// No description provided for @pantryNothingToUndo.
+  ///
+  /// In it, this message translates to:
+  /// **'Niente da annullare'**
+  String get pantryNothingToUndo;
+
+  /// No description provided for @pantryDelete.
+  ///
+  /// In it, this message translates to:
+  /// **'Elimina dalla dispensa'**
+  String get pantryDelete;
+
+  /// No description provided for @pantryDeleteConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Eliminare {name}? Il suo storico di consumo andrà perso.'**
+  String pantryDeleteConfirm(String name);
+
+  /// No description provided for @pantryConsumedMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'{name}: usato {amount}'**
+  String pantryConsumedMessage(String name, String amount);
+
+  /// No description provided for @pantryDiscardedMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'{name} buttato'**
+  String pantryDiscardedMessage(String name);
+
+  /// No description provided for @pantryFinishedMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'{name} finito'**
+  String pantryFinishedMessage(String name);
+
+  /// No description provided for @cancel.
+  ///
+  /// In it, this message translates to:
+  /// **'Annulla'**
+  String get cancel;
+
+  /// No description provided for @delete.
+  ///
+  /// In it, this message translates to:
+  /// **'Elimina'**
+  String get delete;
+
+  /// No description provided for @save.
+  ///
+  /// In it, this message translates to:
+  /// **'Salva'**
+  String get save;
+
+  /// No description provided for @pantryFieldName.
+  ///
+  /// In it, this message translates to:
+  /// **'Nome'**
+  String get pantryFieldName;
+
+  /// No description provided for @pantryFieldQuantity.
+  ///
+  /// In it, this message translates to:
+  /// **'Quantità'**
+  String get pantryFieldQuantity;
+
+  /// No description provided for @pantryFieldPrice.
+  ///
+  /// In it, this message translates to:
+  /// **'Prezzo pagato (facoltativo)'**
+  String get pantryFieldPrice;
+
+  /// No description provided for @pantryFieldCategory.
+  ///
+  /// In it, this message translates to:
+  /// **'Categoria'**
+  String get pantryFieldCategory;
+
+  /// No description provided for @pantryFieldSource.
+  ///
+  /// In it, this message translates to:
+  /// **'Provenienza'**
+  String get pantryFieldSource;
+
+  /// No description provided for @pantryInvalidName.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci un nome'**
+  String get pantryInvalidName;
+
+  /// No description provided for @pantryInvalidQuantity.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci una quantità maggiore di zero'**
+  String get pantryInvalidQuantity;
+
+  /// No description provided for @pantryInvalidPrice.
+  ///
+  /// In it, this message translates to:
+  /// **'Prezzo non valido'**
+  String get pantryInvalidPrice;
+
+  /// No description provided for @unitPieces.
+  ///
+  /// In it, this message translates to:
+  /// **'pz'**
+  String get unitPieces;
+
+  /// No description provided for @unitKilograms.
+  ///
+  /// In it, this message translates to:
+  /// **'kg'**
+  String get unitKilograms;
+
+  /// No description provided for @unitLitres.
+  ///
+  /// In it, this message translates to:
+  /// **'l'**
+  String get unitLitres;
+
+  /// No description provided for @settingsPhotoReading.
+  ///
+  /// In it, this message translates to:
+  /// **'Lettura delle foto'**
+  String get settingsPhotoReading;
+
+  /// No description provided for @glmOcrModelTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Modello di lettura avanzato'**
+  String get glmOcrModelTitle;
+
+  /// No description provided for @glmOcrModelChecking.
+  ///
+  /// In it, this message translates to:
+  /// **'Verifica…'**
+  String get glmOcrModelChecking;
+
+  /// No description provided for @glmOcrModelMissing.
+  ///
+  /// In it, this message translates to:
+  /// **'Non installato: le foto si leggono con il riconoscimento standard. GLM-OCR è più preciso ma sui telefoni meno potenti può richiedere minuti per scontrino. Download di {size}.'**
+  String glmOcrModelMissing(String size);
+
+  /// No description provided for @glmOcrModelPartial.
+  ///
+  /// In it, this message translates to:
+  /// **'Download interrotto: {done} di {total}.'**
+  String glmOcrModelPartial(String done, String total);
+
+  /// No description provided for @glmOcrModelDownloading.
+  ///
+  /// In it, this message translates to:
+  /// **'Download: {done} di {total}'**
+  String glmOcrModelDownloading(String done, String total);
+
+  /// No description provided for @glmOcrModelInstalled.
+  ///
+  /// In it, this message translates to:
+  /// **'Installato ({size}): le foto si leggono sul telefono con GLM-OCR.'**
+  String glmOcrModelInstalled(String size);
+
+  /// No description provided for @glmOcrDownload.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarica'**
+  String get glmOcrDownload;
+
+  /// No description provided for @glmOcrResume.
+  ///
+  /// In it, this message translates to:
+  /// **'Riprendi'**
+  String get glmOcrResume;
+
+  /// No description provided for @glmOcrDownloadConfirmTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Scaricare il modello?'**
+  String get glmOcrDownloadConfirmTitle;
+
+  /// No description provided for @glmOcrDownloadConfirmBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Il modello GLM-OCR ({size}) si scarica da Hugging Face: meglio con il Wi-Fi. Gli scontrini non lasciano il telefono, il modello li legge senza connessione.'**
+  String glmOcrDownloadConfirmBody(String size);
+
+  /// No description provided for @glmOcrDeleteConfirmTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Eliminare il modello?'**
+  String get glmOcrDeleteConfirmTitle;
+
+  /// No description provided for @glmOcrDeleteConfirmBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Libera {size}. Le foto torneranno a essere lette con il riconoscimento standard.'**
+  String glmOcrDeleteConfirmBody(String size);
+
+  /// No description provided for @glmOcrErrorNetwork.
+  ///
+  /// In it, this message translates to:
+  /// **'Download non riuscito: controlla la connessione.'**
+  String get glmOcrErrorNetwork;
+
+  /// No description provided for @glmOcrErrorCorrupt.
+  ///
+  /// In it, this message translates to:
+  /// **'Il file scaricato è danneggiato: riprova.'**
+  String get glmOcrErrorCorrupt;
+
+  /// No description provided for @glmOcrErrorStorage.
+  ///
+  /// In it, this message translates to:
+  /// **'Spazio insufficiente sul telefono.'**
+  String get glmOcrErrorStorage;
+
+  /// No description provided for @extractionStepPreparing.
+  ///
+  /// In it, this message translates to:
+  /// **'Preparo la foto…'**
+  String get extractionStepPreparing;
+
+  /// No description provided for @extractionStepFindingLines.
+  ///
+  /// In it, this message translates to:
+  /// **'Cerco le righe…'**
+  String get extractionStepFindingLines;
+
+  /// No description provided for @extractionStepReadingLines.
+  ///
+  /// In it, this message translates to:
+  /// **'Leggo le righe…'**
+  String get extractionStepReadingLines;
+
+  /// No description provided for @extractionStepParsing.
+  ///
+  /// In it, this message translates to:
+  /// **'Ricostruisco lo scontrino…'**
+  String get extractionStepParsing;
+
+  /// No description provided for @triageTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Smista in dispensa'**
+  String get triageTitle;
+
+  /// No description provided for @triageCounter.
+  ///
+  /// In it, this message translates to:
+  /// **'{current} di {total}'**
+  String triageCounter(int current, int total);
+
+  /// No description provided for @triageKeep.
+  ///
+  /// In it, this message translates to:
+  /// **'In dispensa'**
+  String get triageKeep;
+
+  /// No description provided for @triageSkip.
+  ///
+  /// In it, this message translates to:
+  /// **'Salta'**
+  String get triageSkip;
+
+  /// No description provided for @triageDone.
+  ///
+  /// In it, this message translates to:
+  /// **'Fatto'**
+  String get triageDone;
+
+  /// No description provided for @triageFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Impossibile caricare i prodotti.'**
+  String get triageFailed;
+
+  /// No description provided for @triageSummary.
+  ///
+  /// In it, this message translates to:
+  /// **'{kept} in dispensa, {skipped} saltati.'**
+  String triageSummary(int kept, int skipped);
+
+  /// No description provided for @confirmAndSort.
+  ///
+  /// In it, this message translates to:
+  /// **'Conferma e smista in dispensa'**
+  String get confirmAndSort;
+
+  /// No description provided for @confirmFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Impossibile salvare lo scontrino.'**
+  String get confirmFailed;
+
+  /// No description provided for @navInsights.
+  ///
+  /// In it, this message translates to:
+  /// **'Consigli'**
+  String get navInsights;
 
   /// No description provided for @insightsEmpty.
   ///

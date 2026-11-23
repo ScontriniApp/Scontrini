@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scontrini/core/database/app_database.dart';
@@ -41,6 +42,23 @@ void main() {
     await (db.delete(db.receipts)..where((r) => r.id.equals(receiptId))).go();
 
     expect(await db.select(db.receiptItems).get(), isEmpty);
+  });
+
+  test('the same transaction hash cannot be confirmed twice', () async {
+    ReceiptsCompanion receipt(String? hash) => ReceiptsCompanion.insert(
+      purchaseDate: DateTime.utc(2026, 11, 18),
+      totalCents: 129,
+      status: hash == null ? ReceiptStatus.draft : ReceiptStatus.confirmed,
+      transactionHash: Value(hash),
+    );
+    await db.into(db.receipts).insert(receipt(null));
+    await db.into(db.receipts).insert(receipt(null));
+    await db.into(db.receipts).insert(receipt('abc'));
+
+    expect(
+      () => db.into(db.receipts).insert(receipt('abc')),
+      throwsA(isA<SqliteException>()),
+    );
   });
 
   test('bundled SQLite supports encryption', () async {

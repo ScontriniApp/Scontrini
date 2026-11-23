@@ -1,0 +1,52 @@
+{
+  "storeName": "PAM PANORAMA S.P.A.",
+  "vatNumber": "02036440275",
+  "address": "VIALE MONZA, 8 - MILANO",
+  "purchaseDate": "2026-10-08T11:17:00.000",
+  "totalCents": 1483,
+  "items": [
+    {
+      "rawName": "MACINATO SCELTO CR",
+      "unitPriceCents": 942,
+      "lineTotalCents": 942,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "PAM CAROTE G 700",
+      "unitPriceCents": 99,
+      "lineTotalCents": 99,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "SEDANO BIANCO",
+      "unitPriceCents": 196,
+      "lineTotalCents": 196,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "BIO 60% SK OF 30+1",
+      "unitPriceCents": 2,
+      "lineTotalCents": 2,
+      "vatPercent": 22
+    },
+    {
+      "rawName": "POLPA POMO.MUTTIX2",
+      "unitPriceCents": 229,
+      "lineTotalCents": 229,
+      "discountCents": 64,
+      "vatPercent": 4
+    },
+    {
+      "rawName": "PAM CECI",
+      "unitPriceCents": 69,
+      "lineTotalCents": 69,
+      "vatPercent": 10
+    },
+    {
+      "rawName": "SHOPPER PIU'AMENO",
+      "unitPriceCents": 10,
+      "lineTotalCents": 10,
+      "vatPercent": 22
+    }
+  ]
+}
