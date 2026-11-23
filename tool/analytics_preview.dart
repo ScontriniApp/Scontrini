@@ -1,60 +1,27 @@
-// Prints the analytics metrics computed on a seeded sample history, as a
-// quick look at the numbers before the screens exist.
+// Prints the analytics metrics computed on the demo history
+// (`demo_history_seed.dart`, today = 23 November 2026), as a quick look at
+// the numbers before the screens exist.
 //
 // Run from the project root:
 //   dart run --packages=.dart_tool/package_config.json tool/analytics_preview.dart
 // ignore_for_file: avoid_print
-import 'dart:math';
-
+import 'package:drift/native.dart';
+import 'package:scontrini/core/database/app_database.dart';
 import 'package:scontrini/core/utils/money.dart';
+import 'package:scontrini/features/analytics/data/analytics_dao.dart';
+import 'package:scontrini/features/analytics/data/demo_history_seed.dart';
 import 'package:scontrini/features/analytics/domain/models/date_range.dart';
 import 'package:scontrini/features/analytics/domain/models/granularity.dart';
-import 'package:scontrini/features/analytics/domain/models/purchase_history.dart';
 import 'package:scontrini/features/analytics/domain/spending_metrics.dart';
 
-void main() {
-  final rng = Random(7);
-  final receipts = <PurchaseReceipt>[];
-  var id = 1;
-  // ~3 receipts a week from June to November 2026.
-  for (
-    var d = DateTime(2026, 6);
-    d.isBefore(DateTime(2026, 11, 21));
-    d = DateTime(d.year, d.month, d.day + 1)
-  ) {
-    if (rng.nextDouble() > 0.43) continue;
-    final items = <PurchaseItem>[];
-    for (var i = 0; i < 4 + rng.nextInt(10); i++) {
-      final line = 80 + rng.nextInt(600);
-      final disc = rng.nextDouble() < 0.15 ? (line * 0.3).round() : 0;
-      items.add(
-        PurchaseItem(
-          id: id++,
-          rawName: 'ITEM',
-          unitPriceCents: line,
-          lineTotalCents: line,
-          discountCents: disc,
-        ),
-      );
-    }
-    final coupon = rng.nextDouble() < 0.05 ? 300 : 0;
-    final total = items.fold(0, (s, i) => s + i.netCents) - coupon;
-    receipts.add(
-      PurchaseReceipt(
-        id: id++,
-        purchaseDate: DateTime(
-          d.year,
-          d.month,
-          d.day,
-          9 + rng.nextInt(12),
-        ).toUtc(),
-        totalCents: total,
-        discountCents: coupon,
-        items: items,
-      ),
-    );
-  }
-  final h = PurchaseHistory(receipts: receipts);
+Future<void> main() async {
+  final db = AppDatabase(NativeDatabase.memory());
+  final seeded = await seedDemoHistory(db, today: DateTime(2026, 11, 23));
+  final h = await AnalyticsDao(db)
+      .loadHistory(DateRange(DateTime(2026), DateTime(2027)));
+  await db.close();
+  final receipts = h.receipts;
+  print('Demo seed: ${seeded.confirmed} confirmed, ${seeded.drafts} draft');
   final november = DateRange.month(DateTime(2026, 11));
 
   String pct(double? p) =>
@@ -90,9 +57,7 @@ void main() {
     'Dec',
   ];
 
-  print(
-    'Sample history: ${receipts.length} confirmed receipts, Jun–Nov 2026\n',
-  );
+  print('Demo history: ${receipts.length} confirmed receipts, May–Nov 2026\n');
   final m1 = SpendingMetrics.totalSpending(h, november);
   print(
     'M1  November total: ${Money.format(m1.cents)}   '

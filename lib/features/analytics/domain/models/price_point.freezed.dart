@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PricePoint {
 
- int get productId; int get receiptId;/// Instant of purchase (UTC, like [PurchaseReceipt.purchaseDate]).
+ int get productId; int get receiptId;/// Instant of purchase (UTC, like `PurchaseReceipt.purchaseDate`).
  DateTime get purchaseDate;/// Pieces, or kg/l for weighed items. Always positive.
  double get quantity;/// Amount paid for the rows, after their discounts.
  int get netCents;/// Amount of the rows before their discounts.
@@ -228,7 +228,7 @@ class _PricePoint extends PricePoint {
 
 @override final  int productId;
 @override final  int receiptId;
-/// Instant of purchase (UTC, like [PurchaseReceipt.purchaseDate]).
+/// Instant of purchase (UTC, like `PurchaseReceipt.purchaseDate`).
 @override final  DateTime purchaseDate;
 /// Pieces, or kg/l for weighed items. Always positive.
 @override final  double quantity;
