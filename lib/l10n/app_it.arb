@@ -140,7 +140,7 @@
   "settingsPhotoReading": "Lettura delle foto",
   "glmOcrModelTitle": "Modello di lettura avanzato",
   "glmOcrModelChecking": "Verifica…",
-  "glmOcrModelMissing": "Non installato: le foto si leggono con il riconoscimento di base, meno preciso. Download di {size}.",
+  "glmOcrModelMissing": "Non installato: le foto si leggono con il riconoscimento standard. GLM-OCR è più preciso ma sui telefoni meno potenti può richiedere minuti per scontrino. Download di {size}.",
   "@glmOcrModelMissing": {
     "placeholders": {
       "size": {
@@ -190,7 +190,7 @@
     }
   },
   "glmOcrDeleteConfirmTitle": "Eliminare il modello?",
-  "glmOcrDeleteConfirmBody": "Libera {size}. Le foto torneranno a essere lette con il riconoscimento di base.",
+  "glmOcrDeleteConfirmBody": "Libera {size}. Le foto torneranno a essere lette con il riconoscimento standard.",
   "@glmOcrDeleteConfirmBody": {
     "placeholders": {
       "size": {

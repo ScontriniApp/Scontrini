@@ -266,7 +266,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String glmOcrModelMissing(String size) {
-    return 'Non installato: le foto si leggono con il riconoscimento di base, meno preciso. Download di $size.';
+    return 'Non installato: le foto si leggono con il riconoscimento standard. GLM-OCR è più preciso ma sui telefoni meno potenti può richiedere minuti per scontrino. Download di $size.';
   }
 
   @override
@@ -303,7 +303,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String glmOcrDeleteConfirmBody(String size) {
-    return 'Libera $size. Le foto torneranno a essere lette con il riconoscimento di base.';
+    return 'Libera $size. Le foto torneranno a essere lette con il riconoscimento standard.';
   }
 
   @override

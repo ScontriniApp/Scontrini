@@ -37,6 +37,33 @@ a real phone ("Esporta come test" + `tool/pull_fixtures.sh`) are replayed the sa
 `assets/test_receipts/incoming/`. So work on the row builder and the parser happens on the PC only;
 the device is needed again only for new photos or to test a different OCR setup.
 
+**GLM-OCR on the phone** (speed, memory, which GPU backend works):
+
+```bash
+tool/bench/run_device.sh --glm --only carrefour_1                 # the app's placement: GPU, then CPU
+tool/bench/run_device.sh --glm --glm-placement cpu --glm-threads 4
+```
+
+`--glm` pushes the model files once into the app's external folder (`files/glm-model/`, left there
+for the next run; `--remove-model` deletes them) and reads the photos with `GlmOcr`. Each receipt
+prints its time, the placement it ran on and the process memory (RSS and peak). Options:
+`--glm-model FILE` (e.g. a Q4 requantization, `mmproj-GLM-OCR-Q8_0.gguf` next to it),
+`--glm-placement app|cpu|vulkan|opencl`, `--glm-threads N`, `--glm-strip PX`, `--only TEXT`.
+GLM-OCR's text lands in `data/ocr_cache/glm_device/`, apart from ML Kit's.
+
+**PaddleOCR on the phone and on the PC, with the app's own code.**
+
+```bash
+tool/bench/run_device.sh --paddle                       # the app's model (small, from the assets)
+tool/bench/run_device.sh --paddle --paddle-size medium  # pushes data/modelli/paddle/*medium* first
+```
+
+Each receipt prints its time per step (decode, detection, boxes, crops, recognition) and memory;
+the text lands in `data/ocr_cache/paddle_device-v6-<size>/`. On the PC,
+`flutter test tool/bench/paddle_dart_test.dart --dart-define=PADDLE=true` runs the same Dart code
+(`PaddleOcr`) on the bench photos into `data/ocr_cache/paddle_dart-v6-<size>/`: it must score like
+`paddle_ocr.py`, which checks the port (onnxruntime from the Python venv, see the file's header).
+
 **GLM-OCR on the PC, with the app's own code.** The app reads photos with GLM-OCR (a 0.9B
 vision-language OCR model) through `GlmOcr` (`lib/features/extraction/data/glm_ocr.dart`, llama.cpp
 via `llamadart`). The benchmark runs that same class on the PC, image preparation included, so its

@@ -569,7 +569,7 @@ abstract class AppLocalizations {
   /// No description provided for @glmOcrModelMissing.
   ///
   /// In it, this message translates to:
-  /// **'Non installato: le foto si leggono con il riconoscimento di base, meno preciso. Download di {size}.'**
+  /// **'Non installato: le foto si leggono con il riconoscimento standard. GLM-OCR è più preciso ma sui telefoni meno potenti può richiedere minuti per scontrino. Download di {size}.'**
   String glmOcrModelMissing(String size);
 
   /// No description provided for @glmOcrModelPartial.
@@ -623,7 +623,7 @@ abstract class AppLocalizations {
   /// No description provided for @glmOcrDeleteConfirmBody.
   ///
   /// In it, this message translates to:
-  /// **'Libera {size}. Le foto torneranno a essere lette con il riconoscimento di base.'**
+  /// **'Libera {size}. Le foto torneranno a essere lette con il riconoscimento standard.'**
   String glmOcrDeleteConfirmBody(String size);
 
   /// No description provided for @glmOcrErrorNetwork.

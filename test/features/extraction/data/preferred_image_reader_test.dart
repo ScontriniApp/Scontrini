@@ -23,7 +23,7 @@ void main() {
     final glm = _Reader(1);
     final mlKit = _Reader(2);
     final reader = PreferredImageReader(
-      glm: Future.value(glm),
+      preferred: Future.value(glm),
       fallback: mlKit,
     );
 
@@ -33,7 +33,10 @@ void main() {
 
   test('uses ML Kit when the model is not installed', () async {
     final mlKit = _Reader(2);
-    final reader = PreferredImageReader(glm: Future.value(), fallback: mlKit);
+    final reader = PreferredImageReader(
+      preferred: Future.value(),
+      fallback: mlKit,
+    );
 
     expect((await reader.recognizeFile('a.jpg')).width, 2);
   });
@@ -42,11 +45,43 @@ void main() {
     final glm = _Reader(1, fails: true);
     final mlKit = _Reader(2);
     final reader = PreferredImageReader(
-      glm: Future.value(glm),
+      preferred: Future.value(glm),
       fallback: mlKit,
     );
 
     expect((await reader.recognizeFile('a.jpg')).width, 2);
     expect(glm.read, ['a.jpg']);
+  });
+
+  test('chains: GLM-OCR, then PaddleOCR, then ML Kit', () async {
+    final glm = _Reader(1, fails: true);
+    final paddle = _Reader(2, fails: true);
+    final mlKit = _Reader(3);
+    final reader = PreferredImageReader(
+      preferred: Future.value(glm),
+      fallback: PreferredImageReader(
+        preferred: Future.value(paddle),
+        fallback: mlKit,
+      ),
+    );
+
+    expect((await reader.recognizeFile('a.jpg')).width, 3);
+    expect(glm.read, ['a.jpg']);
+    expect(paddle.read, ['a.jpg']);
+  });
+
+  test('without GLM-OCR, PaddleOCR reads before ML Kit', () async {
+    final paddle = _Reader(2);
+    final mlKit = _Reader(3);
+    final reader = PreferredImageReader(
+      preferred: Future.value(),
+      fallback: PreferredImageReader(
+        preferred: Future.value(paddle),
+        fallback: mlKit,
+      ),
+    );
+
+    expect((await reader.recognizeFile('a.jpg')).width, 2);
+    expect(mlKit.read, isEmpty);
   });
 }
