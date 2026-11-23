@@ -19,6 +19,10 @@ abstract class OcrLine with _$OcrLine {
     /// Rotation of the text in degrees, clockwise in image coordinates
     /// (y pointing down), as reported by ML Kit. 0 for PDF text.
     @Default(0) double angle,
+
+    /// How sure the reader is of [text], 0..1 (PaddleOCR's mean character
+    /// probability); `null` when the reader doesn't say (ML Kit, PDF text).
+    double? confidence,
   }) = _OcrLine;
 
   factory fromJson(Map<String, Object?> json) => _$OcrLineFromJson(json);

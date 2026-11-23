@@ -426,16 +426,27 @@ Tensor recognitionInput(List<img.Image> crops) {
   return (data: data, shape: [crops.length, 3, height, width]);
 }
 
+/// Whether [character] can appear on an Italian receipt: ASCII, Latin-1
+/// (accented letters, °, ×), Latin Extended-A and €. The recogniser knows
+/// 18,708 characters of many scripts; on a receipt a Chinese or Cyrillic
+/// one is a printed symbol the model has no class for, so decoding drops
+/// it (taking the next best letter instead invented letters: "WGRANMIX").
+bool isReceiptCharacter(String character) => character.runes.every(
+  (r) => (r >= 0x20 && r <= 0x7E) || (r >= 0xA0 && r <= 0x17F) || r == 0x20AC,
+);
+
 /// CTC greedy decoding of the recognition output ([batch] × [steps] ×
 /// classes): the best class per step, repeats merged, blanks (class 0)
 /// dropped. [characters] are the model's classes 1..n-1 (the last one is
-/// a space). Returns each line's text and mean confidence.
+/// a space). Steps whose best class has a 0 [allowed] entry are dropped
+/// (see [isReceiptCharacter]). Returns each line's text and mean confidence.
 List<(String, double)> ctcDecode(
   Float32List probabilities,
   int batch,
   int steps,
-  List<String> characters,
-) {
+  List<String> characters, {
+  Uint8List? allowed,
+}) {
   final classes = characters.length + 1;
   final results = <(String, double)>[];
   for (var b = 0; b < batch; b++) {
@@ -454,7 +465,10 @@ List<(String, double)> ctcDecode(
           best = c;
         }
       }
-      if (best != 0 && best != previous) {
+      // A step whose best class is not a receipt character is dropped:
+      // the model saw a printed symbol (a flag, a logo), not a letter.
+      final skip = allowed != null && allowed[best] == 0;
+      if (best != 0 && best != previous && !skip) {
         text.write(characters[best - 1]);
         sum += bestP;
         count++;
@@ -464,4 +478,14 @@ List<(String, double)> ctcDecode(
     results.add((text.toString(), count == 0 ? 0 : sum / count));
   }
   return results;
+}
+
+/// [ctcDecode]'s `allowed` mask for [characters]: 1 for the blank and for
+/// every receipt character.
+Uint8List receiptCharacterMask(List<String> characters) {
+  final mask = Uint8List(characters.length + 1)..[0] = 1;
+  for (final (i, c) in characters.indexed) {
+    if (isReceiptCharacter(c)) mask[i + 1] = 1;
+  }
+  return mask;
 }

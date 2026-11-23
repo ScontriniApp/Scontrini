@@ -217,4 +217,38 @@ void main() {
       expect([for (final d in decoded) d.$1], ['x', 'y']);
     });
   });
+
+  group('receipt characters', () {
+    test('Latin letters, accents, digits, €, ° and × are allowed', () {
+      for (final c in ['A', 'z', 'à', 'É', '5', ',', '*', '€', '°', '×', ' ']) {
+        expect(isReceiptCharacter(c), isTrue, reason: c);
+      }
+    });
+
+    test('other scripts are not', () {
+      for (final c in ['米', '内', 'Ж', 'ا']) {
+        expect(isReceiptCharacter(c), isFalse, reason: c);
+      }
+    });
+
+    test('decoding drops a step whose best class is not allowed', () {
+      final characters = ['A', '米', 'B', ' '];
+      final p = Float32List(4 * 5);
+      // Steps: A, 米 (best) with B second, B, blank.
+      p[0 * 5 + 1] = 0.9;
+      p[1 * 5 + 2] = 0.6;
+      p[1 * 5 + 3] = 0.3;
+      p[2 * 5 + 3] = 0.9;
+      p[3 * 5 + 0] = 0.9;
+      final decoded = ctcDecode(
+        p,
+        1,
+        4,
+        characters,
+        allowed: receiptCharacterMask(characters),
+      );
+      expect(decoded.single.$1, 'AB');
+      expect(ctcDecode(p, 1, 4, characters).single.$1, 'A米B');
+    });
+  });
 }

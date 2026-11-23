@@ -72,6 +72,7 @@ class PaddleOcr implements ImageTextReader {
   OrtSession? _detection;
   OrtSession? _recognition;
   late List<String> _characters;
+  late Uint8List _allowed;
 
   /// Time spent in each step of the last [recognizeFile], for benchmarks.
   final timings = <String, Duration>{};
@@ -89,6 +90,7 @@ class PaddleOcr implements ImageTextReader {
     _detection = OrtSession.fromBuffer(model.detection, options());
     _recognition = OrtSession.fromBuffer(model.recognition, options());
     _characters = [...model.characters, ' '];
+    _allowed = receiptCharacterMask(_characters);
   }
 
   @override
@@ -136,8 +138,25 @@ class PaddleOcr implements ImageTextReader {
 
     final crops = [for (final q in quads) cropLine(image, q)];
     lap('crops');
-    final texts = List<(String, double)>.filled(quads.length, ('', 0));
-    // Batches of similar width, as RapidOCR: less padding to read.
+    final texts = recognizeCrops(crops);
+    lap('recognition');
+
+    return OcrPage(
+      width: width.toDouble(),
+      height: height.toDouble(),
+      lines: [
+        for (final (i, quad) in quads.indexed)
+          if (texts[i].$2 >= minScore && texts[i].$1.trim().isNotEmpty)
+            _line(texts[i].$1, texts[i].$2, quad, 1 / scale),
+      ],
+    );
+  }
+
+  /// Text and confidence of each line image (see [cropLine]), recognised in
+  /// batches of similar width as RapidOCR does: less padding to read.
+  List<(String, double)> recognizeCrops(List<img.Image> crops) {
+    load();
+    final texts = List<(String, double)>.filled(crops.length, ('', 0));
     final order = List<int>.generate(crops.length, (i) => i)
       ..sort(
         (a, b) => (crops[a].width / crops[a].height).compareTo(
@@ -164,33 +183,24 @@ class PaddleOcr implements ImageTextReader {
         output.shape[0],
         output.shape[1],
         _characters,
+        allowed: _allowed,
       );
       decode.stop();
       for (final (k, i) in batch.indexed) {
         texts[i] = decoded[k];
       }
     }
-    lap('recognition');
     timings
       ..['rec-input'] = prepare.elapsed
       ..['rec-network'] = run.elapsed
       ..['rec-decode'] = decode.elapsed;
-
-    return OcrPage(
-      width: width.toDouble(),
-      height: height.toDouble(),
-      lines: [
-        for (final (i, quad) in quads.indexed)
-          if (texts[i].$2 >= minScore && texts[i].$1.trim().isNotEmpty)
-            _line(texts[i].$1, quad, 1 / scale),
-      ],
-    );
+    return texts;
   }
 
   /// A line as the benchmark's Python reader writes it: the box keeps the
   /// real text height (left and right edges of the slanted quad) around
   /// the quad's centre, so RowBuilder doesn't merge rows.
-  static OcrLine _line(String text, Quad q, double scale) {
+  static OcrLine _line(String text, double confidence, Quad q, double scale) {
     double dist(Point a, Point b) =>
         math.sqrt(math.pow(a.x - b.x, 2) + math.pow(a.y - b.y, 2));
     final xs = [for (final c in q) c.x * scale];
@@ -205,6 +215,7 @@ class PaddleOcr implements ImageTextReader {
         bottom: cy + h / 2,
       ),
       angle: math.atan2(q[1].y - q[0].y, q[1].x - q[0].x) * 180 / math.pi,
+      confidence: confidence,
     );
   }
 
