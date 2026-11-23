@@ -4,10 +4,12 @@ import 'package:scontrini/core/widgets/placeholder_view.dart';
 import 'package:scontrini/features/pantry/data/pantry_providers.dart';
 import 'package:scontrini/features/pantry/domain/pantry_category.dart';
 import 'package:scontrini/features/pantry/domain/pantry_lot.dart';
+import 'package:scontrini/features/pantry/presentation/category_sprites.dart';
 import 'package:scontrini/features/pantry/presentation/manual_add_sheet.dart';
 import 'package:scontrini/features/pantry/presentation/pantry_providers.dart';
 import 'package:scontrini/features/pantry/presentation/quantity_format.dart';
 import 'package:scontrini/features/pantry/presentation/widgets/lot_actions_sheet.dart';
+import 'package:scontrini/features/pantry/presentation/widgets/lot_avatar.dart';
 import 'package:scontrini/features/pantry/presentation/widgets/pantry_lot_tile.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
@@ -88,10 +90,17 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
         for (final key in keys) ...[
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            child: Text(
-              key == null ? l10n.pantryUncategorised : byId[key]!.name,
-              style: Theme.of(context).textTheme.titleSmall
-                  ?.copyWith(color: Theme.of(context).colorScheme.primary),
+            child: Row(
+              spacing: 8,
+              children: [
+                if (categorySprite(byId[key]?.name) case final sprite?)
+                  CategorySpriteImage(sprite, size: 24),
+                Text(
+                  key == null ? l10n.pantryUncategorised : byId[key]!.name,
+                  style: Theme.of(context).textTheme.titleSmall
+                      ?.copyWith(color: Theme.of(context).colorScheme.primary),
+                ),
+              ],
             ),
           ),
           for (final lot in groups[key]!)
@@ -99,6 +108,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
               key: ValueKey(lot.id),
               lot: lot,
               color: key == null ? _fallbackColor : Color(byId[key]!.color),
+              sprite: categorySprite(byId[key]?.name),
               onSetRemaining: (value) => _setRemaining(lot, value),
               onTap: () => _actions(lot),
             ),

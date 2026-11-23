@@ -15,11 +15,15 @@ class PantryLotTile extends StatefulWidget {
     required this.color,
     required this.onSetRemaining,
     required this.onTap,
+    this.sprite,
     super.key,
   });
 
   final PantryLot lot;
   final Color color;
+
+  /// The category's sprite asset, if it has one.
+  final String? sprite;
   final ValueChanged<double> onSetRemaining;
   final VoidCallback onTap;
 
@@ -54,7 +58,11 @@ class _PantryLotTileState extends State<PantryLotTile> {
             children: [
               Row(
                 children: [
-                  LotAvatar(name: lot.name, color: widget.color),
+                  LotAvatar(
+                    name: lot.name,
+                    color: widget.color,
+                    sprite: widget.sprite,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(

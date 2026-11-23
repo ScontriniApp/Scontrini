@@ -18,6 +18,81 @@ void main() {
     expect(keywords, isNotEmpty);
   });
 
+  test('keywords are brought back in line with the seed on open', () async {
+    final pasta = await (db.select(
+      db.categories,
+    )..where((c) => c.name.equals('Pane e pasta'))).getSingle();
+    // An old install: a stale keyword and a missing one.
+    await db
+        .into(db.categoryKeywords)
+        .insert(
+          CategoryKeywordsCompanion.insert(
+            keyword: 'OBSOLETO',
+            categoryId: pasta.id,
+          ),
+        );
+    await (db.delete(
+      db.categoryKeywords,
+    )..where((k) => k.keyword.equals('MOZZ'))).go();
+
+    await db.syncCategoryKeywords();
+
+    final keywords = {
+      for (final k in await db.select(db.categoryKeywords).get()) k.keyword,
+    };
+    expect(keywords, {for (final c in defaultCategories) ...c.keywords});
+  });
+
+  test('rows and lots saved without a category get one on open', () async {
+    final receiptId = await db
+        .into(db.receipts)
+        .insert(
+          ReceiptsCompanion.insert(
+            purchaseDate: DateTime.utc(2026, 11, 23),
+            totalCents: 300,
+            status: ReceiptStatus.confirmed,
+          ),
+        );
+    Future<int> row(String name) => db
+        .into(db.receiptItems)
+        .insert(
+          ReceiptItemsCompanion.insert(
+            receiptId: receiptId,
+            rawName: name,
+            unitPriceCents: 100,
+            lineTotalCents: 100,
+          ),
+        );
+    final mozzarella = await row('MOZZ.TRIS SANTA LUCI');
+    final unknown = await row('ARTICOLO 123');
+    final lot = await db
+        .into(db.pantryLots)
+        .insert(
+          PantryLotsCompanion.insert(
+            receiptId: Value(receiptId),
+            name: 'MOZZ.TRIS SANTA LUCI',
+            source: PantrySource.receipt,
+            initialQuantity: 1,
+            addedAt: DateTime.utc(2026, 11, 23),
+          ),
+        );
+
+    await db.categorizeUnclassified();
+
+    final dairy = await (db.select(
+      db.categories,
+    )..where((c) => c.name.equals('Latticini e uova'))).getSingle();
+    Future<int?> rowCategory(int id) async => (await (db.select(
+      db.receiptItems,
+    )..where((r) => r.id.equals(id))).getSingle()).categoryId;
+    expect(await rowCategory(mozzarella), dairy.id);
+    expect(await rowCategory(unknown), isNull);
+    final savedLot = await (db.select(
+      db.pantryLots,
+    )..where((l) => l.id.equals(lot))).getSingle();
+    expect(savedLot.categoryId, dairy.id);
+  });
+
   test('deleting a receipt cascades to its items', () async {
     final receiptId = await db
         .into(db.receipts)

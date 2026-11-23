@@ -87,6 +87,8 @@ flutter:
   # PaddleOCR PP-OCRv6 small (Apache-2.0): the default photo reader.
   assets:
     - assets/models/paddle/
+    # 8-bit category sprites (16x16, drawn without smoothing).
+    - assets/sprites/categories/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

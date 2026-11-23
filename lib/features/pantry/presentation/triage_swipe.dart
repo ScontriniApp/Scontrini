@@ -26,8 +26,12 @@ class TriageSwipe extends StatefulWidget {
     required this.onDecision,
     required this.onUndo,
     required this.onDone,
+    this.spriteFor,
     super.key,
   });
+
+  /// The sprite asset of a card's category, if it has one.
+  final String? Function(TriageCard card)? spriteFor;
 
   final List<TriageCard> cards;
   final Future<void> Function(TriageCard card, TriageDecision decision)
@@ -147,7 +151,13 @@ class _TriageSwipeState extends State<TriageSwipe>
                   alignment: Alignment.center,
                   children: [
                     if (next != null)
-                      Transform.scale(scale: 0.94, child: _CardFace(next)),
+                      Transform.scale(
+                        scale: 0.94,
+                        child: _CardFace(
+                          next,
+                          sprite: widget.spriteFor?.call(next),
+                        ),
+                      ),
                     if (current != null)
                       AnimatedBuilder(
                         animation: _fly,
@@ -173,7 +183,11 @@ class _TriageSwipeState extends State<TriageSwipe>
                               setState(() => _drag = Offset.zero);
                             }
                           },
-                          child: _CardFace(current, hint: _drag.dx / width),
+                          child: _CardFace(
+                            current,
+                            hint: _drag.dx / width,
+                            sprite: widget.spriteFor?.call(current),
+                          ),
                         ),
                       ),
                   ],
@@ -214,10 +228,11 @@ class _TriageSwipeState extends State<TriageSwipe>
 /// One product: avatar, name, quantity and price. [hint] is the drag as a
 /// share of the width: the side's label fades in as the card moves.
 class _CardFace extends StatelessWidget {
-  const new(this.card, {this.hint = 0});
+  const new(this.card, {this.hint = 0, this.sprite});
 
   final TriageCard card;
   final double hint;
+  final String? sprite;
 
   @override
   Widget build(BuildContext context) {
@@ -244,6 +259,7 @@ class _CardFace extends StatelessWidget {
                       child: LotAvatar(
                         name: card.name,
                         color: theme.colorScheme.primaryContainer,
+                        sprite: sprite,
                       ),
                     ),
                   ),
