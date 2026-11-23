@@ -304,5 +304,8 @@
         "type": "String"
       }
     }
-  }
+  },
+  "pantrySearchHint": "Cerca in dispensa",
+  "pantrySearchClear": "Cancella ricerca",
+  "pantryNoResults": "Nessun prodotto trovato."
 }

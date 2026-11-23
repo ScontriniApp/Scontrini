@@ -453,4 +453,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String dashboardFullPrice(String amount) {
     return 'full price $amount';
   }
+
+  @override
+  String get pantrySearchHint => 'Search the pantry';
+
+  @override
+  String get pantrySearchClear => 'Clear search';
+
+  @override
+  String get pantryNoResults => 'No products found.';
 }

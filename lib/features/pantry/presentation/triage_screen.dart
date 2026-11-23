@@ -1,10 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/features/pantry/data/pantry_providers.dart';
-import 'package:scontrini/features/pantry/domain/pantry_category.dart';
 import 'package:scontrini/features/pantry/domain/triage_grouping.dart';
-import 'package:scontrini/features/pantry/presentation/category_sprites.dart';
-import 'package:scontrini/features/pantry/presentation/pantry_providers.dart';
 import 'package:scontrini/features/pantry/presentation/triage_swipe.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
@@ -29,15 +26,8 @@ class _ReceiptTriageScreenState extends ConsumerState<ReceiptTriageScreen> {
   @override
   Widget build(BuildContext context) {
     final repository = ref.read(pantryRepositoryProvider);
-    final categories = <int, String>{
-      for (final c
-          in ref.watch(pantryCategoriesProvider).value ??
-              const <PantryCategory>[])
-        c.id: c.name,
-    };
     return TriageScreen(
       cards: _cards,
-      spriteFor: (card) => categorySprite(categories[card.categoryId]),
       onDecision: (card, decision) async {
         if (decision == TriageDecision.keep) {
           _lots[card] = await repository.addFromReceipt(widget.receiptId, card);
@@ -58,14 +48,11 @@ class TriageScreen extends StatefulWidget {
     required this.cards,
     required this.onDecision,
     required this.onUndo,
-    this.spriteFor,
     super.key,
   });
 
   final Future<List<TriageCard>> cards;
 
-  /// The sprite asset of a card's category (see [TriageSwipe.spriteFor]).
-  final String? Function(TriageCard card)? spriteFor;
   final Future<void> Function(TriageCard card, TriageDecision decision)
   onDecision;
   final Future<void> Function(TriageCard card, TriageDecision decision) onUndo;
@@ -112,7 +99,6 @@ class _TriageScreenState extends State<TriageScreen> {
                 }
                 return TriageSwipe(
                   cards: cards,
-                  spriteFor: widget.spriteFor,
                   onDecision: widget.onDecision,
                   onUndo: widget.onUndo,
                   onDone: (decisions) => setState(() => _done = decisions),

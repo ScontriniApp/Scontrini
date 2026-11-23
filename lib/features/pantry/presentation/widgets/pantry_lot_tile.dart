@@ -7,23 +7,21 @@ import 'package:scontrini/features/pantry/presentation/widgets/lot_avatar.dart';
 import 'package:scontrini/features/receipts/domain/transaction_hash.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
-/// One lot: avatar, name, origin, what is left and, while active, a slider.
-/// The slider reports only on release, so one drag is one event.
+/// One lot: initials tile, name, origin and quantity, the share left and,
+/// while active, a 0-100 % slider. The slider reports only on release, so
+/// one drag is one event, and hands back a quantity
+/// ([onSetRemaining] = initial × percent).
 class PantryLotTile extends StatefulWidget {
   const new({
     required this.lot,
     required this.color,
     required this.onSetRemaining,
     required this.onTap,
-    this.sprite,
     super.key,
   });
 
   final PantryLot lot;
   final Color color;
-
-  /// The category's sprite asset, if it has one.
-  final String? sprite;
   final ValueChanged<double> onSetRemaining;
   final VoidCallback onTap;
 
@@ -32,8 +30,11 @@ class PantryLotTile extends StatefulWidget {
 }
 
 class _PantryLotTileState extends State<PantryLotTile> {
-  /// Value under the finger while dragging; null otherwise.
+  /// Percent under the finger while dragging; null otherwise.
   double? _dragging;
+
+  /// Slider steps of 5 %.
+  static const _divisions = 20;
 
   @override
   Widget build(BuildContext context) {
@@ -41,10 +42,11 @@ class _PantryLotTileState extends State<PantryLotTile> {
     final theme = Theme.of(context);
     final lot = widget.lot;
     final active = lot.status == PantryLotStatus.active;
-    final shown = _dragging ?? lot.remainingQuantity;
+    final initial = lot.initialQuantity;
+    final percent = _dragging ?? lot.remainingFraction * 100;
     final remaining = l10n.pantryRemaining(
-      formatQuantity(l10n, shown, lot.unit),
-      formatQuantity(l10n, lot.initialQuantity, lot.unit),
+      formatQuantity(l10n, initial * percent / 100, lot.unit),
+      formatQuantity(l10n, initial, lot.unit),
     );
 
     return InkWell(
@@ -58,11 +60,7 @@ class _PantryLotTileState extends State<PantryLotTile> {
             children: [
               Row(
                 children: [
-                  LotAvatar(
-                    name: lot.name,
-                    color: widget.color,
-                    sprite: widget.sprite,
-                  ),
+                  LotAvatar(name: lot.name, color: widget.color),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -70,29 +68,35 @@ class _PantryLotTileState extends State<PantryLotTile> {
                       children: [
                         Text(lot.name, style: theme.textTheme.titleMedium),
                         Text(
-                          _origin(l10n, lot),
+                          [
+                            _origin(l10n, lot),
+                            if (active) remaining,
+                          ].where((t) => t.isNotEmpty).join(' · '),
                           style: theme.textTheme.bodySmall,
                         ),
                       ],
                     ),
                   ),
                   Text(
-                    active ? remaining : _status(l10n, lot.status),
-                    style: theme.textTheme.bodyMedium,
+                    active ? '${percent.round()}%' : _status(l10n, lot.status),
+                    style: active
+                        ? theme.textTheme.titleMedium
+                        : theme.textTheme.bodyMedium,
                   ),
                 ],
               ),
               if (active)
                 Slider(
-                  value: shown.clamp(0, lot.initialQuantity).toDouble(),
-                  max: lot.initialQuantity,
-                  divisions: sliderDivisions(lot.initialQuantity, lot.unit),
-                  label: formatQuantity(l10n, shown, lot.unit),
+                  value: percent,
+                  max: 100,
+                  divisions: _divisions,
+                  label: '${percent.round()}%',
                   onChanged: (value) => setState(() => _dragging = value),
                   onChangeEnd: (value) {
                     setState(() => _dragging = null);
-                    if (value != lot.remainingQuantity) {
-                      widget.onSetRemaining(value);
+                    final quantity = initial * value / 100;
+                    if ((quantity - lot.remainingQuantity).abs() > 1e-9) {
+                      widget.onSetRemaining(quantity);
                     }
                   },
                 )

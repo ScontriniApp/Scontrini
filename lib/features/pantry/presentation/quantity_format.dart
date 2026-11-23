@@ -12,11 +12,3 @@ String unitLabel(AppLocalizations l10n, String unit) => switch (unit) {
   'l' => l10n.unitLitres,
   _ => l10n.unitPieces,
 };
-
-/// Slider steps: quarters of a piece (up to 48 steps), twentieths for
-/// weighed items.
-int sliderDivisions(double initial, String unit) {
-  if (unit != 'pz') return 20;
-  final steps = (initial * 4).round();
-  return steps.clamp(1, 48);
-}

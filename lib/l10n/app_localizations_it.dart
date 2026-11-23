@@ -456,4 +456,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String dashboardFullPrice(String amount) {
     return 'prezzo pieno $amount';
   }
+
+  @override
+  String get pantrySearchHint => 'Cerca in dispensa';
+
+  @override
+  String get pantrySearchClear => 'Cancella ricerca';
+
+  @override
+  String get pantryNoResults => 'Nessun prodotto trovato.';
 }

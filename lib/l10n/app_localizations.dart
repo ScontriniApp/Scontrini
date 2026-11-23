@@ -853,6 +853,24 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'prezzo pieno {amount}'**
   String dashboardFullPrice(String amount);
+
+  /// No description provided for @pantrySearchHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Cerca in dispensa'**
+  String get pantrySearchHint;
+
+  /// No description provided for @pantrySearchClear.
+  ///
+  /// In it, this message translates to:
+  /// **'Cancella ricerca'**
+  String get pantrySearchClear;
+
+  /// No description provided for @pantryNoResults.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun prodotto trovato.'**
+  String get pantryNoResults;
 }
 
 class _AppLocalizationsDelegate
