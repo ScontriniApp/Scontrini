@@ -58,7 +58,9 @@ flutter test tool/bench/desktop_bench_test.dart --dart-define=BENCH_GLM=true --d
 - `BENCH_GLM_MODEL`: another model file, e.g. a Q4 requantization
   (`llama-quantize --allow-requantize GLM-OCR-Q8_0.gguf GLM-OCR-Q4_K_M.gguf Q4_K_M`), with
   `mmproj-GLM-OCR-Q8_0.gguf` next to it.
-- `BENCH_GLM_GPU`: Vulkan GPU index, `-1` (default) for CPU. On the test laptop the RTX is `1`:
+- `BENCH_GLM_GPU`: Vulkan GPU index, `-1` (default) for CPU.
+- `BENCH_GLM_PLACEMENT=app`: what the app does (image encoder on the first GPU, text on the CPU;
+  the CPU if that fails); `=projector`: image encoder on `BENCH_GLM_GPU`, text on the CPU. On the test laptop the RTX is `1`:
   ~4 s per photo, against ~27 s on the CPU; split with the integrated Radeon it took 49 s.
 
 It reads the photos in `data/scontrini_foto_reali` and `data/foto_render` (`BENCH_PHOTOS`) that it

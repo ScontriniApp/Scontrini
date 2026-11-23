@@ -24,6 +24,9 @@
 //   BENCH_GLM_MODEL another GLM-OCR model file (e.g. a Q4 quantization), with
 //                 mmproj-GLM-OCR-Q8_0.gguf next to it
 //   BENCH_GLM_GPU GPU index for GLM-OCR (Vulkan); -1 = CPU, the default
+//   BENCH_GLM_PLACEMENT `app`: the app's placements (image encoder on a GPU,
+//                 else CPU); `projector`: image encoder on BENCH_GLM_GPU,
+//                 text on CPU
 //   BENCH_GLM_WIDTH one width all photos are scaled to (default: the app rule)
 //   BENCH_GLM_STRIP cut photos into strips at most this tall (default: whole)
 //   BENCH_TRUTH   ground truth folder         (default data/ground_truth)
@@ -32,6 +35,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:llamadart/llamadart.dart';
@@ -66,6 +70,7 @@ const _glm = String.fromEnvironment('BENCH_GLM');
 const _glmModelDir = String.fromEnvironment('BENCH_GLM_MODEL_DIR');
 const _glmModel = String.fromEnvironment('BENCH_GLM_MODEL');
 const _glmGpu = int.fromEnvironment('BENCH_GLM_GPU', defaultValue: -1);
+const _glmPlacement = String.fromEnvironment('BENCH_GLM_PLACEMENT');
 const _glmWidth = String.fromEnvironment('BENCH_GLM_WIDTH');
 const _glmStrip = String.fromEnvironment('BENCH_GLM_STRIP');
 const _truth = String.fromEnvironment(
@@ -171,8 +176,11 @@ void main() {
         ).summary(),
       );
     }
+    final placement = glm?.placement;
     await glm?.close();
-    if (glmTimes.isNotEmpty) stdout.write(_timeSummary(glmTimes));
+    if (glmTimes.isNotEmpty) {
+      stdout.write(_timeSummary(glmTimes, placement ?? '-'));
+    }
     stdout
       ..writeln()
       ..writeln('Full report: ${file.path}');
@@ -209,21 +217,39 @@ GlmOcr _glmOcr() {
   final strips = stripHeight == null
       ? null
       : ReceiptStrips(maxStripHeight: stripHeight);
-  if (_glmGpu < 0) {
-    return GlmOcr(files, preparation: preparation, strips: strips);
-  }
   return GlmOcr(
     files,
     preparation: preparation,
     strips: strips,
-    params: GlmOcr.defaultParams.copyWith(
-      device: ComputeDevice.gpu,
-      gpuLayers: -1,
-      preferredBackend: GpuBackend.vulkan,
-      mainGpu: _glmGpu,
-      // One GPU only: split with an integrated GPU it was slower than the CPU.
-      splitMode: ModelSplitMode.none,
-    ),
+    placements: switch (_glmPlacement) {
+      // What the app does: image encoder on a GPU if any, else the CPU.
+      'app' => null,
+      // Image encoder on GPU _glmGpu (0 = first), text on the CPU.
+      'projector' => [
+        (
+          name: 'projector on GPU $_glmGpu',
+          params: GlmOcr.gpuProjectorParams(
+            GpuBackend.vulkan,
+            gpu: math.max(_glmGpu, 0),
+          ),
+        ),
+      ],
+      _ when _glmGpu >= 0 => [
+        (
+          name: 'all on GPU $_glmGpu',
+          params: GlmOcr.cpuParams.copyWith(
+            device: ComputeDevice.gpu,
+            gpuLayers: -1,
+            preferredBackend: GpuBackend.vulkan,
+            mainGpu: _glmGpu,
+            // One GPU only: split with an integrated GPU it was slower than
+            // the CPU.
+            splitMode: ModelSplitMode.none,
+          ),
+        ),
+      ],
+      _ => [(name: 'cpu', params: GlmOcr.cpuParams)],
+    },
   );
 }
 
@@ -260,12 +286,16 @@ List<int> _imageTokens(GlmOcr glm, String path) {
   ];
 }
 
-String _timeSummary(Map<String, (Duration, List<int>)> times) {
+String _timeSummary(
+  Map<String, (Duration, List<int>)> times,
+  String placement,
+) {
   final b = StringBuffer()
     ..writeln()
     ..writeln(
       'GLM-OCR on this PC, width ${_glmWidth.isEmpty ? 'rule' : _glmWidth}, '
-      'strips ${_glmStrip.isEmpty ? 'off' : '≤ $_glmStrip px'} '
+      'strips ${_glmStrip.isEmpty ? 'off' : '≤ $_glmStrip px'}, '
+      'placement $placement '
       '(the first photo includes loading the model)',
     );
   var tokens = 0;

@@ -38,6 +38,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Qualcomm's OpenCL driver, for GLM-OCR's image encoder on Adreno GPUs
+             (optional: phones without it use Vulkan or the CPU). -->
+        <uses-native-library android:name="libOpenCL.so" android:required="false"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
