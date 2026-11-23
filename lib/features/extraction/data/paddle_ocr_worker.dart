@@ -38,14 +38,27 @@ class PaddleOcrWorker implements ImageTextReader {
   }
 
   @override
-  Future<OcrPage> recognizeFile(String imagePath) async {
+  Future<OcrPage> recognizeFile(
+    String imagePath, {
+    OnReadProgress? onProgress,
+  }) async {
     _idle?.cancel();
     _running++;
     try {
+      onProgress?.call((step: ReadStep.preparing, fraction: 0));
       final worker = await _start();
       final reply = ReceivePort();
       worker.send((imagePath, reply.sendPort));
-      final answer = await reply.first;
+      Object? answer;
+      await for (final message in reply) {
+        // Progress comes as (step index, fraction) before the answer.
+        if (message case (final int step, final double fraction)) {
+          onProgress?.call((step: ReadStep.values[step], fraction: fraction));
+          continue;
+        }
+        answer = message;
+        break;
+      }
       reply.close();
       return switch (answer) {
         (final Map<String, Object?> page, final Map<String, int> timings) =>
@@ -137,7 +150,10 @@ Future<void> _main(
     switch (message) {
       case (final String path, final SendPort reply):
         try {
-          final page = await ocr.recognizeFile(path);
+          final page = await ocr.recognizeFile(
+            path,
+            onProgress: (p) => reply.send((p.step.index, p.fraction ?? 0.0)),
+          );
           reply.send((
             page.toJson(),
             {

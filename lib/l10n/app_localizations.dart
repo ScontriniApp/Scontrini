@@ -215,7 +215,7 @@ abstract class AppLocalizations {
   /// No description provided for @extractionPreviewNotice.
   ///
   /// In it, this message translates to:
-  /// **'Anteprima di sviluppo: lo scontrino non viene ancora salvato.'**
+  /// **'Controlla i dati: confermando, lo scontrino viene salvato e puoi smistarlo in dispensa.'**
   String get extractionPreviewNotice;
 
   /// No description provided for @fieldStore.
@@ -643,6 +643,84 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Spazio insufficiente sul telefono.'**
   String get glmOcrErrorStorage;
+
+  /// No description provided for @extractionStepPreparing.
+  ///
+  /// In it, this message translates to:
+  /// **'Preparo la foto…'**
+  String get extractionStepPreparing;
+
+  /// No description provided for @extractionStepFindingLines.
+  ///
+  /// In it, this message translates to:
+  /// **'Cerco le righe…'**
+  String get extractionStepFindingLines;
+
+  /// No description provided for @extractionStepReadingLines.
+  ///
+  /// In it, this message translates to:
+  /// **'Leggo le righe…'**
+  String get extractionStepReadingLines;
+
+  /// No description provided for @extractionStepParsing.
+  ///
+  /// In it, this message translates to:
+  /// **'Ricostruisco lo scontrino…'**
+  String get extractionStepParsing;
+
+  /// No description provided for @triageTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Smista in dispensa'**
+  String get triageTitle;
+
+  /// No description provided for @triageCounter.
+  ///
+  /// In it, this message translates to:
+  /// **'{current} di {total}'**
+  String triageCounter(int current, int total);
+
+  /// No description provided for @triageKeep.
+  ///
+  /// In it, this message translates to:
+  /// **'In dispensa'**
+  String get triageKeep;
+
+  /// No description provided for @triageSkip.
+  ///
+  /// In it, this message translates to:
+  /// **'Salta'**
+  String get triageSkip;
+
+  /// No description provided for @triageDone.
+  ///
+  /// In it, this message translates to:
+  /// **'Fatto'**
+  String get triageDone;
+
+  /// No description provided for @triageFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Impossibile caricare i prodotti.'**
+  String get triageFailed;
+
+  /// No description provided for @triageSummary.
+  ///
+  /// In it, this message translates to:
+  /// **'{kept} in dispensa, {skipped} saltati.'**
+  String triageSummary(int kept, int skipped);
+
+  /// No description provided for @confirmAndSort.
+  ///
+  /// In it, this message translates to:
+  /// **'Conferma e smista in dispensa'**
+  String get confirmAndSort;
+
+  /// No description provided for @confirmFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Impossibile salvare lo scontrino.'**
+  String get confirmFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -19,7 +19,7 @@
   "extractionLoading": "Reading the receipt…",
   "extractionFailed": "Couldn't read the receipt.",
   "retry": "Retry",
-  "extractionPreviewNotice": "Development preview: the receipt is not saved yet.",
+  "extractionPreviewNotice": "Check the data: confirming saves the receipt and lets you sort it into the pantry.",
   "fieldStore": "Store",
   "fieldDate": "Date",
   "fieldTotal": "Total",
@@ -90,5 +90,18 @@
   "glmOcrDeleteConfirmBody": "Frees {size}. Photos will be read with standard recognition again.",
   "glmOcrErrorNetwork": "Download failed: check the connection.",
   "glmOcrErrorCorrupt": "The downloaded file is damaged: try again.",
-  "glmOcrErrorStorage": "Not enough space on the phone."
+  "glmOcrErrorStorage": "Not enough space on the phone.",
+  "extractionStepPreparing": "Preparing the photo…",
+  "extractionStepFindingLines": "Finding the lines…",
+  "extractionStepReadingLines": "Reading the lines…",
+  "extractionStepParsing": "Putting the receipt together…",
+  "triageTitle": "Sort into the pantry",
+  "triageCounter": "{current} of {total}",
+  "triageKeep": "In the pantry",
+  "triageSkip": "Skip",
+  "triageDone": "Done",
+  "triageFailed": "Could not load the products.",
+  "triageSummary": "{kept} in the pantry, {skipped} skipped.",
+  "confirmAndSort": "Confirm and sort into the pantry",
+  "confirmFailed": "Could not save the receipt."
 }

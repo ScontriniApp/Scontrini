@@ -11,7 +11,10 @@ class _Reader implements ImageTextReader {
   final read = <String>[];
 
   @override
-  Future<OcrPage> recognizeFile(String imagePath) async {
+  Future<OcrPage> recognizeFile(
+    String imagePath, {
+    OnReadProgress? onProgress,
+  }) async {
     read.add(imagePath);
     if (fails) throw StateError('out of memory');
     return OcrPage(width: width, height: 1, lines: const []);

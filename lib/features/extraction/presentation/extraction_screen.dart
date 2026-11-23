@@ -6,10 +6,13 @@ import 'package:scontrini/core/utils/money.dart';
 import 'package:scontrini/features/capture/domain/receipt_source.dart';
 import 'package:scontrini/features/extraction/data/extraction_providers.dart';
 import 'package:scontrini/features/extraction/domain/extraction_result.dart';
+import 'package:scontrini/features/extraction/domain/image_text_reader.dart';
 import 'package:scontrini/features/extraction/domain/models/parse_warning.dart';
 import 'package:scontrini/features/extraction/domain/models/parsed_item.dart';
 import 'package:scontrini/features/extraction/domain/models/quantity_unit.dart';
 import 'package:scontrini/features/extraction/presentation/extraction_result_provider.dart';
+import 'package:scontrini/features/pantry/presentation/triage_screen.dart';
+import 'package:scontrini/features/receipts/data/receipt_providers.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 // TODO(extraction): replace with the review screen (edit fields, confirm,
@@ -38,6 +41,19 @@ class ExtractionScreen extends ConsumerWidget {
             ),
         ],
       ),
+      bottomNavigationBar: result.hasValue
+          ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.kitchen_outlined),
+                  label: Text(l10n.confirmAndSort),
+                  onPressed: () =>
+                      _confirmAndSort(context, ref, result.requireValue),
+                ),
+              ),
+            )
+          : null,
       body: switch (result) {
         AsyncData(:final value) => _ResultView(result: value),
         AsyncError() => _Message(
@@ -48,13 +64,37 @@ class ExtractionScreen extends ConsumerWidget {
             child: Text(l10n.retry),
           ),
         ),
-        _ => _Message(
-          icon: Icons.document_scanner_outlined,
-          text: l10n.extractionLoading,
-          action: const CircularProgressIndicator(),
-        ),
+        _ => _Progress(source: source),
       },
     );
+  }
+
+  /// Saves the receipt as confirmed, then opens the pantry triage on it.
+  Future<void> _confirmAndSort(
+    BuildContext context,
+    WidgetRef ref,
+    ExtractionResult result,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final l10n = AppLocalizations.of(context);
+    try {
+      final receiptId = await ref
+          .read(receiptRepositoryProvider)
+          .saveConfirmed(
+            result.receipt,
+            sourcePath: source.paths.firstOrNull,
+            rawOcrText: result.rowsText,
+          );
+      await navigator.push(
+        MaterialPageRoute<void>(
+          builder: (_) => ReceiptTriageScreen(receiptId: receiptId),
+        ),
+      );
+    } on Object catch (error) {
+      debugPrint('Saving the receipt failed: $error');
+      messenger.showSnackBar(SnackBar(content: Text(l10n.confirmFailed)));
+    }
   }
 
   Future<void> _export(
@@ -68,6 +108,54 @@ class ExtractionScreen extends ConsumerWidget {
     messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(l10n.exportFixtureDone(name))));
+  }
+}
+
+/// While the receipt is read: the step and a bar that fills up as lines
+/// are read (indeterminate when the reader can't tell, e.g. ML Kit).
+class _Progress extends ConsumerWidget {
+  const new({required this.source});
+
+  final ReceiptSource source;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final progress = ref.watch(extractionProgressProvider(source));
+    final fraction = progress?.fraction;
+    final step = switch (progress?.step) {
+      null || ReadStep.preparing => l10n.extractionStepPreparing,
+      ReadStep.findingLines => l10n.extractionStepFindingLines,
+      ReadStep.readingLines => l10n.extractionStepReadingLines,
+      ReadStep.parsing => l10n.extractionStepParsing,
+    };
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 16,
+          children: [
+            const Icon(Icons.document_scanner_outlined, size: 48),
+            Text(l10n.extractionLoading, textAlign: TextAlign.center),
+            TweenAnimationBuilder<double>(
+              // Eases between reports, so the bar moves rather than jumps.
+              tween: Tween(end: fraction ?? 0),
+              duration: const Duration(milliseconds: 400),
+              builder: (context, value, _) => LinearProgressIndicator(
+                value: fraction == null ? null : value,
+                minHeight: 8,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            Text(
+              fraction == null ? step : '$step ${(fraction * 100).round()}%',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

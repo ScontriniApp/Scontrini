@@ -135,20 +135,33 @@ class GlmOcr implements ImageTextReader {
   }
 
   @override
-  Future<OcrPage> recognizeFile(String imagePath) async =>
-      modelTextToPage((await readStrips(imagePath).toList()).join('\n'));
+  Future<OcrPage> recognizeFile(
+    String imagePath, {
+    OnReadProgress? onProgress,
+  }) async => modelTextToPage(
+    (await readStrips(imagePath, onProgress: onProgress).toList()).join('\n'),
+  );
 
   /// The text of each strip of the photo (see [strips]), top to bottom, as
   /// soon as it is read: the first rows can be shown, or triaged, while the
   /// rest of the receipt is still being read.
-  Stream<String> readStrips(String imagePath) async* {
+  Stream<String> readStrips(
+    String imagePath, {
+    OnReadProgress? onProgress,
+  }) async* {
     _idle?.cancel();
     _running++;
     try {
+      onProgress?.call((step: ReadStep.preparing, fraction: 0));
       final image = preparation.prepareImage(
         await File(imagePath).readAsBytes(),
       );
-      for (final strip in strips?.split(image) ?? [image]) {
+      final parts = strips?.split(image) ?? [image];
+      for (final (i, strip) in parts.indexed) {
+        onProgress?.call((
+          step: ReadStep.readingLines,
+          fraction: 0.05 + 0.95 * i / parts.length,
+        ));
         yield await _read(img.encodePng(strip));
       }
     } finally {

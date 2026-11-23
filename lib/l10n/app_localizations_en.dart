@@ -69,7 +69,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get extractionPreviewNotice =>
-      'Development preview: the receipt is not saved yet.';
+      'Check the data: confirming saves the receipt and lets you sort it into the pantry.';
 
   @override
   String get fieldStore => 'Store';
@@ -313,4 +313,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get glmOcrErrorStorage => 'Not enough space on the phone.';
+
+  @override
+  String get extractionStepPreparing => 'Preparing the photo…';
+
+  @override
+  String get extractionStepFindingLines => 'Finding the lines…';
+
+  @override
+  String get extractionStepReadingLines => 'Reading the lines…';
+
+  @override
+  String get extractionStepParsing => 'Putting the receipt together…';
+
+  @override
+  String get triageTitle => 'Sort into the pantry';
+
+  @override
+  String triageCounter(int current, int total) {
+    return '$current of $total';
+  }
+
+  @override
+  String get triageKeep => 'In the pantry';
+
+  @override
+  String get triageSkip => 'Skip';
+
+  @override
+  String get triageDone => 'Done';
+
+  @override
+  String get triageFailed => 'Could not load the products.';
+
+  @override
+  String triageSummary(int kept, int skipped) {
+    return '$kept in the pantry, $skipped skipped.';
+  }
+
+  @override
+  String get confirmAndSort => 'Confirm and sort into the pantry';
+
+  @override
+  String get confirmFailed => 'Could not save the receipt.';
 }

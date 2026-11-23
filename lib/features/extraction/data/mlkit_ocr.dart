@@ -13,7 +13,11 @@ class MlKitOcr implements ImageTextReader {
   final _recognizer = TextRecognizer();
 
   @override
-  Future<OcrPage> recognizeFile(String imagePath) async {
+  Future<OcrPage> recognizeFile(
+    String imagePath, {
+    OnReadProgress? onProgress,
+  }) async {
+    onProgress?.call((step: ReadStep.readingLines, fraction: null));
     final result = await _recognizer.processImage(
       InputImage.fromFilePath(imagePath),
     );

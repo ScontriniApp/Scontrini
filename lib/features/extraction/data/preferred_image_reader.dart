@@ -17,11 +17,16 @@ class PreferredImageReader implements ImageTextReader {
   final String name;
 
   @override
-  Future<OcrPage> recognizeFile(String imagePath) async {
+  Future<OcrPage> recognizeFile(
+    String imagePath, {
+    OnReadProgress? onProgress,
+  }) async {
     final reader = await preferred;
-    if (reader == null) return await fallback.recognizeFile(imagePath);
+    if (reader == null) {
+      return await fallback.recognizeFile(imagePath, onProgress: onProgress);
+    }
     try {
-      return await reader.recognizeFile(imagePath);
+      return await reader.recognizeFile(imagePath, onProgress: onProgress);
     } on Object catch (error, stack) {
       developer.log(
         '$name failed, reading with the next reader',
@@ -29,7 +34,7 @@ class PreferredImageReader implements ImageTextReader {
         error: error,
         stackTrace: stack,
       );
-      return await fallback.recognizeFile(imagePath);
+      return await fallback.recognizeFile(imagePath, onProgress: onProgress);
     }
   }
 }

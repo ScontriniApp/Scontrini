@@ -19,7 +19,7 @@
   "extractionLoading": "Lettura dello scontrino…",
   "extractionFailed": "Impossibile leggere lo scontrino.",
   "retry": "Riprova",
-  "extractionPreviewNotice": "Anteprima di sviluppo: lo scontrino non viene ancora salvato.",
+  "extractionPreviewNotice": "Controlla i dati: confermando, lo scontrino viene salvato e puoi smistarlo in dispensa.",
   "fieldStore": "Negozio",
   "fieldDate": "Data",
   "fieldTotal": "Totale",
@@ -200,5 +200,38 @@
   },
   "glmOcrErrorNetwork": "Download non riuscito: controlla la connessione.",
   "glmOcrErrorCorrupt": "Il file scaricato è danneggiato: riprova.",
-  "glmOcrErrorStorage": "Spazio insufficiente sul telefono."
+  "glmOcrErrorStorage": "Spazio insufficiente sul telefono.",
+  "extractionStepPreparing": "Preparo la foto…",
+  "extractionStepFindingLines": "Cerco le righe…",
+  "extractionStepReadingLines": "Leggo le righe…",
+  "extractionStepParsing": "Ricostruisco lo scontrino…",
+  "triageTitle": "Smista in dispensa",
+  "triageCounter": "{current} di {total}",
+  "@triageCounter": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "triageKeep": "In dispensa",
+  "triageSkip": "Salta",
+  "triageDone": "Fatto",
+  "triageFailed": "Impossibile caricare i prodotti.",
+  "triageSummary": "{kept} in dispensa, {skipped} saltati.",
+  "@triageSummary": {
+    "placeholders": {
+      "kept": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "confirmAndSort": "Conferma e smista in dispensa",
+  "confirmFailed": "Impossibile salvare lo scontrino."
 }

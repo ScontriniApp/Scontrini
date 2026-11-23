@@ -152,6 +152,33 @@ void main() {
     });
   });
 
+  test('a total printed a row off its label is still found', () {
+    // Curved photo: the big total digits sit above their label, and the
+    // label's row gets the VAT amount instead.
+    final receipt = _parser.parseLines([
+      'NEGOZIO',
+      'DESCRIZIONE PREZZO',
+      'PANE 1,20',
+      'LATTE 1,80',
+      '3,00',
+      'TOTALE COMPLESSIVO 0,21',
+      'DI CUI IVA 3,00',
+    ]);
+    expect(receipt.totalCents, 300);
+    expect(receipt.warnings, isNot(contains(ParseWarning.totalMismatch)));
+  });
+
+  test('an item price is never taken for the total', () {
+    final receipt = _parser.parseLines([
+      'NEGOZIO',
+      'DESCRIZIONE PREZZO',
+      'PANE 1,20',
+      'TOTALE 4,00',
+    ]);
+    expect(receipt.totalCents, 400);
+    expect(receipt.warnings, contains(ParseWarning.totalMismatch));
+  });
+
   test('a discount summary is neither the total nor a discount', () {
     final receipt = _parser.parseLines([
       'NEGOZIO',

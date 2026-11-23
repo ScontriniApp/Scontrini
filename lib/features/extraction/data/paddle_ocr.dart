@@ -94,7 +94,11 @@ class PaddleOcr implements ImageTextReader {
   }
 
   @override
-  Future<OcrPage> recognizeFile(String imagePath) async {
+  Future<OcrPage> recognizeFile(
+    String imagePath, {
+    OnReadProgress? onProgress,
+  }) async {
+    onProgress?.call((step: ReadStep.preparing, fraction: 0));
     timings.clear();
     final watch = Stopwatch()..start();
     void lap(String step) {
@@ -123,6 +127,7 @@ class PaddleOcr implements ImageTextReader {
       image = image.convert(numChannels: 3);
     }
     lap('decode');
+    onProgress?.call((step: ReadStep.findingLines, fraction: 0.05));
 
     final input = detectionInput(image);
     final map = _run(_detection!, input);
@@ -138,7 +143,17 @@ class PaddleOcr implements ImageTextReader {
 
     final crops = [for (final q in quads) cropLine(image, q)];
     lap('crops');
-    final texts = recognizeCrops(crops);
+    // Detection is about a quarter of the time, recognition the rest.
+    onProgress?.call((step: ReadStep.readingLines, fraction: 0.3));
+    final texts = recognizeCrops(
+      crops,
+      onBatch: onProgress == null
+          ? null
+          : (done, total) => onProgress((
+              step: ReadStep.readingLines,
+              fraction: 0.3 + 0.7 * done / total,
+            )),
+    );
     lap('recognition');
 
     return OcrPage(
@@ -154,7 +169,11 @@ class PaddleOcr implements ImageTextReader {
 
   /// Text and confidence of each line image (see [cropLine]), recognised in
   /// batches of similar width as RapidOCR does: less padding to read.
-  List<(String, double)> recognizeCrops(List<img.Image> crops) {
+  /// [onBatch] gets the lines read so far after each batch.
+  List<(String, double)> recognizeCrops(
+    List<img.Image> crops, {
+    void Function(int done, int total)? onBatch,
+  }) {
     load();
     final texts = List<(String, double)>.filled(crops.length, ('', 0));
     final order = List<int>.generate(crops.length, (i) => i)
@@ -189,6 +208,7 @@ class PaddleOcr implements ImageTextReader {
       for (final (k, i) in batch.indexed) {
         texts[i] = decoded[k];
       }
+      onBatch?.call(start + batch.length, crops.length);
     }
     timings
       ..['rec-input'] = prepare.elapsed

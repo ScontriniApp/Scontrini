@@ -69,7 +69,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get extractionPreviewNotice =>
-      'Anteprima di sviluppo: lo scontrino non viene ancora salvato.';
+      'Controlla i dati: confermando, lo scontrino viene salvato e puoi smistarlo in dispensa.';
 
   @override
   String get fieldStore => 'Negozio';
@@ -315,4 +315,47 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get glmOcrErrorStorage => 'Spazio insufficiente sul telefono.';
+
+  @override
+  String get extractionStepPreparing => 'Preparo la foto…';
+
+  @override
+  String get extractionStepFindingLines => 'Cerco le righe…';
+
+  @override
+  String get extractionStepReadingLines => 'Leggo le righe…';
+
+  @override
+  String get extractionStepParsing => 'Ricostruisco lo scontrino…';
+
+  @override
+  String get triageTitle => 'Smista in dispensa';
+
+  @override
+  String triageCounter(int current, int total) {
+    return '$current di $total';
+  }
+
+  @override
+  String get triageKeep => 'In dispensa';
+
+  @override
+  String get triageSkip => 'Salta';
+
+  @override
+  String get triageDone => 'Fatto';
+
+  @override
+  String get triageFailed => 'Impossibile caricare i prodotti.';
+
+  @override
+  String triageSummary(int kept, int skipped) {
+    return '$kept in dispensa, $skipped saltati.';
+  }
+
+  @override
+  String get confirmAndSort => 'Conferma e smista in dispensa';
+
+  @override
+  String get confirmFailed => 'Impossibile salvare lo scontrino.';
 }

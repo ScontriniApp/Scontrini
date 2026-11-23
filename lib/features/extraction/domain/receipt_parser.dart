@@ -36,9 +36,16 @@ class ReceiptParser {
   /// other readings are tried (no layout, VAT column after the price, VAT
   /// column before it) and the first that adds up wins: the arithmetic is
   /// the referee when the headings were misread or not read at all.
+  ///
+  /// When no reading adds up to the total printed next to its label, but
+  /// one adds up to an amount printed just above or below it, that amount
+  /// is the total: on a curved photo the big total digits can land a row
+  /// off (`30,45` / `TOTALE COMPLESSIVO 2,13` / `DI CUI IVA 30,45`).
   ParsedReceipt parseLines(List<String> lines) {
-    final receipt = _Parse().run(lines);
+    final first = _Parse();
+    final receipt = first.run(lines);
     if (receipt.totalCents == null || receipt.isBalanced) return receipt;
+    final readings = [(first, receipt)];
     for (final alternative in [
       _Parse(useLayout: false),
       _Parse(useLayout: false, vatSide: _VatSide.afterPrice),
@@ -46,6 +53,18 @@ class ReceiptParser {
     ]) {
       final other = alternative.run(lines);
       if (other.isBalanced) return other;
+      readings.add((alternative, other));
+    }
+    for (final (parse, reading) in readings) {
+      if (parse.amountsNearTotal.contains(reading.computedTotalCents)) {
+        return reading.copyWith(
+          totalCents: reading.computedTotalCents,
+          warnings: [
+            for (final w in reading.warnings)
+              if (w != ParseWarning.totalMismatch) w,
+          ],
+        );
+      }
     }
     return receipt;
   }
@@ -411,6 +430,13 @@ class _Parse {
   int? _total;
   var _totalOnNextRow = false;
 
+  /// Amounts printed around the `TOTALE` label: rows of a lone amount just
+  /// above it, the label's row and the two rows after it (see
+  /// [ReceiptParser.parseLines]).
+  final amountsNearTotal = <int>{};
+  final _previousRowAmounts = <List<int>>[];
+  var _rowsAfterTotal = 0;
+
   /// Column order from the headings. Ignored when [useLayout] is false.
   final _layout = _ColumnLayout();
 
@@ -451,6 +477,7 @@ class _Parse {
       if (row.isEmpty) continue;
       rows.add(row);
       _readLegend(row);
+      _noteAmountsNearTotal(row);
       _read(raw.trim(), row);
     }
     _resolveQuantity(null);
@@ -476,6 +503,28 @@ class _Parse {
           ParseWarning.totalMismatch,
       ],
     );
+  }
+
+  void _noteAmountsNearTotal(String row) {
+    final amounts = [
+      for (final m in _amountRe.allMatches(row)) Money.parseCents(m[0]!),
+    ].nonNulls.toList();
+    if (_totalRe.hasMatch(row) &&
+        !_discountSummaryRe.hasMatch(row) &&
+        _total == null &&
+        !_totalOnNextRow) {
+      amountsNearTotal
+        ..addAll(_previousRowAmounts.expand((a) => a))
+        ..addAll(amounts);
+      _rowsAfterTotal = 2;
+    } else if (_rowsAfterTotal > 0) {
+      amountsNearTotal.addAll(amounts);
+      _rowsAfterTotal--;
+    }
+    // Before the label only rows that are just an amount count: an item's
+    // price is never the total.
+    _previousRowAmounts.add(_onlyAmountRe.hasMatch(row) ? amounts : const []);
+    if (_previousRowAmounts.length > 2) _previousRowAmounts.removeAt(0);
   }
 
   void _readLegend(String row) {

@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:scontrini/app/app.dart';
 import 'package:scontrini/core/database/app_database.dart';
@@ -9,6 +12,7 @@ import 'package:scontrini/features/capture/data/capture_providers.dart';
 import 'package:scontrini/features/capture/data/receipt_capture_service.dart';
 import 'package:scontrini/features/capture/domain/receipt_source.dart';
 import 'package:scontrini/features/extraction/data/extraction_providers.dart';
+import 'package:scontrini/features/extraction/domain/image_text_reader.dart';
 import 'package:scontrini/features/extraction/domain/models/ocr_document.dart';
 import 'package:scontrini/features/extraction/domain/models/ocr_line.dart';
 import 'package:scontrini/features/extraction/domain/models/ocr_page.dart';
@@ -71,14 +75,15 @@ void main() {
 
   testWidgets('a scanned receipt is read and shown', (tester) async {
     when(() => capture.scan()).thenAnswer((_) async => _source);
-    when(() => extractor.extract(_source)).thenAnswer(
-      (_) async => _document([
-        'SUPERMERCATO ESEMPIO',
-        'LATTE INTERO 1,29',
-        'PANE 1,10',
-        'TOTALE 3,00',
-      ]),
-    );
+    when(() => extractor.extract(_source, onProgress: any(named: 'onProgress')))
+        .thenAnswer(
+          (_) async => _document([
+            'SUPERMERCATO ESEMPIO',
+            'LATTE INTERO 1,29',
+            'PANE 1,10',
+            'TOTALE 3,00',
+          ]),
+        );
 
     await openCapture(tester);
     await tester.tap(find.text('Scansiona con la fotocamera'));
@@ -105,7 +110,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Nuovo scontrino'), findsOneWidget);
-    verifyNever(() => extractor.extract(any()));
+    verifyNever(
+      () => extractor.extract(any(), onProgress: any(named: 'onProgress')),
+    );
   });
 
   testWidgets('a capture error shows a message', (tester) async {
@@ -121,10 +128,11 @@ void main() {
   testWidgets('an extraction error can be retried', (tester) async {
     var calls = 0;
     when(() => capture.scan()).thenAnswer((_) async => _source);
-    when(() => extractor.extract(_source)).thenAnswer((_) async {
-      if (calls++ == 0) throw Exception('OCR failed');
-      return _document(['PANE 1,10', 'TOTALE 1,10']);
-    });
+    when(() => extractor.extract(_source, onProgress: any(named: 'onProgress')))
+        .thenAnswer((_) async {
+          if (calls++ == 0) throw Exception('OCR failed');
+          return _document(['PANE 1,10', 'TOTALE 1,10']);
+        });
 
     await openCapture(tester);
     await tester.tap(find.text('Scansiona con la fotocamera'));
@@ -132,6 +140,34 @@ void main() {
     expect(find.text('Impossibile leggere lo scontrino.'), findsOneWidget);
 
     await tester.tap(find.text('Riprova'));
+    await tester.pumpAndSettle();
+    expect(find.text('PANE'), findsOneWidget);
+  });
+
+  testWidgets('a progress bar shows how far reading is', (tester) async {
+    final done = Completer<OcrDocument>();
+    when(() => capture.scan()).thenAnswer((_) async => _source);
+    when(() => extractor.extract(_source, onProgress: any(named: 'onProgress')))
+        .thenAnswer((invocation) {
+          final onProgress =
+              invocation.namedArguments[#onProgress] as OnReadProgress?;
+          onProgress?.call((step: ReadStep.readingLines, fraction: 0.5));
+          return done.future;
+        });
+
+    await openCapture(tester);
+    await tester.tap(find.text('Scansiona con la fotocamera'));
+    await tester.pump();
+    await tester.pump();
+    // The bar eases to the new value.
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Leggo le righe… 50%'), findsOneWidget);
+    final bar = tester.widget<LinearProgressIndicator>(
+      find.byType(LinearProgressIndicator),
+    );
+    expect(bar.value, closeTo(0.5, 0.01));
+
+    done.complete(_document(['PANE 1,10', 'TOTALE 1,10']));
     await tester.pumpAndSettle();
     expect(find.text('PANE'), findsOneWidget);
   });
