@@ -68,10 +68,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get retry => 'Riprova';
 
   @override
-  String get extractionPreviewNotice =>
-      'Controlla i dati: confermando, lo scontrino viene salvato e puoi smistarlo in dispensa.';
-
-  @override
   String get fieldStore => 'Negozio';
 
   @override
@@ -354,9 +350,6 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
-  String get confirmAndSort => 'Conferma e smista in dispensa';
-
-  @override
   String get confirmFailed => 'Impossibile salvare lo scontrino.';
 
   @override
@@ -465,4 +458,129 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get pantryNoResults => 'Nessun prodotto trovato.';
+
+  @override
+  String get reviewTitle => 'Controlla lo scontrino';
+
+  @override
+  String get reviewNotice =>
+      'Controlla ogni prodotto: confermalo se è stato letto bene, altrimenti correggilo. Salvando, lo scontrino entra nella dashboard e i prodotti in dispensa.';
+
+  @override
+  String get reviewAddItem => 'Aggiungi articolo';
+
+  @override
+  String get reviewEditItem => 'Modifica articolo';
+
+  @override
+  String get reviewFieldName => 'Nome sullo scontrino';
+
+  @override
+  String get reviewFieldQuantity => 'Quantità';
+
+  @override
+  String get reviewFieldUnitPrice => 'Prezzo unitario';
+
+  @override
+  String get reviewFieldAmount => 'Importo';
+
+  @override
+  String get reviewFieldDiscount => 'Sconto (facoltativo)';
+
+  @override
+  String get reviewFieldCategory => 'Categoria';
+
+  @override
+  String get reviewInvalidName => 'Inserisci un nome';
+
+  @override
+  String get reviewInvalidQuantity => 'Inserisci una quantità maggiore di zero';
+
+  @override
+  String get reviewInvalidAmount => 'Importo non valido';
+
+  @override
+  String get reviewDiscountTooLarge => 'Lo sconto supera l\'importo';
+
+  @override
+  String get reviewUncategorised => 'Senza categoria';
+
+  @override
+  String get reviewNoItems =>
+      'Nessun articolo: aggiungine almeno uno per confermare.';
+
+  @override
+  String get reviewUnparsedHint => 'Se manca un articolo, aggiungilo a mano.';
+
+  @override
+  String reviewItemDeleted(String name) {
+    return '$name eliminato';
+  }
+
+  @override
+  String get reviewUndo => 'Annulla';
+
+  @override
+  String get reviewDiscardTitle => 'Scartare le modifiche?';
+
+  @override
+  String get reviewDiscardBody => 'Lo scontrino non è ancora stato salvato.';
+
+  @override
+  String get reviewDiscard => 'Scarta';
+
+  @override
+  String reviewMismatchDetail(String items, String total) {
+    return 'Somma articoli $items, totale $total';
+  }
+
+  @override
+  String get reviewMissingDateHint => 'Senza data, viene usata quella di oggi.';
+
+  @override
+  String get reviewMissingTotalHint =>
+      'Senza totale, viene usata la somma degli articoli.';
+
+  @override
+  String get reviewUseItemsTotal => 'Usa la somma';
+
+  @override
+  String get reviewSave => 'Salva scontrino';
+
+  @override
+  String reviewSaveBlocked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Mancano $count prodotti da controllare',
+      one: 'Manca 1 prodotto da controllare',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reviewItemsPending(int count, int pending) {
+    return 'Articoli ($count), $pending da controllare';
+  }
+
+  @override
+  String get reviewConfirmItem => 'Corretto';
+
+  @override
+  String get reviewCorrectItem => 'Correggi';
+
+  @override
+  String get reviewUnconfirmItem => 'Da ricontrollare';
+
+  @override
+  String reviewSaved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Scontrino salvato, $count prodotti in dispensa.',
+      one: 'Scontrino salvato, 1 prodotto in dispensa.',
+      zero: 'Scontrino salvato.',
+    );
+    return '$_temp0';
+  }
 }

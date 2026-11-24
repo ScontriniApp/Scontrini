@@ -86,6 +86,43 @@ void main() {
     expect(rows.where((r) => r.categoryId != null), isNotEmpty);
   });
 
+  test('categories chosen in the review are saved as they are', () async {
+    final home = (await (db.select(
+      db.categories,
+    )..where((c) => c.name.equals('Casa e igiene'))).getSingle()).id;
+    final id = await receipts.saveConfirmed(
+      _receipt,
+      categoryIds: [home, null, home],
+    );
+    final rows =
+        await (db.select(db.receiptItems)
+              ..where((r) => r.receiptId.equals(id))
+              ..orderBy([(r) => OrderingTerm.asc(r.id)]))
+            .get();
+    // MELE would be fruit by keyword: the user's "uncategorised" wins.
+    expect(rows.map((r) => r.categoryId), [home, null, home]);
+    final apples = await (db.select(
+      db.products,
+    )..where((p) => p.canonicalName.equals('MELE GOLDEN'))).getSingle();
+    expect(apples.categoryId, isNull);
+  });
+
+  test("guesses prefer the product's category, then the keywords", () async {
+    final home = (await (db.select(
+      db.categories,
+    )..where((c) => c.name.equals('Casa e igiene'))).getSingle()).id;
+    final dairy = (await (db.select(
+      db.categories,
+    )..where((c) => c.name.equals('Latticini e uova'))).getSingle()).id;
+    // A product the user filed under home care in an earlier review.
+    await receipts.saveConfirmed(_receipt, categoryIds: [home, null, null]);
+
+    expect(
+      await receipts.guessCategories(['latte intero', 'MOZZARELLA', 'ZZZ']),
+      [home, dairy, null],
+    );
+  });
+
   test('the same receipt saved twice is one receipt', () async {
     final first = await receipts.saveConfirmed(_receipt);
     final second = await receipts.saveConfirmed(_receipt);
@@ -110,6 +147,47 @@ void main() {
       expect(saved.totalCents, 488);
     },
   );
+
+  test('a saved receipt can go into the pantry all at once', () async {
+    final id = await receipts.saveConfirmed(
+      _receipt.copyWith(
+        items: [
+          ..._receipt.items,
+          // A second milk row is the same lot; a bag is never tracked.
+          const ParsedItem(
+            rawName: 'LATTE INTERO',
+            unitPriceCents: 129,
+            lineTotalCents: 129,
+          ),
+          const ParsedItem(
+            rawName: 'SHOPPER',
+            unitPriceCents: 10,
+            lineTotalCents: 10,
+          ),
+        ],
+        totalCents: 627,
+      ),
+    );
+    final bag = await (db.select(
+      db.products,
+    )..where((p) => p.canonicalName.equals('SHOPPER'))).getSingle();
+    await (db.update(db.products)..where((p) => p.id.equals(bag.id))).write(
+      const ProductsCompanion(trackInPantry: Value(false)),
+    );
+
+    final pantry = PantryRepository(db);
+    expect(await pantry.addAllFromReceipt(id), 3);
+    final lots = await (db.select(
+      db.pantryLots,
+    )..orderBy([(l) => OrderingTerm.asc(l.id)])).get();
+    expect(lots.map((l) => (l.name, l.initialQuantity)), [
+      ('LATTE INTERO', 2.0),
+      ('MELE GOLDEN', 0.5),
+      ('MOZZARELLA', 1.0),
+    ]);
+    // Nothing is added twice.
+    expect(await pantry.addAllFromReceipt(id), 0);
+  });
 
   test('a saved receipt can be sorted into the pantry', () async {
     final id = await receipts.saveConfirmed(_receipt);

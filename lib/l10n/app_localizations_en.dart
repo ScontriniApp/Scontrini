@@ -68,10 +68,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retry => 'Retry';
 
   @override
-  String get extractionPreviewNotice =>
-      'Check the data: confirming saves the receipt and lets you sort it into the pantry.';
-
-  @override
   String get fieldStore => 'Store';
 
   @override
@@ -352,9 +348,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get confirmAndSort => 'Confirm and sort into the pantry';
-
-  @override
   String get confirmFailed => 'Could not save the receipt.';
 
   @override
@@ -462,4 +455,128 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pantryNoResults => 'No products found.';
+
+  @override
+  String get reviewTitle => 'Check the receipt';
+
+  @override
+  String get reviewNotice =>
+      'Check each product: confirm it if it was read correctly, otherwise correct it. Saving adds the receipt to the dashboard and its products to the pantry.';
+
+  @override
+  String get reviewAddItem => 'Add item';
+
+  @override
+  String get reviewEditItem => 'Edit item';
+
+  @override
+  String get reviewFieldName => 'Name on the receipt';
+
+  @override
+  String get reviewFieldQuantity => 'Quantity';
+
+  @override
+  String get reviewFieldUnitPrice => 'Unit price';
+
+  @override
+  String get reviewFieldAmount => 'Amount';
+
+  @override
+  String get reviewFieldDiscount => 'Discount (optional)';
+
+  @override
+  String get reviewFieldCategory => 'Category';
+
+  @override
+  String get reviewInvalidName => 'Enter a name';
+
+  @override
+  String get reviewInvalidQuantity => 'Enter a quantity greater than zero';
+
+  @override
+  String get reviewInvalidAmount => 'Invalid amount';
+
+  @override
+  String get reviewDiscountTooLarge => 'The discount is more than the amount';
+
+  @override
+  String get reviewUncategorised => 'Uncategorised';
+
+  @override
+  String get reviewNoItems => 'No items: add at least one to confirm.';
+
+  @override
+  String get reviewUnparsedHint => 'If an item is missing, add it by hand.';
+
+  @override
+  String reviewItemDeleted(String name) {
+    return '$name deleted';
+  }
+
+  @override
+  String get reviewUndo => 'Undo';
+
+  @override
+  String get reviewDiscardTitle => 'Discard changes?';
+
+  @override
+  String get reviewDiscardBody => 'The receipt hasn\'t been saved yet.';
+
+  @override
+  String get reviewDiscard => 'Discard';
+
+  @override
+  String reviewMismatchDetail(String items, String total) {
+    return 'Items sum $items, total $total';
+  }
+
+  @override
+  String get reviewMissingDateHint => 'Without a date, today\'s is used.';
+
+  @override
+  String get reviewMissingTotalHint =>
+      'Without a total, the items\' sum is used.';
+
+  @override
+  String get reviewUseItemsTotal => 'Use the sum';
+
+  @override
+  String get reviewSave => 'Save receipt';
+
+  @override
+  String reviewSaveBlocked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count products left to check',
+      one: '1 product left to check',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reviewItemsPending(int count, int pending) {
+    return 'Items ($count), $pending to check';
+  }
+
+  @override
+  String get reviewConfirmItem => 'Correct';
+
+  @override
+  String get reviewCorrectItem => 'Fix';
+
+  @override
+  String get reviewUnconfirmItem => 'Check again';
+
+  @override
+  String reviewSaved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Receipt saved, $count products in the pantry.',
+      one: 'Receipt saved, 1 product in the pantry.',
+      zero: 'Receipt saved.',
+    );
+    return '$_temp0';
+  }
 }

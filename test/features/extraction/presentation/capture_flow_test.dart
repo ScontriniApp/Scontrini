@@ -55,7 +55,23 @@ void main() {
     extractor = _MockExtractor();
   });
 
+  /// The review loads category guesses from Drift, which runs on real
+  /// async work the fake clock never advances: give it real time.
+  Future<void> settle(WidgetTester tester) async {
+    for (var i = 0; i < 5; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+    }
+  }
+
   Future<void> openCapture(WidgetTester tester) async {
+    // A tall phone, so the review's rows fit without scrolling.
+    tester.view
+      ..physicalSize = const Size(1080, 9000)
+      ..devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
     final db = AppDatabase(NativeDatabase.memory());
     // The app opens on the dashboard, which watches the database: unmount
     // and let Drift's timers run before closing it (as in widget_test.dart).
@@ -70,6 +86,10 @@ void main() {
           appDatabaseProvider.overrideWithValue(db),
           receiptCaptureServiceProvider.overrideWithValue(capture),
           textExtractorProvider.overrideWithValue(extractor),
+          // No platform folders in tests: no GLM-OCR model installed.
+          glmOcrModelDirectoryProvider.overrideWithValue(
+            Future.value('/nonexistent/models/glm-ocr'),
+          ),
         ],
         child: const ScontriniApp(),
       ),
@@ -93,12 +113,12 @@ void main() {
 
     await openCapture(tester);
     await tester.tap(find.text('Scansiona con la fotocamera'));
-    await tester.pumpAndSettle();
+    await settle(tester);
 
-    expect(find.text('Scontrino letto'), findsOneWidget);
+    expect(find.text('Controlla lo scontrino'), findsOneWidget);
     expect(find.text('SUPERMERCATO ESEMPIO'), findsOneWidget);
     expect(find.text('LATTE INTERO'), findsOneWidget);
-    expect(find.text('Articoli (2)'), findsOneWidget);
+    expect(find.text('Articoli (2), 2 da controllare'), findsOneWidget);
     expect(find.text('Data non trovata'), findsOneWidget);
     expect(
       find.text('La somma degli articoli non corrisponde al totale'),
@@ -146,7 +166,7 @@ void main() {
     expect(find.text('Impossibile leggere lo scontrino.'), findsOneWidget);
 
     await tester.tap(find.text('Riprova'));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.text('PANE'), findsOneWidget);
   });
 
@@ -174,7 +194,7 @@ void main() {
     expect(bar.value, closeTo(0.5, 0.01));
 
     done.complete(_document(['PANE 1,10', 'TOTALE 1,10']));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.text('PANE'), findsOneWidget);
   });
 }

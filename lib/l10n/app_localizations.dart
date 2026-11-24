@@ -212,12 +212,6 @@ abstract class AppLocalizations {
   /// **'Riprova'**
   String get retry;
 
-  /// No description provided for @extractionPreviewNotice.
-  ///
-  /// In it, this message translates to:
-  /// **'Controlla i dati: confermando, lo scontrino viene salvato e puoi smistarlo in dispensa.'**
-  String get extractionPreviewNotice;
-
   /// No description provided for @fieldStore.
   ///
   /// In it, this message translates to:
@@ -710,12 +704,6 @@ abstract class AppLocalizations {
   /// **'{kept} in dispensa, {skipped} saltati.'**
   String triageSummary(int kept, int skipped);
 
-  /// No description provided for @confirmAndSort.
-  ///
-  /// In it, this message translates to:
-  /// **'Conferma e smista in dispensa'**
-  String get confirmAndSort;
-
   /// No description provided for @confirmFailed.
   ///
   /// In it, this message translates to:
@@ -871,6 +859,204 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Nessun prodotto trovato.'**
   String get pantryNoResults;
+
+  /// No description provided for @reviewTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Controlla lo scontrino'**
+  String get reviewTitle;
+
+  /// No description provided for @reviewNotice.
+  ///
+  /// In it, this message translates to:
+  /// **'Controlla ogni prodotto: confermalo se è stato letto bene, altrimenti correggilo. Salvando, lo scontrino entra nella dashboard e i prodotti in dispensa.'**
+  String get reviewNotice;
+
+  /// No description provided for @reviewAddItem.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi articolo'**
+  String get reviewAddItem;
+
+  /// No description provided for @reviewEditItem.
+  ///
+  /// In it, this message translates to:
+  /// **'Modifica articolo'**
+  String get reviewEditItem;
+
+  /// No description provided for @reviewFieldName.
+  ///
+  /// In it, this message translates to:
+  /// **'Nome sullo scontrino'**
+  String get reviewFieldName;
+
+  /// No description provided for @reviewFieldQuantity.
+  ///
+  /// In it, this message translates to:
+  /// **'Quantità'**
+  String get reviewFieldQuantity;
+
+  /// No description provided for @reviewFieldUnitPrice.
+  ///
+  /// In it, this message translates to:
+  /// **'Prezzo unitario'**
+  String get reviewFieldUnitPrice;
+
+  /// No description provided for @reviewFieldAmount.
+  ///
+  /// In it, this message translates to:
+  /// **'Importo'**
+  String get reviewFieldAmount;
+
+  /// No description provided for @reviewFieldDiscount.
+  ///
+  /// In it, this message translates to:
+  /// **'Sconto (facoltativo)'**
+  String get reviewFieldDiscount;
+
+  /// No description provided for @reviewFieldCategory.
+  ///
+  /// In it, this message translates to:
+  /// **'Categoria'**
+  String get reviewFieldCategory;
+
+  /// No description provided for @reviewInvalidName.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci un nome'**
+  String get reviewInvalidName;
+
+  /// No description provided for @reviewInvalidQuantity.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci una quantità maggiore di zero'**
+  String get reviewInvalidQuantity;
+
+  /// No description provided for @reviewInvalidAmount.
+  ///
+  /// In it, this message translates to:
+  /// **'Importo non valido'**
+  String get reviewInvalidAmount;
+
+  /// No description provided for @reviewDiscountTooLarge.
+  ///
+  /// In it, this message translates to:
+  /// **'Lo sconto supera l\'importo'**
+  String get reviewDiscountTooLarge;
+
+  /// No description provided for @reviewUncategorised.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza categoria'**
+  String get reviewUncategorised;
+
+  /// No description provided for @reviewNoItems.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun articolo: aggiungine almeno uno per confermare.'**
+  String get reviewNoItems;
+
+  /// No description provided for @reviewUnparsedHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Se manca un articolo, aggiungilo a mano.'**
+  String get reviewUnparsedHint;
+
+  /// No description provided for @reviewItemDeleted.
+  ///
+  /// In it, this message translates to:
+  /// **'{name} eliminato'**
+  String reviewItemDeleted(String name);
+
+  /// No description provided for @reviewUndo.
+  ///
+  /// In it, this message translates to:
+  /// **'Annulla'**
+  String get reviewUndo;
+
+  /// No description provided for @reviewDiscardTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Scartare le modifiche?'**
+  String get reviewDiscardTitle;
+
+  /// No description provided for @reviewDiscardBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Lo scontrino non è ancora stato salvato.'**
+  String get reviewDiscardBody;
+
+  /// No description provided for @reviewDiscard.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarta'**
+  String get reviewDiscard;
+
+  /// No description provided for @reviewMismatchDetail.
+  ///
+  /// In it, this message translates to:
+  /// **'Somma articoli {items}, totale {total}'**
+  String reviewMismatchDetail(String items, String total);
+
+  /// No description provided for @reviewMissingDateHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza data, viene usata quella di oggi.'**
+  String get reviewMissingDateHint;
+
+  /// No description provided for @reviewMissingTotalHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza totale, viene usata la somma degli articoli.'**
+  String get reviewMissingTotalHint;
+
+  /// No description provided for @reviewUseItemsTotal.
+  ///
+  /// In it, this message translates to:
+  /// **'Usa la somma'**
+  String get reviewUseItemsTotal;
+
+  /// No description provided for @reviewSave.
+  ///
+  /// In it, this message translates to:
+  /// **'Salva scontrino'**
+  String get reviewSave;
+
+  /// No description provided for @reviewSaveBlocked.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{Manca 1 prodotto da controllare} other{Mancano {count} prodotti da controllare}}'**
+  String reviewSaveBlocked(int count);
+
+  /// No description provided for @reviewItemsPending.
+  ///
+  /// In it, this message translates to:
+  /// **'Articoli ({count}), {pending} da controllare'**
+  String reviewItemsPending(int count, int pending);
+
+  /// No description provided for @reviewConfirmItem.
+  ///
+  /// In it, this message translates to:
+  /// **'Corretto'**
+  String get reviewConfirmItem;
+
+  /// No description provided for @reviewCorrectItem.
+  ///
+  /// In it, this message translates to:
+  /// **'Correggi'**
+  String get reviewCorrectItem;
+
+  /// No description provided for @reviewUnconfirmItem.
+  ///
+  /// In it, this message translates to:
+  /// **'Da ricontrollare'**
+  String get reviewUnconfirmItem;
+
+  /// No description provided for @reviewSaved.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =0{Scontrino salvato.} =1{Scontrino salvato, 1 prodotto in dispensa.} other{Scontrino salvato, {count} prodotti in dispensa.}}'**
+  String reviewSaved(int count);
 }
 
 class _AppLocalizationsDelegate

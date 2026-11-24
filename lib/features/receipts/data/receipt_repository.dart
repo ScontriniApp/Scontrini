@@ -5,9 +5,8 @@ import 'package:scontrini/features/extraction/domain/models/quantity_unit.dart';
 import 'package:scontrini/features/receipts/domain/product_matcher.dart';
 import 'package:scontrini/features/receipts/domain/transaction_hash.dart';
 
-/// Stores receipts. For now only [saveConfirmed], used by the extraction
-/// screen's "confirm and sort" until the review screen (where the user
-/// corrects the fields first) takes over.
+/// Stores receipts: [saveConfirmed] is what the review screen's "confirm"
+/// calls, once the user has corrected what was read.
 class ReceiptRepository {
   new(this._db, {DateTime Function()? clock}) : _clock = clock ?? DateTime.now;
 
@@ -19,8 +18,10 @@ class ReceiptRepository {
   /// returns the existing id instead of a duplicate.
   ///
   /// A receipt whose date wasn't read is dated now (the capture). A total
-  /// that wasn't read is the rows' sum. Rows get a category from the
-  /// keywords table (`CategoryClassifier`), else their product's.
+  /// that wasn't read is the rows' sum. Rows get the categories in
+  /// [categoryIds] (same order, as chosen in the review; `null` means
+  /// uncategorised). Without [categoryIds] they get one from the keywords
+  /// table (`CategoryClassifier`), else their product's.
   ///
   /// Every row is linked to a product (`ProductMatcher`): the one with the
   /// same label (canonical name or alias), or else a new product named after
@@ -28,6 +29,7 @@ class ReceiptRepository {
   /// merged.
   Future<int> saveConfirmed(
     ParsedReceipt receipt, {
+    List<int?>? categoryIds,
     String? sourcePath,
     String? rawOcrText,
   }) => _db.transaction(() async {
@@ -60,13 +62,16 @@ class ReceiptRepository {
         );
     final classifier = await _db.categoryClassifier();
     final products = await _ProductLinker.load(_db);
-    for (final item in receipt.items) {
+    for (final (i, item) in receipt.items.indexed) {
       final unit = unitCode(item.unit);
-      final keywordCategory = classifier.classify(item.rawName);
+      final chosen = categoryIds != null;
+      final category = chosen
+          ? (i < categoryIds.length ? categoryIds[i] : null)
+          : classifier.classify(item.rawName);
       final product = await products.link(
         item.rawName,
         unit: unit,
-        categoryId: keywordCategory,
+        categoryId: category,
       );
       await _db
           .into(_db.receiptItems)
@@ -80,12 +85,35 @@ class ReceiptRepository {
               unitPriceCents: item.unitPriceCents,
               lineTotalCents: item.lineTotalCents,
               discountCents: Value(item.discountCents),
-              categoryId: Value(keywordCategory ?? product.categoryId),
+              categoryId: Value(
+                chosen ? category : category ?? product.categoryId,
+              ),
             ),
           );
     }
     return receiptId;
   });
+
+  /// The category of each name: the product's with that label (chosen in
+  /// an earlier review), else the keywords table's. What the review screen
+  /// shows before the user changes it.
+  Future<List<int?>> guessCategories(List<String> names) async {
+    final classifier = await _db.categoryClassifier();
+    final products = await _db.select(_db.products).get();
+    final aliases = await _db.select(_db.productAliases).get();
+    final matcher = ProductMatcher(
+      products: [
+        for (final p in products)
+          MatchableProduct(id: p.id, canonicalName: p.canonicalName),
+      ],
+      aliases: {for (final a in aliases) a.rawName: a.productId},
+    );
+    final categoryOf = {for (final p in products) p.id: p.categoryId};
+    return [
+      for (final name in names)
+        categoryOf[matcher.match(name)] ?? classifier.classify(name),
+    ];
+  }
 
   /// The `receipt_items.unit` code of [unit].
   static String unitCode(QuantityUnit unit) => switch (unit) {
