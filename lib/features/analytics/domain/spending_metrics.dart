@@ -15,13 +15,17 @@ import 'package:scontrini/features/analytics/domain/proportional_split.dart';
 /// history must be loaded with `range.extendBack(range.days)`; otherwise the
 /// previous amounts come out as zero.
 abstract final class SpendingMetrics {
-  /// M1: sum of `totalCents` of the receipts in [range], compared with the
-  /// previous equal-length range. Trusts the printed totals, not the items.
-  static PeriodAmount totalSpending(PurchaseHistory history, DateRange range) =>
-      PeriodAmount(
-        cents: _sumTotals(history, range),
-        previousCents: _sumTotals(history, range.previous()),
-      );
+  /// M1: sum of `totalCents` of the receipts in [range], compared with
+  /// [previous] (by default the previous equal-length range). Trusts the
+  /// printed totals, not the items.
+  static PeriodAmount totalSpending(
+    PurchaseHistory history,
+    DateRange range, {
+    DateRange? previous,
+  }) => PeriodAmount(
+    cents: _sumTotals(history, range),
+    previousCents: _sumTotals(history, previous ?? range.previous()),
+  );
 
   /// M2: M1 per day, ISO week or month. Returns one bucket per period in
   /// [range], including empty ones, so the chart's time axis has no gaps; the
@@ -148,12 +152,16 @@ abstract final class SpendingMetrics {
   }
 
   /// M8: item and receipt-level discounts in [range] (returns excluded),
-  /// compared with the previous equal-length range, plus the amount paid
-  /// so the UI can show the savings rate.
-  static Savings savings(PurchaseHistory history, DateRange range) => Savings(
+  /// compared with [previous] (by default the previous equal-length range),
+  /// plus the amount paid so the UI can show the savings rate.
+  static Savings savings(
+    PurchaseHistory history,
+    DateRange range, {
+    DateRange? previous,
+  }) => Savings(
     saved: PeriodAmount(
       cents: _sumSavings(history, range),
-      previousCents: _sumSavings(history, range.previous()),
+      previousCents: _sumSavings(history, previous ?? range.previous()),
     ),
     paidCents: _sumTotals(history, range),
   );

@@ -51,9 +51,6 @@ class AppLocalizationsIt extends AppLocalizations {
       'Nessuno scontrino salvato. Fotografane uno o inseriscilo a mano.';
 
   @override
-  String get analyticsEmpty => 'Grafici e statistiche appariranno qui.';
-
-  @override
   String get captureFailed => 'Impossibile acquisire lo scontrino.';
 
   @override
@@ -619,4 +616,133 @@ class AppLocalizationsIt extends AppLocalizations {
   String reviewConfirmAll(int count) {
     return 'Conferma tutti ($count)';
   }
+
+  @override
+  String get analyticsTabSpending => 'Spesa';
+
+  @override
+  String get analyticsTabProducts => 'Prodotti';
+
+  @override
+  String get analyticsPeriodWeek => 'Settimana';
+
+  @override
+  String get analyticsPeriodMonth => 'Mese';
+
+  @override
+  String get analyticsPeriodQuarter => '3 mesi';
+
+  @override
+  String get analyticsPeriodYear => 'Anno';
+
+  @override
+  String get analyticsPickDates => 'Scegli le date';
+
+  @override
+  String get analyticsPreviousPeriod => 'Periodo precedente';
+
+  @override
+  String get analyticsNextPeriod => 'Periodo successivo';
+
+  @override
+  String get analyticsNoReceipts => 'Nessuno scontrino in questo periodo';
+
+  @override
+  String get analyticsSpent => 'Speso';
+
+  @override
+  String analyticsComparedWith(String period, String amount) {
+    return '$period: $amount';
+  }
+
+  @override
+  String analyticsNothingBefore(String period) {
+    return 'Nessuna spesa nel periodo prima ($period)';
+  }
+
+  @override
+  String analyticsChangeVs(String change, String period) {
+    return '$change rispetto a $period';
+  }
+
+  @override
+  String get analyticsOverTime => 'Andamento';
+
+  @override
+  String get analyticsOverTimeHint => 'Tocca una barra per vederne il totale';
+
+  @override
+  String get analyticsCategoriesTitle => 'Categorie';
+
+  @override
+  String get analyticsUncategorised => 'Senza categoria e altro';
+
+  @override
+  String get analyticsStoresTitle => 'Negozi';
+
+  @override
+  String get analyticsUnknownStore => 'Negozio sconosciuto';
+
+  @override
+  String analyticsStoreVisits(int count, String amount) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count visite',
+      one: '1 visita',
+    );
+    return '$_temp0 · spesa media $amount';
+  }
+
+  @override
+  String get analyticsSavingsTitle => 'Risparmiato con gli sconti';
+
+  @override
+  String analyticsSavingsRate(String percent) {
+    return '$percent del prezzo pieno';
+  }
+
+  @override
+  String get analyticsMostBoughtTitle => 'Più acquistati';
+
+  @override
+  String analyticsTimesBought(int count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count volte',
+      one: '1 volta',
+    );
+    return '$_temp0 · ultimo acquisto $date';
+  }
+
+  @override
+  String analyticsShowAll(int count) {
+    return 'Mostra tutti ($count)';
+  }
+
+  @override
+  String get analyticsShowLess => 'Mostra meno';
+
+  @override
+  String get analyticsPriceChangesTitle => 'Variazioni di prezzo';
+
+  @override
+  String get analyticsPriceRises => 'In aumento';
+
+  @override
+  String get analyticsPriceDrops => 'In calo';
+
+  @override
+  String analyticsPriceVsUsual(String latest, String usual) {
+    return '$latest contro $usual di solito';
+  }
+
+  @override
+  String get analyticsPriceChangesHint =>
+      'Prezzo pieno dell\'ultimo acquisto rispetto alla mediana dei 90 giorni prima (almeno 3 acquisti). Le offerte non contano.';
+
+  @override
+  String get analyticsNoPriceChanges =>
+      'Nessuna variazione di prezzo di rilievo in questo periodo';
 }

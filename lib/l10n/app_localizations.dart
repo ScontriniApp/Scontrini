@@ -176,12 +176,6 @@ abstract class AppLocalizations {
   /// **'Nessuno scontrino salvato. Fotografane uno o inseriscilo a mano.'**
   String get receiptsEmpty;
 
-  /// No description provided for @analyticsEmpty.
-  ///
-  /// In it, this message translates to:
-  /// **'Grafici e statistiche appariranno qui.'**
-  String get analyticsEmpty;
-
   /// No description provided for @captureFailed.
   ///
   /// In it, this message translates to:
@@ -1087,6 +1081,204 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Conferma tutti ({count})'**
   String reviewConfirmAll(int count);
+
+  /// No description provided for @analyticsTabSpending.
+  ///
+  /// In it, this message translates to:
+  /// **'Spesa'**
+  String get analyticsTabSpending;
+
+  /// No description provided for @analyticsTabProducts.
+  ///
+  /// In it, this message translates to:
+  /// **'Prodotti'**
+  String get analyticsTabProducts;
+
+  /// No description provided for @analyticsPeriodWeek.
+  ///
+  /// In it, this message translates to:
+  /// **'Settimana'**
+  String get analyticsPeriodWeek;
+
+  /// No description provided for @analyticsPeriodMonth.
+  ///
+  /// In it, this message translates to:
+  /// **'Mese'**
+  String get analyticsPeriodMonth;
+
+  /// No description provided for @analyticsPeriodQuarter.
+  ///
+  /// In it, this message translates to:
+  /// **'3 mesi'**
+  String get analyticsPeriodQuarter;
+
+  /// No description provided for @analyticsPeriodYear.
+  ///
+  /// In it, this message translates to:
+  /// **'Anno'**
+  String get analyticsPeriodYear;
+
+  /// No description provided for @analyticsPickDates.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli le date'**
+  String get analyticsPickDates;
+
+  /// No description provided for @analyticsPreviousPeriod.
+  ///
+  /// In it, this message translates to:
+  /// **'Periodo precedente'**
+  String get analyticsPreviousPeriod;
+
+  /// No description provided for @analyticsNextPeriod.
+  ///
+  /// In it, this message translates to:
+  /// **'Periodo successivo'**
+  String get analyticsNextPeriod;
+
+  /// No description provided for @analyticsNoReceipts.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuno scontrino in questo periodo'**
+  String get analyticsNoReceipts;
+
+  /// No description provided for @analyticsSpent.
+  ///
+  /// In it, this message translates to:
+  /// **'Speso'**
+  String get analyticsSpent;
+
+  /// No description provided for @analyticsComparedWith.
+  ///
+  /// In it, this message translates to:
+  /// **'{period}: {amount}'**
+  String analyticsComparedWith(String period, String amount);
+
+  /// No description provided for @analyticsNothingBefore.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna spesa nel periodo prima ({period})'**
+  String analyticsNothingBefore(String period);
+
+  /// No description provided for @analyticsChangeVs.
+  ///
+  /// In it, this message translates to:
+  /// **'{change} rispetto a {period}'**
+  String analyticsChangeVs(String change, String period);
+
+  /// No description provided for @analyticsOverTime.
+  ///
+  /// In it, this message translates to:
+  /// **'Andamento'**
+  String get analyticsOverTime;
+
+  /// No description provided for @analyticsOverTimeHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Tocca una barra per vederne il totale'**
+  String get analyticsOverTimeHint;
+
+  /// No description provided for @analyticsCategoriesTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Categorie'**
+  String get analyticsCategoriesTitle;
+
+  /// No description provided for @analyticsUncategorised.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza categoria e altro'**
+  String get analyticsUncategorised;
+
+  /// No description provided for @analyticsStoresTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Negozi'**
+  String get analyticsStoresTitle;
+
+  /// No description provided for @analyticsUnknownStore.
+  ///
+  /// In it, this message translates to:
+  /// **'Negozio sconosciuto'**
+  String get analyticsUnknownStore;
+
+  /// No description provided for @analyticsStoreVisits.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 visita} other{{count} visite}} · spesa media {amount}'**
+  String analyticsStoreVisits(int count, String amount);
+
+  /// No description provided for @analyticsSavingsTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Risparmiato con gli sconti'**
+  String get analyticsSavingsTitle;
+
+  /// No description provided for @analyticsSavingsRate.
+  ///
+  /// In it, this message translates to:
+  /// **'{percent} del prezzo pieno'**
+  String analyticsSavingsRate(String percent);
+
+  /// No description provided for @analyticsMostBoughtTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Più acquistati'**
+  String get analyticsMostBoughtTitle;
+
+  /// No description provided for @analyticsTimesBought.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 volta} other{{count} volte}} · ultimo acquisto {date}'**
+  String analyticsTimesBought(int count, String date);
+
+  /// No description provided for @analyticsShowAll.
+  ///
+  /// In it, this message translates to:
+  /// **'Mostra tutti ({count})'**
+  String analyticsShowAll(int count);
+
+  /// No description provided for @analyticsShowLess.
+  ///
+  /// In it, this message translates to:
+  /// **'Mostra meno'**
+  String get analyticsShowLess;
+
+  /// No description provided for @analyticsPriceChangesTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Variazioni di prezzo'**
+  String get analyticsPriceChangesTitle;
+
+  /// No description provided for @analyticsPriceRises.
+  ///
+  /// In it, this message translates to:
+  /// **'In aumento'**
+  String get analyticsPriceRises;
+
+  /// No description provided for @analyticsPriceDrops.
+  ///
+  /// In it, this message translates to:
+  /// **'In calo'**
+  String get analyticsPriceDrops;
+
+  /// No description provided for @analyticsPriceVsUsual.
+  ///
+  /// In it, this message translates to:
+  /// **'{latest} contro {usual} di solito'**
+  String analyticsPriceVsUsual(String latest, String usual);
+
+  /// No description provided for @analyticsPriceChangesHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Prezzo pieno dell\'ultimo acquisto rispetto alla mediana dei 90 giorni prima (almeno 3 acquisti). Le offerte non contano.'**
+  String get analyticsPriceChangesHint;
+
+  /// No description provided for @analyticsNoPriceChanges.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna variazione di prezzo di rilievo in questo periodo'**
+  String get analyticsNoPriceChanges;
 }
 
 class _AppLocalizationsDelegate

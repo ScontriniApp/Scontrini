@@ -51,9 +51,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'No receipts yet. Take a photo of one or type it in by hand.';
 
   @override
-  String get analyticsEmpty => 'Charts and statistics will appear here.';
-
-  @override
   String get captureFailed => 'Couldn\'t capture the receipt.';
 
   @override
@@ -617,4 +614,133 @@ class AppLocalizationsEn extends AppLocalizations {
   String reviewConfirmAll(int count) {
     return 'Confirm all ($count)';
   }
+
+  @override
+  String get analyticsTabSpending => 'Spending';
+
+  @override
+  String get analyticsTabProducts => 'Products';
+
+  @override
+  String get analyticsPeriodWeek => 'Week';
+
+  @override
+  String get analyticsPeriodMonth => 'Month';
+
+  @override
+  String get analyticsPeriodQuarter => '3 months';
+
+  @override
+  String get analyticsPeriodYear => 'Year';
+
+  @override
+  String get analyticsPickDates => 'Pick dates';
+
+  @override
+  String get analyticsPreviousPeriod => 'Previous period';
+
+  @override
+  String get analyticsNextPeriod => 'Next period';
+
+  @override
+  String get analyticsNoReceipts => 'No receipts in this period';
+
+  @override
+  String get analyticsSpent => 'Spent';
+
+  @override
+  String analyticsComparedWith(String period, String amount) {
+    return '$period: $amount';
+  }
+
+  @override
+  String analyticsNothingBefore(String period) {
+    return 'Nothing spent in the period before ($period)';
+  }
+
+  @override
+  String analyticsChangeVs(String change, String period) {
+    return '$change vs $period';
+  }
+
+  @override
+  String get analyticsOverTime => 'Over time';
+
+  @override
+  String get analyticsOverTimeHint => 'Tap a bar to see its total';
+
+  @override
+  String get analyticsCategoriesTitle => 'Categories';
+
+  @override
+  String get analyticsUncategorised => 'Uncategorised and other';
+
+  @override
+  String get analyticsStoresTitle => 'Stores';
+
+  @override
+  String get analyticsUnknownStore => 'Unknown store';
+
+  @override
+  String analyticsStoreVisits(int count, String amount) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count visits',
+      one: '1 visit',
+    );
+    return '$_temp0 · average $amount';
+  }
+
+  @override
+  String get analyticsSavingsTitle => 'Saved with discounts';
+
+  @override
+  String analyticsSavingsRate(String percent) {
+    return '$percent of the full price';
+  }
+
+  @override
+  String get analyticsMostBoughtTitle => 'Most bought';
+
+  @override
+  String analyticsTimesBought(int count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count times',
+      one: 'once',
+    );
+    return '$_temp0 · last bought $date';
+  }
+
+  @override
+  String analyticsShowAll(int count) {
+    return 'Show all ($count)';
+  }
+
+  @override
+  String get analyticsShowLess => 'Show less';
+
+  @override
+  String get analyticsPriceChangesTitle => 'Price changes';
+
+  @override
+  String get analyticsPriceRises => 'Going up';
+
+  @override
+  String get analyticsPriceDrops => 'Going down';
+
+  @override
+  String analyticsPriceVsUsual(String latest, String usual) {
+    return '$latest vs $usual usually';
+  }
+
+  @override
+  String get analyticsPriceChangesHint =>
+      'Full price of the latest purchase against the median of the 90 days before (at least 3 purchases). Offers don\'t count.';
+
+  @override
+  String get analyticsNoPriceChanges =>
+      'No notable price changes in this period';
 }

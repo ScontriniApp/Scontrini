@@ -6,11 +6,13 @@ import 'package:scontrini/features/analytics/presentation/chart_palette.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 /// Shows the items behind a dashboard category slice: name, price paid and
-/// date of purchase, newest first.
+/// date of purchase, newest first. [restLabel] names the slice without a
+/// category (default "Altre categorie").
 Future<void> showCategoryPurchases(
   BuildContext context,
-  DashboardSlice slice,
-) => showModalBottomSheet<void>(
+  DashboardSlice slice, {
+  String? restLabel,
+}) => showModalBottomSheet<void>(
   context: context,
   isScrollControlled: true,
   useSafeArea: true,
@@ -20,16 +22,20 @@ Future<void> showCategoryPurchases(
     initialChildSize: 0.6,
     minChildSize: 0.3,
     maxChildSize: 0.95,
-    builder: (context, controller) =>
-        CategoryPurchasesList(slice: slice, controller: controller),
+    builder: (context, controller) => CategoryPurchasesList(
+      slice: slice,
+      controller: controller,
+      restLabel: restLabel,
+    ),
   ),
 );
 
 class CategoryPurchasesList extends StatelessWidget {
-  const new({required this.slice, this.controller, super.key});
+  const new({required this.slice, this.controller, this.restLabel, super.key});
 
   final DashboardSlice slice;
   final ScrollController? controller;
+  final String? restLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +63,9 @@ class CategoryPurchasesList extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  slice.category?.name ?? l10n.dashboardOtherCategories,
+                  slice.category?.name ??
+                      restLabel ??
+                      l10n.dashboardOtherCategories,
                   style: theme.textTheme.titleLarge,
                 ),
               ),

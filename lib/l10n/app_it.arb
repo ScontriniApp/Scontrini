@@ -13,7 +13,6 @@
   "comingSoon": "Funzionalità in arrivo",
   "dashboardEmpty": "Nessuno scontrino ancora.\nAggiungi il primo per vedere le tue spese.",
   "receiptsEmpty": "Nessuno scontrino salvato. Fotografane uno o inseriscilo a mano.",
-  "analyticsEmpty": "Grafici e statistiche appariranno qui.",
   "captureFailed": "Impossibile acquisire lo scontrino.",
   "extractionTitle": "Scontrino letto",
   "extractionLoading": "Lettura dello scontrino…",
@@ -375,5 +374,109 @@
         "type": "int"
       }
     }
-  }
+  },
+  "analyticsTabSpending": "Spesa",
+  "analyticsTabProducts": "Prodotti",
+  "analyticsPeriodWeek": "Settimana",
+  "analyticsPeriodMonth": "Mese",
+  "analyticsPeriodQuarter": "3 mesi",
+  "analyticsPeriodYear": "Anno",
+  "analyticsPickDates": "Scegli le date",
+  "analyticsPreviousPeriod": "Periodo precedente",
+  "analyticsNextPeriod": "Periodo successivo",
+  "analyticsNoReceipts": "Nessuno scontrino in questo periodo",
+  "analyticsSpent": "Speso",
+  "analyticsComparedWith": "{period}: {amount}",
+  "@analyticsComparedWith": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsNothingBefore": "Nessuna spesa nel periodo prima ({period})",
+  "@analyticsNothingBefore": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsChangeVs": "{change} rispetto a {period}",
+  "@analyticsChangeVs": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsOverTime": "Andamento",
+  "analyticsOverTimeHint": "Tocca una barra per vederne il totale",
+  "analyticsCategoriesTitle": "Categorie",
+  "analyticsUncategorised": "Senza categoria e altro",
+  "analyticsStoresTitle": "Negozi",
+  "analyticsUnknownStore": "Negozio sconosciuto",
+  "analyticsStoreVisits": "{count, plural, =1{1 visita} other{{count} visite}} · spesa media {amount}",
+  "@analyticsStoreVisits": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsSavingsTitle": "Risparmiato con gli sconti",
+  "analyticsSavingsRate": "{percent} del prezzo pieno",
+  "@analyticsSavingsRate": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsMostBoughtTitle": "Più acquistati",
+  "analyticsTimesBought": "{count, plural, =1{1 volta} other{{count} volte}} · ultimo acquisto {date}",
+  "@analyticsTimesBought": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsShowAll": "Mostra tutti ({count})",
+  "@analyticsShowAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "analyticsShowLess": "Mostra meno",
+  "analyticsPriceChangesTitle": "Variazioni di prezzo",
+  "analyticsPriceRises": "In aumento",
+  "analyticsPriceDrops": "In calo",
+  "analyticsPriceVsUsual": "{latest} contro {usual} di solito",
+  "@analyticsPriceVsUsual": {
+    "placeholders": {
+      "latest": {
+        "type": "String"
+      },
+      "usual": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsPriceChangesHint": "Prezzo pieno dell'ultimo acquisto rispetto alla mediana dei 90 giorni prima (almeno 3 acquisti). Le offerte non contano.",
+  "analyticsNoPriceChanges": "Nessuna variazione di prezzo di rilievo in questo periodo"
 }

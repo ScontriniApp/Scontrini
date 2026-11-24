@@ -58,15 +58,20 @@ abstract final class DashboardMetrics {
       usualCents: earlier.isEmpty
           ? null
           : (earlier.reduce((a, b) => a + b) / earlier.length).round(),
-      slices: _slices(history, monthToDate),
+      slices: slices(history, monthToDate),
       hasHistory: history.receipts.isNotEmpty,
     );
   }
 
-  static List<DashboardSlice> _slices(
+  /// Category slices of [range], largest first: up to [maxSlices]
+  /// categories (all of them when null), then one slice with the rest
+  /// (smaller categories, uncategorised items, the gap to the receipt
+  /// totals). Each slice lists its items, newest first.
+  static List<DashboardSlice> slices(
     PurchaseHistory history,
-    DateRange range,
-  ) {
+    DateRange range, {
+    int? maxSlices = maxCategorySlices,
+  }) {
     final shares = SpendingMetrics.spendingByCategory(history, range);
     final ids = history.categories.keys.toList()..sort();
 
@@ -74,7 +79,7 @@ abstract final class DashboardMetrics {
       for (final s in shares)
         if (s.kind == CategoryShareKind.category && s.cents > 0) s,
     ];
-    final drawn = named.take(maxCategorySlices).toList();
+    final drawn = (maxSlices == null ? named : named.take(maxSlices)).toList();
     final rest =
         shares.fold<int>(0, (sum, s) => sum + s.cents) -
         drawn.fold<int>(0, (sum, s) => sum + s.cents);
