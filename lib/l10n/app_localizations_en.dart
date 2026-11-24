@@ -251,66 +251,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unitLitres => 'l';
 
   @override
-  String get settingsPhotoReading => 'Reading photos';
-
-  @override
-  String get glmOcrModelTitle => 'Advanced reading model';
-
-  @override
-  String get glmOcrModelChecking => 'Checking…';
-
-  @override
-  String glmOcrModelMissing(String size) {
-    return 'Not installed: photos are read with standard recognition. GLM-OCR is more accurate but can take minutes per receipt on less powerful phones. $size download.';
-  }
-
-  @override
-  String glmOcrModelPartial(String done, String total) {
-    return 'Download stopped: $done of $total.';
-  }
-
-  @override
-  String glmOcrModelDownloading(String done, String total) {
-    return 'Downloading: $done of $total';
-  }
-
-  @override
-  String glmOcrModelInstalled(String size) {
-    return 'Installed ($size): photos are read on the phone with GLM-OCR.';
-  }
-
-  @override
-  String get glmOcrDownload => 'Download';
-
-  @override
-  String get glmOcrResume => 'Resume';
-
-  @override
-  String get glmOcrDownloadConfirmTitle => 'Download the model?';
-
-  @override
-  String glmOcrDownloadConfirmBody(String size) {
-    return 'The GLM-OCR model ($size) is downloaded from Hugging Face: Wi-Fi is best. Receipts never leave the phone, the model reads them offline.';
-  }
-
-  @override
-  String get glmOcrDeleteConfirmTitle => 'Delete the model?';
-
-  @override
-  String glmOcrDeleteConfirmBody(String size) {
-    return 'Frees $size. Photos will be read with standard recognition again.';
-  }
-
-  @override
-  String get glmOcrErrorNetwork => 'Download failed: check the connection.';
-
-  @override
-  String get glmOcrErrorCorrupt => 'The downloaded file is damaged: try again.';
-
-  @override
-  String get glmOcrErrorStorage => 'Not enough space on the phone.';
-
-  @override
   String get extractionStepPreparing => 'Preparing the photo…';
 
   @override
