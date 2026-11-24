@@ -1,8 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <!-- Only for downloading the GLM-OCR model from Settings, on request.
-         Receipts are never sent anywhere. -->
-    <uses-permission android:name="android.permission.INTERNET"/>
     <!-- No backup or device transfer: receipt data stays on this device.
          tools:replace overrides cunning_document_scanner's rules, which only
          exclude its scanned pictures; ours exclude everything. -->
@@ -41,9 +38,6 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <!-- Qualcomm's OpenCL driver, for GLM-OCR's image encoder on Adreno GPUs
-             (optional: phones without it use Vulkan or the CPU). -->
-        <uses-native-library android:name="libOpenCL.so" android:required="false"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

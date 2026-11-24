@@ -48,6 +48,7 @@ void main() {
     int lineTotalCents, {
     String rawName = 'ITEM',
     double quantity = 1,
+    String unit = 'pz',
     int discountCents = 0,
     int? productId,
     int? categoryId,
@@ -58,6 +59,7 @@ void main() {
           receiptId: receiptId,
           rawName: rawName,
           quantity: Value(quantity),
+          unit: Value(unit),
           unitPriceCents: (lineTotalCents / quantity).round(),
           lineTotalCents: lineTotalCents,
           discountCents: Value(discountCents),
@@ -96,6 +98,30 @@ void main() {
     expect(receipt.purchaseDate.isUtc, isTrue);
     expect(receipt.purchaseDate, DateTime(2026, 11, 1, 0, 5).toUtc());
     expect(SpendingMetrics.totalSpending(history, november).cents, 1100);
+  });
+
+  test("the row's unit wins over the product's", () async {
+    final melon = await db
+        .into(db.products)
+        .insert(
+          ProductsCompanion.insert(
+            canonicalName: 'Melone',
+            unit: const Value('pz'),
+          ),
+        );
+    final receiptId = await addReceipt(DateTime(2026, 11, 5), 300);
+    await addItem(
+      receiptId,
+      300,
+      rawName: 'MELONE',
+      quantity: 1.5,
+      unit: 'kg',
+      productId: melon,
+    );
+    await addItem(receiptId, 0, rawName: 'SENZA PRODOTTO', unit: 'l');
+
+    final items = (await dao.loadHistory(november)).receipts.single.items;
+    expect(items.map((i) => i.unit), [ProductUnit.kilogram, ProductUnit.litre]);
   });
 
   test('items resolve category and unit, with the lookups filled', () async {
@@ -141,6 +167,7 @@ void main() {
       240,
       rawName: 'MELE',
       quantity: 0.8,
+      unit: 'kg',
       discountCents: 40,
       productId: apples,
       categoryId: dairy, // corrected by hand: the item's own category wins
@@ -159,7 +186,7 @@ void main() {
       [
         ('LATTE PS', milk, dairy, ProductUnit.piece),
         ('MELE', apples, dairy, ProductUnit.kilogram),
-        ('SCONOSCIUTO', null, null, null),
+        ('SCONOSCIUTO', null, null, ProductUnit.piece),
       ],
     );
     final weighed = receipt.items[1];

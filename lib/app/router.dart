@@ -6,9 +6,9 @@ import 'package:scontrini/features/analytics/presentation/dashboard_screen.dart'
 import 'package:scontrini/features/capture/domain/receipt_source.dart';
 import 'package:scontrini/features/capture/presentation/capture_screen.dart';
 import 'package:scontrini/features/extraction/presentation/extraction_screen.dart';
+import 'package:scontrini/features/extraction/presentation/receipt_review_screen.dart';
 import 'package:scontrini/features/pantry/presentation/pantry_screen.dart';
 import 'package:scontrini/features/products/presentation/product_stats_screen.dart';
-import 'package:scontrini/features/receipts/presentation/manual_receipt_screen.dart';
 import 'package:scontrini/features/receipts/presentation/receipt_detail_screen.dart';
 import 'package:scontrini/features/receipts/presentation/receipts_screen.dart';
 import 'package:scontrini/features/settings/presentation/settings_screen.dart';
@@ -110,7 +110,7 @@ GoRouter _createRouter() => GoRouter(
     ),
     GoRoute(
       path: Routes.manualReceipt,
-      builder: (_, _) => const ManualReceiptScreen(),
+      builder: (_, _) => const ReceiptReviewScreen.manual(),
     ),
     GoRoute(path: Routes.settings, builder: (_, _) => const SettingsScreen()),
   ],

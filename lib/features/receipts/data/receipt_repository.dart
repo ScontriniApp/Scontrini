@@ -5,10 +5,9 @@ import 'package:scontrini/features/extraction/domain/models/quantity_unit.dart';
 import 'package:scontrini/features/receipts/domain/receipt_history.dart';
 import 'package:scontrini/features/receipts/domain/transaction_hash.dart';
 
-/// Stores and reads receipts. [saveConfirmed] is used by the extraction
-/// screen's "confirm and sort" (until the review screen, where the user
-/// corrects the fields first, takes over) and by the manual receipt form;
-/// [watchHistory] and [watchReceipt] feed the history tab.
+/// Stores and reads receipts. [saveConfirmed] is what the review screen
+/// calls once the user has checked a scanned receipt or typed one in by
+/// hand; [watchHistory] and [watchReceipt] feed the history tab.
 class ReceiptRepository {
   new(this._db, {DateTime Function()? clock}) : _clock = clock ?? DateTime.now;
 
@@ -20,10 +19,15 @@ class ReceiptRepository {
   /// returns the existing id instead of a duplicate.
   ///
   /// A receipt whose date wasn't read is dated now (the capture). A total
-  /// that wasn't read is the rows' sum. Rows get a category from the
-  /// keywords table (`CategoryClassifier`), unless [categoryIds] (one entry
-  /// per item, `null` = classify) says otherwise, and the product of their
-  /// name (`AppDatabase.productIdFor`), which per-product statistics group by.
+  /// that wasn't read is the rows' sum. Rows get the categories in
+  /// [categoryIds] (one per item, as chosen in the review; `null` means
+  /// uncategorised). Without [categoryIds] they get one from the keywords
+  /// table (`CategoryClassifier`), else their product's.
+  ///
+  /// Every row is linked to a product (`ProductLinker`): the one with the
+  /// same label (canonical name or alias), or else a new product named after
+  /// the row, with the row's category and unit. Different labels are never
+  /// merged.
   Future<int> saveConfirmed(
     ParsedReceipt receipt, {
     String? sourcePath,
@@ -61,28 +65,32 @@ class ReceiptRepository {
           ),
         );
     final classifier = await _db.categoryClassifier();
-    for (final (index, item) in receipt.items.indexed) {
-      final categoryId =
-          categoryIds?[index] ?? classifier.classify(item.rawName);
+    final products = await _db.productLinker();
+    for (final (i, item) in receipt.items.indexed) {
       final unit = unitCode(item.unit);
+      final chosen = categoryIds != null;
+      final category = chosen
+          ? categoryIds[i]
+          : classifier.classify(item.rawName);
+      final product = await products.link(
+        item.rawName,
+        unit: unit,
+        categoryId: category,
+      );
       await _db
           .into(_db.receiptItems)
           .insert(
             ReceiptItemsCompanion.insert(
               receiptId: receiptId,
+              productId: Value(product?.id),
               rawName: item.rawName,
               quantity: Value(item.quantity),
               unit: Value(unit),
               unitPriceCents: item.unitPriceCents,
               lineTotalCents: item.lineTotalCents,
               discountCents: Value(item.discountCents),
-              categoryId: Value(categoryId),
-              productId: Value(
-                await _db.productIdFor(
-                  item.rawName,
-                  categoryId: categoryId,
-                  unit: unit,
-                ),
+              categoryId: Value(
+                chosen ? category : category ?? product?.categoryId,
               ),
             ),
           );
@@ -183,6 +191,18 @@ class ReceiptRepository {
         manual: r.sourcePath == null && r.rawOcrText == null,
         transactionHash: r.transactionHash,
       );
+
+  /// The category of each name: the product's with that label (chosen in
+  /// an earlier review), else the keywords table's. What the review screen
+  /// shows before the user changes it.
+  Future<List<int?>> guessCategories(List<String> names) async {
+    final classifier = await _db.categoryClassifier();
+    final products = await _db.productLinker();
+    return [
+      for (final name in names)
+        products.categoryOf(products.match(name)) ?? classifier.classify(name),
+    ];
+  }
 
   /// The `receipt_items.unit` code of [unit].
   static String unitCode(QuantityUnit unit) => switch (unit) {

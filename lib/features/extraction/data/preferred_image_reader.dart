@@ -5,7 +5,7 @@ import 'package:scontrini/features/extraction/domain/models/ocr_page.dart';
 
 /// Reads photos with [preferred] when it is available, with [fallback]
 /// otherwise and when [preferred] fails (out of memory, a missing model).
-/// Chained, it gives the app's order: GLM-OCR, PaddleOCR, ML Kit.
+/// The app's order: PaddleOCR, then ML Kit.
 class PreferredImageReader implements ImageTextReader {
   new({required this.preferred, required this.fallback, this.name = 'OCR'});
 

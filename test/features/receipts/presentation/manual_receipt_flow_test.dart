@@ -32,25 +32,6 @@ void main() {
     await tester.pump(Duration.zero);
   }
 
-  /// Scrolls the form (a lazy list) until [finder] is built.
-  Future<void> scrollTo(WidgetTester tester, Finder finder) =>
-      tester.scrollUntilVisible(
-        finder,
-        200,
-        scrollable: find
-            .ancestor(
-              of: find.byType(TextFormField).first,
-              matching: find.byType(Scrollable),
-            )
-            .last,
-      );
-
-  Future<void> tapVisible(WidgetTester tester, Finder finder) async {
-    await scrollTo(tester, finder);
-    await tester.pump();
-    await tester.tap(finder);
-  }
-
   Future<void> openApp(WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -61,9 +42,39 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('a receipt typed in the pantry lands in pantry and history', (
+  /// Fills the review screen's row form and saves it.
+  Future<void> addItem(
+    WidgetTester tester,
+    String name,
+    String unitPrice, {
+    String? kilograms,
+  }) async {
+    await tester.tap(find.text('Aggiungi articolo'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('review-item-name')), name);
+    if (kilograms != null) {
+      await tester.enterText(
+        find.byKey(const Key('review-item-quantity')),
+        kilograms,
+      );
+      await tester.tap(find.text('kg'));
+    }
+    await tester.enterText(
+      find.byKey(const Key('review-item-unit-price')),
+      unitPrice,
+    );
+    await tester.pump();
+    await tester.tap(find.text('Salva'));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('a receipt typed in by hand: review screen → pantry + history', (
     tester,
   ) async {
+    tester.view
+      ..physicalSize = const Size(1080, 6000)
+      ..devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
     await openApp(tester);
     await tester.tap(find.text('Dispensa'));
     await settle(tester);
@@ -71,45 +82,29 @@ void main() {
     await tester.tap(find.byTooltip('Aggiungi scontrino a mano'));
     await settle(tester);
     expect(find.text('Scontrino a mano'), findsOneWidget);
+    expect(
+      tester
+          .widget<ButtonStyleButton>(find.byKey(const Key('review-save')))
+          .onPressed,
+      isNull,
+    );
+    // The total is the rows' sum: no warning about it.
+    expect(find.text('Totale non trovato'), findsNothing);
 
-    // Nothing typed yet: the item needs a name and a price.
-    await tapVisible(tester, find.text('Salva scontrino'));
-    await settle(tester);
-    expect(find.text('Inserisci un nome'), findsOneWidget);
-    expect(find.text('Prezzo non valido'), findsOneWidget);
+    await addItem(tester, 'Farina', '1,40', kilograms: '1,5');
+    await addItem(tester, 'Latte intero', '1,29');
+    // Rows typed in by hand need no check.
+    expect(find.text('Articoli (2)'), findsOneWidget);
+    expect(find.text('Corretto'), findsNothing);
 
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Nome'),
-      'Farina',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Quantità'),
-      '1,5',
-    );
-    await tester.tap(find.text('kg'));
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Prezzo pagato'),
-      '2,10',
-    );
-    await tapVisible(tester, find.text('Aggiungi articolo'));
-    await tester.pump();
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Nome').last,
-      'Latte intero',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Prezzo pagato').last,
-      '1,29',
-    );
-    await tester.pump();
-    await scrollTo(tester, find.text('Salva scontrino'));
-    expect(find.text(Money.format(339)), findsOneWidget);
-
-    await tapVisible(tester, find.text('Salva scontrino'));
+    await tester.tap(find.text('Salva scontrino'));
     await settle(tester);
 
-    // Back in the pantry, with both items tagged with the receipt.
-    expect(find.text('Scontrino salvato nello storico'), findsOneWidget);
+    // Saved, in the pantry, and shown in the history's detail page.
+    expect(
+      find.text('Scontrino salvato, 2 prodotti in dispensa.'),
+      findsOneWidget,
+    );
     final lots = (await tester.runAsync(
       () => PantryRepository(db).watchLots().first,
     ))!;
@@ -118,22 +113,16 @@ void main() {
       ('Latte intero', 1.0, 'pz'),
     });
     expect(lots.every((l) => l.source == PantrySource.receipt), isTrue);
+    expect(find.text('Latticini e uova'), findsOneWidget);
+    await tester.tap(find.text('Latticini e uova'));
+    await settle(tester);
+    expect(find.text('Latte intero'), findsOneWidget);
 
-    // The history lists it; its rows sit in closed category sections.
-    await tester.tap(find.text('Storico'));
+    await tester.binding.handlePopRoute();
     await settle(tester);
     expect(find.text('Negozio sconosciuto'), findsOneWidget);
     expect(find.text(Money.format(339)), findsOneWidget);
     expect(find.textContaining('2 articoli · A mano'), findsOneWidget);
-
-    await tester.tap(find.text('Negozio sconosciuto'));
-    await settle(tester);
-    expect(find.text('Latticini e uova'), findsOneWidget);
-    expect(find.text('Latte intero'), findsNothing);
-    await tester.tap(find.text('Latticini e uova'));
-    await settle(tester);
-    expect(find.text('Latte intero'), findsOneWidget);
-    expect(find.text(Money.format(129)), findsNWidgets(2)); // section + row
 
     await closeApp(tester);
   });

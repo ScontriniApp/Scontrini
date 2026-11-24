@@ -94,9 +94,11 @@ class AnalyticsDao {
               discountCents: item.discountCents,
               productId: item.productId,
               categoryId: item.categoryId ?? product?.categoryId,
-              // Schema v1 has no unit per row, so the product's unit stands
-              // in. With `receipt_items.unit` (v2) the row's unit comes first.
-              unit: ProductUnit.fromDb(product?.unit),
+              // The unit printed on the row (`receipt_items.unit`, v2); the
+              // product's only for a value the row can't hold.
+              unit:
+                  ProductUnit.fromDb(item.unit) ??
+                  ProductUnit.fromDb(product?.unit),
             ),
           );
         }

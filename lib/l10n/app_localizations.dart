@@ -212,12 +212,6 @@ abstract class AppLocalizations {
   /// **'Riprova'**
   String get retry;
 
-  /// No description provided for @extractionPreviewNotice.
-  ///
-  /// In it, this message translates to:
-  /// **'Controlla i dati: confermando, lo scontrino viene salvato e puoi smistarlo in dispensa.'**
-  String get extractionPreviewNotice;
-
   /// No description provided for @fieldStore.
   ///
   /// In it, this message translates to:
@@ -482,42 +476,6 @@ abstract class AppLocalizations {
   /// **'Salva'**
   String get save;
 
-  /// No description provided for @pantryFieldName.
-  ///
-  /// In it, this message translates to:
-  /// **'Nome'**
-  String get pantryFieldName;
-
-  /// No description provided for @pantryFieldQuantity.
-  ///
-  /// In it, this message translates to:
-  /// **'Quantità'**
-  String get pantryFieldQuantity;
-
-  /// No description provided for @pantryFieldCategory.
-  ///
-  /// In it, this message translates to:
-  /// **'Categoria'**
-  String get pantryFieldCategory;
-
-  /// No description provided for @pantryInvalidName.
-  ///
-  /// In it, this message translates to:
-  /// **'Inserisci un nome'**
-  String get pantryInvalidName;
-
-  /// No description provided for @pantryInvalidQuantity.
-  ///
-  /// In it, this message translates to:
-  /// **'Inserisci una quantità maggiore di zero'**
-  String get pantryInvalidQuantity;
-
-  /// No description provided for @pantryInvalidPrice.
-  ///
-  /// In it, this message translates to:
-  /// **'Prezzo non valido'**
-  String get pantryInvalidPrice;
-
   /// No description provided for @unitPieces.
   ///
   /// In it, this message translates to:
@@ -535,102 +493,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'l'**
   String get unitLitres;
-
-  /// No description provided for @settingsPhotoReading.
-  ///
-  /// In it, this message translates to:
-  /// **'Lettura delle foto'**
-  String get settingsPhotoReading;
-
-  /// No description provided for @glmOcrModelTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Modello di lettura avanzato'**
-  String get glmOcrModelTitle;
-
-  /// No description provided for @glmOcrModelChecking.
-  ///
-  /// In it, this message translates to:
-  /// **'Verifica…'**
-  String get glmOcrModelChecking;
-
-  /// No description provided for @glmOcrModelMissing.
-  ///
-  /// In it, this message translates to:
-  /// **'Non installato: le foto si leggono con il riconoscimento standard. GLM-OCR è più preciso ma sui telefoni meno potenti può richiedere minuti per scontrino. Download di {size}.'**
-  String glmOcrModelMissing(String size);
-
-  /// No description provided for @glmOcrModelPartial.
-  ///
-  /// In it, this message translates to:
-  /// **'Download interrotto: {done} di {total}.'**
-  String glmOcrModelPartial(String done, String total);
-
-  /// No description provided for @glmOcrModelDownloading.
-  ///
-  /// In it, this message translates to:
-  /// **'Download: {done} di {total}'**
-  String glmOcrModelDownloading(String done, String total);
-
-  /// No description provided for @glmOcrModelInstalled.
-  ///
-  /// In it, this message translates to:
-  /// **'Installato ({size}): le foto si leggono sul telefono con GLM-OCR.'**
-  String glmOcrModelInstalled(String size);
-
-  /// No description provided for @glmOcrDownload.
-  ///
-  /// In it, this message translates to:
-  /// **'Scarica'**
-  String get glmOcrDownload;
-
-  /// No description provided for @glmOcrResume.
-  ///
-  /// In it, this message translates to:
-  /// **'Riprendi'**
-  String get glmOcrResume;
-
-  /// No description provided for @glmOcrDownloadConfirmTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Scaricare il modello?'**
-  String get glmOcrDownloadConfirmTitle;
-
-  /// No description provided for @glmOcrDownloadConfirmBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Il modello GLM-OCR ({size}) si scarica da Hugging Face: meglio con il Wi-Fi. Gli scontrini non lasciano il telefono, il modello li legge senza connessione.'**
-  String glmOcrDownloadConfirmBody(String size);
-
-  /// No description provided for @glmOcrDeleteConfirmTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Eliminare il modello?'**
-  String get glmOcrDeleteConfirmTitle;
-
-  /// No description provided for @glmOcrDeleteConfirmBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Libera {size}. Le foto torneranno a essere lette con il riconoscimento standard.'**
-  String glmOcrDeleteConfirmBody(String size);
-
-  /// No description provided for @glmOcrErrorNetwork.
-  ///
-  /// In it, this message translates to:
-  /// **'Download non riuscito: controlla la connessione.'**
-  String get glmOcrErrorNetwork;
-
-  /// No description provided for @glmOcrErrorCorrupt.
-  ///
-  /// In it, this message translates to:
-  /// **'Il file scaricato è danneggiato: riprova.'**
-  String get glmOcrErrorCorrupt;
-
-  /// No description provided for @glmOcrErrorStorage.
-  ///
-  /// In it, this message translates to:
-  /// **'Spazio insufficiente sul telefono.'**
-  String get glmOcrErrorStorage;
 
   /// No description provided for @extractionStepPreparing.
   ///
@@ -655,54 +517,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Ricostruisco lo scontrino…'**
   String get extractionStepParsing;
-
-  /// No description provided for @triageTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Smista in dispensa'**
-  String get triageTitle;
-
-  /// No description provided for @triageCounter.
-  ///
-  /// In it, this message translates to:
-  /// **'{current} di {total}'**
-  String triageCounter(int current, int total);
-
-  /// No description provided for @triageKeep.
-  ///
-  /// In it, this message translates to:
-  /// **'In dispensa'**
-  String get triageKeep;
-
-  /// No description provided for @triageSkip.
-  ///
-  /// In it, this message translates to:
-  /// **'Salta'**
-  String get triageSkip;
-
-  /// No description provided for @triageDone.
-  ///
-  /// In it, this message translates to:
-  /// **'Fatto'**
-  String get triageDone;
-
-  /// No description provided for @triageFailed.
-  ///
-  /// In it, this message translates to:
-  /// **'Impossibile caricare i prodotti.'**
-  String get triageFailed;
-
-  /// No description provided for @triageSummary.
-  ///
-  /// In it, this message translates to:
-  /// **'{kept} in dispensa, {skipped} saltati.'**
-  String triageSummary(int kept, int skipped);
-
-  /// No description provided for @confirmAndSort.
-  ///
-  /// In it, this message translates to:
-  /// **'Conferma e smista in dispensa'**
-  String get confirmAndSort;
 
   /// No description provided for @confirmFailed.
   ///
@@ -872,77 +686,11 @@ abstract class AppLocalizations {
   /// **'Scontrino a mano'**
   String get manualReceiptTitle;
 
-  /// No description provided for @manualReceiptStore.
+  /// No description provided for @manualReceiptNotice.
   ///
   /// In it, this message translates to:
-  /// **'Negozio (facoltativo)'**
-  String get manualReceiptStore;
-
-  /// No description provided for @manualReceiptDate.
-  ///
-  /// In it, this message translates to:
-  /// **'Data'**
-  String get manualReceiptDate;
-
-  /// No description provided for @manualReceiptItem.
-  ///
-  /// In it, this message translates to:
-  /// **'Articolo {index}'**
-  String manualReceiptItem(int index);
-
-  /// No description provided for @manualReceiptAddItem.
-  ///
-  /// In it, this message translates to:
-  /// **'Aggiungi articolo'**
-  String get manualReceiptAddItem;
-
-  /// No description provided for @manualReceiptRemoveItem.
-  ///
-  /// In it, this message translates to:
-  /// **'Rimuovi articolo'**
-  String get manualReceiptRemoveItem;
-
-  /// No description provided for @manualReceiptPrice.
-  ///
-  /// In it, this message translates to:
-  /// **'Prezzo pagato'**
-  String get manualReceiptPrice;
-
-  /// No description provided for @manualReceiptCategoryAuto.
-  ///
-  /// In it, this message translates to:
-  /// **'Automatica (dal nome)'**
-  String get manualReceiptCategoryAuto;
-
-  /// No description provided for @manualReceiptTotal.
-  ///
-  /// In it, this message translates to:
-  /// **'Totale'**
-  String get manualReceiptTotal;
-
-  /// No description provided for @manualReceiptToPantry.
-  ///
-  /// In it, this message translates to:
-  /// **'Metti gli articoli in dispensa'**
-  String get manualReceiptToPantry;
-
-  /// No description provided for @manualReceiptSave.
-  ///
-  /// In it, this message translates to:
-  /// **'Salva scontrino'**
-  String get manualReceiptSave;
-
-  /// No description provided for @manualReceiptSaved.
-  ///
-  /// In it, this message translates to:
-  /// **'Scontrino salvato nello storico'**
-  String get manualReceiptSaved;
-
-  /// No description provided for @manualReceiptFailed.
-  ///
-  /// In it, this message translates to:
-  /// **'Impossibile salvare lo scontrino.'**
-  String get manualReceiptFailed;
+  /// **'Aggiungi i prodotti che hai comprato. Salvando, lo scontrino entra nello storico e i prodotti in dispensa.'**
+  String get manualReceiptNotice;
 
   /// No description provided for @receiptsUnknownStore.
   ///
@@ -1135,6 +883,210 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Finiti: {consumed} · Buttati: {discarded}'**
   String productStatsLotsEnded(int consumed, int discarded);
+
+  /// No description provided for @reviewTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Controlla lo scontrino'**
+  String get reviewTitle;
+
+  /// No description provided for @reviewNotice.
+  ///
+  /// In it, this message translates to:
+  /// **'Controlla ogni prodotto: confermalo se è stato letto bene, altrimenti correggilo. Salvando, lo scontrino entra nella dashboard e i prodotti in dispensa.'**
+  String get reviewNotice;
+
+  /// No description provided for @reviewAddItem.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi articolo'**
+  String get reviewAddItem;
+
+  /// No description provided for @reviewEditItem.
+  ///
+  /// In it, this message translates to:
+  /// **'Modifica articolo'**
+  String get reviewEditItem;
+
+  /// No description provided for @reviewFieldName.
+  ///
+  /// In it, this message translates to:
+  /// **'Nome sullo scontrino'**
+  String get reviewFieldName;
+
+  /// No description provided for @reviewFieldQuantity.
+  ///
+  /// In it, this message translates to:
+  /// **'Quantità'**
+  String get reviewFieldQuantity;
+
+  /// No description provided for @reviewFieldUnitPrice.
+  ///
+  /// In it, this message translates to:
+  /// **'Prezzo unitario'**
+  String get reviewFieldUnitPrice;
+
+  /// No description provided for @reviewFieldAmount.
+  ///
+  /// In it, this message translates to:
+  /// **'Importo'**
+  String get reviewFieldAmount;
+
+  /// No description provided for @reviewFieldDiscount.
+  ///
+  /// In it, this message translates to:
+  /// **'Sconto (facoltativo)'**
+  String get reviewFieldDiscount;
+
+  /// No description provided for @reviewFieldCategory.
+  ///
+  /// In it, this message translates to:
+  /// **'Categoria'**
+  String get reviewFieldCategory;
+
+  /// No description provided for @reviewInvalidName.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci un nome'**
+  String get reviewInvalidName;
+
+  /// No description provided for @reviewInvalidQuantity.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci una quantità maggiore di zero'**
+  String get reviewInvalidQuantity;
+
+  /// No description provided for @reviewInvalidAmount.
+  ///
+  /// In it, this message translates to:
+  /// **'Importo non valido'**
+  String get reviewInvalidAmount;
+
+  /// No description provided for @reviewDiscountTooLarge.
+  ///
+  /// In it, this message translates to:
+  /// **'Lo sconto supera l\'importo'**
+  String get reviewDiscountTooLarge;
+
+  /// No description provided for @reviewUncategorised.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza categoria'**
+  String get reviewUncategorised;
+
+  /// No description provided for @reviewNoItems.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun articolo: aggiungine almeno uno per confermare.'**
+  String get reviewNoItems;
+
+  /// No description provided for @reviewUnparsedHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Se manca un articolo, aggiungilo a mano.'**
+  String get reviewUnparsedHint;
+
+  /// No description provided for @reviewItemDeleted.
+  ///
+  /// In it, this message translates to:
+  /// **'{name} eliminato'**
+  String reviewItemDeleted(String name);
+
+  /// No description provided for @reviewUndo.
+  ///
+  /// In it, this message translates to:
+  /// **'Annulla'**
+  String get reviewUndo;
+
+  /// No description provided for @reviewDiscardTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Scartare le modifiche?'**
+  String get reviewDiscardTitle;
+
+  /// No description provided for @reviewDiscardBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Lo scontrino non è ancora stato salvato.'**
+  String get reviewDiscardBody;
+
+  /// No description provided for @reviewDiscard.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarta'**
+  String get reviewDiscard;
+
+  /// No description provided for @reviewMismatchDetail.
+  ///
+  /// In it, this message translates to:
+  /// **'Somma articoli {items}, totale {total}'**
+  String reviewMismatchDetail(String items, String total);
+
+  /// No description provided for @reviewMissingDateHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza data, viene usata quella di oggi.'**
+  String get reviewMissingDateHint;
+
+  /// No description provided for @reviewMissingTotalHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza totale, viene usata la somma degli articoli.'**
+  String get reviewMissingTotalHint;
+
+  /// No description provided for @reviewUseItemsTotal.
+  ///
+  /// In it, this message translates to:
+  /// **'Usa la somma'**
+  String get reviewUseItemsTotal;
+
+  /// No description provided for @reviewSave.
+  ///
+  /// In it, this message translates to:
+  /// **'Salva scontrino'**
+  String get reviewSave;
+
+  /// No description provided for @reviewSaveBlocked.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{Manca 1 prodotto da controllare} other{Mancano {count} prodotti da controllare}}'**
+  String reviewSaveBlocked(int count);
+
+  /// No description provided for @reviewItemsPending.
+  ///
+  /// In it, this message translates to:
+  /// **'Articoli ({count}), {pending} da controllare'**
+  String reviewItemsPending(int count, int pending);
+
+  /// No description provided for @reviewConfirmItem.
+  ///
+  /// In it, this message translates to:
+  /// **'Corretto'**
+  String get reviewConfirmItem;
+
+  /// No description provided for @reviewCorrectItem.
+  ///
+  /// In it, this message translates to:
+  /// **'Correggi'**
+  String get reviewCorrectItem;
+
+  /// No description provided for @reviewUnconfirmItem.
+  ///
+  /// In it, this message translates to:
+  /// **'Da ricontrollare'**
+  String get reviewUnconfirmItem;
+
+  /// No description provided for @reviewSaved.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =0{Scontrino salvato.} =1{Scontrino salvato, 1 prodotto in dispensa.} other{Scontrino salvato, {count} prodotti in dispensa.}}'**
+  String reviewSaved(int count);
+
+  /// No description provided for @reviewConfirmAll.
+  ///
+  /// In it, this message translates to:
+  /// **'Conferma tutti ({count})'**
+  String reviewConfirmAll(int count);
 }
 
 class _AppLocalizationsDelegate

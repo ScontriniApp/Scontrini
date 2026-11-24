@@ -22,11 +22,11 @@ class _Reader implements ImageTextReader {
 }
 
 void main() {
-  test('uses GLM-OCR when the model is installed', () async {
-    final glm = _Reader(1);
+  test('uses the preferred reader when it is available', () async {
+    final paddle = _Reader(1);
     final mlKit = _Reader(2);
     final reader = PreferredImageReader(
-      preferred: Future.value(glm),
+      preferred: Future.value(paddle),
       fallback: mlKit,
     );
 
@@ -34,7 +34,7 @@ void main() {
     expect(mlKit.read, isEmpty);
   });
 
-  test('uses ML Kit when the model is not installed', () async {
+  test('uses the fallback when the preferred reader is missing', () async {
     final mlKit = _Reader(2);
     final reader = PreferredImageReader(
       preferred: Future.value(),
@@ -44,47 +44,32 @@ void main() {
     expect((await reader.recognizeFile('a.jpg')).width, 2);
   });
 
-  test('falls back to ML Kit when GLM-OCR fails', () async {
-    final glm = _Reader(1, fails: true);
+  test('falls back to ML Kit when PaddleOCR fails', () async {
+    final paddle = _Reader(1, fails: true);
     final mlKit = _Reader(2);
     final reader = PreferredImageReader(
-      preferred: Future.value(glm),
+      preferred: Future.value(paddle),
       fallback: mlKit,
     );
 
     expect((await reader.recognizeFile('a.jpg')).width, 2);
-    expect(glm.read, ['a.jpg']);
+    expect(paddle.read, ['a.jpg']);
   });
 
-  test('chains: GLM-OCR, then PaddleOCR, then ML Kit', () async {
-    final glm = _Reader(1, fails: true);
-    final paddle = _Reader(2, fails: true);
-    final mlKit = _Reader(3);
+  test('chains: each reader falls back to the next', () async {
+    final first = _Reader(1, fails: true);
+    final second = _Reader(2, fails: true);
+    final last = _Reader(3);
     final reader = PreferredImageReader(
-      preferred: Future.value(glm),
+      preferred: Future.value(first),
       fallback: PreferredImageReader(
-        preferred: Future.value(paddle),
-        fallback: mlKit,
+        preferred: Future.value(second),
+        fallback: last,
       ),
     );
 
     expect((await reader.recognizeFile('a.jpg')).width, 3);
-    expect(glm.read, ['a.jpg']);
-    expect(paddle.read, ['a.jpg']);
-  });
-
-  test('without GLM-OCR, PaddleOCR reads before ML Kit', () async {
-    final paddle = _Reader(2);
-    final mlKit = _Reader(3);
-    final reader = PreferredImageReader(
-      preferred: Future.value(),
-      fallback: PreferredImageReader(
-        preferred: Future.value(paddle),
-        fallback: mlKit,
-      ),
-    );
-
-    expect((await reader.recognizeFile('a.jpg')).width, 2);
-    expect(mlKit.read, isEmpty);
+    expect(first.read, ['a.jpg']);
+    expect(second.read, ['a.jpg']);
   });
 }

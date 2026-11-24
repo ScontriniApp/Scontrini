@@ -9,7 +9,7 @@ typedef ReadProgress = ({ReadStep step, double? fraction});
 
 typedef OnReadProgress = void Function(ReadProgress progress);
 
-/// Reads the text of one receipt photo: PaddleOCR, GLM-OCR or ML Kit.
+/// Reads the text of one receipt photo: PaddleOCR or ML Kit.
 abstract interface class ImageTextReader {
   /// [onProgress] is called as reading goes on; readers that can't tell
   /// how far along they are report a `null` fraction.

@@ -65,7 +65,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
           IconButton(
             tooltip: l10n.pantryAdd,
             icon: const Icon(Icons.add),
-            onPressed: () => context.push<int>(Routes.manualReceipt),
+            onPressed: () => context.push(Routes.manualReceipt),
           ),
         ],
       ),

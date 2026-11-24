@@ -5,12 +5,6 @@
 //
 // Skipped unless --dart-define=BENCH=true, so `flutter test integration_test`
 // is not affected.
-//
-// With --dart-define=BENCH_GLM=true photos are read by GLM-OCR (the app's
-// GlmOcr class) instead of ML Kit, with the model files run_device.sh --glm
-// pushed into <external files>/glm-model/. BENCH_GLM_PLACEMENT: app (default:
-// GPU, then CPU), cpu, vulkan or opencl; BENCH_GLM_THREADS: CPU threads;
-// BENCH_GLM_MODEL: model file name; BENCH_GLM_STRIP: strip height in px.
 
 import 'dart:convert';
 import 'dart:io';
@@ -18,18 +12,15 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:llamadart/llamadart.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:scontrini/features/capture/domain/receipt_source.dart';
 import 'package:scontrini/features/extraction/data/device_text_extractor.dart';
 import 'package:scontrini/features/extraction/data/extraction_providers.dart';
-import 'package:scontrini/features/extraction/data/glm_ocr.dart';
 import 'package:scontrini/features/extraction/data/mlkit_ocr.dart';
 import 'package:scontrini/features/extraction/data/paddle_ocr.dart';
 import 'package:scontrini/features/extraction/data/paddle_ocr_worker.dart';
 import 'package:scontrini/features/extraction/data/pdf_text_reader.dart';
-import 'package:scontrini/features/extraction/domain/receipt_strips.dart';
 
 import '../../tool/bench/src/bench_case.dart';
 import '../../tool/bench/src/bench_runner.dart';
@@ -37,7 +28,6 @@ import '../../tool/bench/src/keyword_classifier.dart';
 import '../../tool/bench/src/report.dart';
 
 const _enabled = bool.fromEnvironment('BENCH');
-const _glm = bool.fromEnvironment('BENCH_GLM');
 // PaddleOCR (PP-OCRv6 via onnxruntime) with the models run_device.sh
 // --paddle pushed into <external files>/paddle-model/.
 const _paddle = bool.fromEnvironment('BENCH_PADDLE');
@@ -46,55 +36,6 @@ const _paddleSize = String.fromEnvironment(
   defaultValue: 'small',
 );
 const _paddleThreads = String.fromEnvironment('BENCH_PADDLE_THREADS');
-const _glmPlacement = String.fromEnvironment(
-  'BENCH_GLM_PLACEMENT',
-  defaultValue: 'app',
-);
-const _glmThreads = String.fromEnvironment('BENCH_GLM_THREADS');
-const _glmModel = String.fromEnvironment('BENCH_GLM_MODEL');
-const _glmStrip = String.fromEnvironment('BENCH_GLM_STRIP');
-
-/// The app's GLM-OCR reader, set up as the BENCH_GLM_* defines say.
-GlmOcr _glmOcr(String modelDir) {
-  final threads = int.tryParse(_glmThreads);
-  ModelParams tuned(ModelParams params) => threads == null
-      ? params
-      : params.copyWith(
-          numberOfThreads: threads,
-          numberOfThreadsBatch: threads,
-        );
-  final strip = int.tryParse(_glmStrip);
-  final files = _glmModel.isEmpty
-      ? GlmOcrModelFiles.inDirectory(modelDir)
-      : GlmOcrModelFiles(
-          model: p.join(modelDir, _glmModel),
-          projector: p.join(modelDir, GlmOcrModelFiles.projectorFileName),
-        );
-  if (!files.exist) throw StateError('GLM-OCR files not in $modelDir');
-  return GlmOcr(
-    files,
-    strips: strip == null ? null : ReceiptStrips(maxStripHeight: strip),
-    placements: switch (_glmPlacement) {
-      'app' => [
-        for (final placement in GlmOcr.defaultPlacements)
-          (name: placement.name, params: tuned(placement.params)),
-      ],
-      'vulkan' => [
-        (
-          name: 'gpu-vulkan',
-          params: tuned(GlmOcr.gpuProjectorParams(GpuBackend.vulkan)),
-        ),
-      ],
-      'opencl' => [
-        (
-          name: 'gpu-opencl',
-          params: tuned(GlmOcr.gpuProjectorParams(GpuBackend.opencl)),
-        ),
-      ],
-      _ => [(name: 'cpu', params: tuned(GlmOcr.cpuParams))],
-    },
-  );
-}
 
 /// "decode 20, detection 359, ..." from PaddleOcr's step timings.
 String _steps(Map<String, Duration> timings) =>
@@ -132,7 +73,7 @@ void main() {
       if (rootDir.existsSync()) await rootDir.delete(recursive: true);
       final out = Directory(p.join(root, 'out'));
       final ocrOut = Directory(
-        p.join(out.path, _glm ? 'ocr_glm' : (_paddle ? 'ocr_paddle' : 'ocr')),
+        p.join(out.path, _paddle ? 'ocr_paddle' : 'ocr'),
       );
       await ocrOut.create(recursive: true);
       await Directory(p.join(root, 'input')).create();
@@ -156,11 +97,6 @@ void main() {
       expect(cases, isNotEmpty, reason: 'nothing in $root/input');
 
       final ocr = MlKitOcr();
-      final glm = _glm
-          ? _glmOcr(
-              p.join((await getExternalStorageDirectory())!.path, 'glm-model'),
-            )
-          : null;
       // small: the app's own model, from the assets; other sizes: the
       // files run_device.sh pushed.
       final paddleDir = p.join(
@@ -176,20 +112,10 @@ void main() {
             )
           : null;
       final extractor = DeviceTextExtractor(
-        glm ?? paddle ?? ocr,
+        paddle ?? ocr,
         PdfTextReader(ocr, getTemporaryDirectory),
       );
       final times = <String, Duration>{};
-      if (glm != null) {
-        // Loading apart, so the per-receipt times are reading only.
-        final load = Stopwatch()..start();
-        await tester.runAsync(glm.warmUp);
-        // ignore: avoid_print, progress in the flutter test output
-        print(
-          'GLM-OCR loaded in ${load.elapsedMilliseconds} ms '
-          'on ${glm.placement}, ${_memory()}',
-        );
-      }
       final startedAt = DateTime.now();
 
       final results = await tester.runAsync(
@@ -223,22 +149,17 @@ void main() {
             // ignore: avoid_print, progress in the flutter test output
             print(
               '${r.benchCase.name}: ${r.error ?? _differences(r)}, '
-              '$seconds s${glm == null ? '' : ' on ${glm.placement}'}$steps, '
+              '$seconds s$steps, '
               '${_memory()}',
             );
           },
         ),
       );
       await ocr.close();
-      await glm?.close();
       await paddle?.close();
 
       final report = BenchReport(
-        label: glm != null
-            ? 'device · GLM-OCR $_glmPlacement'
-            : paddle != null
-            ? 'device · PaddleOCR v6-$_paddleSize'
-            : 'device',
+        label: paddle != null ? 'device · PaddleOCR v6-$_paddleSize' : 'device',
         results: results!,
         startedAt: startedAt,
         classifierName: 'keyword baseline',

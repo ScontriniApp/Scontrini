@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:scontrini/core/database/category_classifier.dart';
 import 'package:scontrini/core/database/default_categories.dart';
-import 'package:scontrini/core/database/product_key.dart';
+import 'package:scontrini/core/database/product_linker.dart';
 import 'package:scontrini/core/database/tables/tables.dart';
 
 export 'package:scontrini/core/database/tables/tables.dart'
@@ -118,53 +118,25 @@ class AppDatabase extends _$AppDatabase {
     }
   });
 
-  /// The product of a printed [rawName]: found through its alias (the
-  /// name's `productKey`), else created with [categoryId] and [unit] and
-  /// given that alias. `null` for a name with no letters or digits.
-  Future<int?> productIdFor(
-    String rawName, {
-    int? categoryId,
-    String? unit,
-  }) async {
-    final key = productKey(rawName);
-    if (key.isEmpty) return null;
-    final alias = await (select(
-      productAliases,
-    )..where((a) => a.rawName.equals(key))).getSingleOrNull();
-    if (alias != null) return alias.productId;
-    final name = rawName.trim();
-    final existing = await (select(
-      products,
-    )..where((p) => p.canonicalName.equals(name))).getSingleOrNull();
-    final id =
-        existing?.id ??
-        await into(products).insert(
-          ProductsCompanion.insert(
-            canonicalName: name,
-            categoryId: Value(categoryId),
-            unit: Value(unit),
-          ),
-        );
-    await into(productAliases)
-        .insert(ProductAliasesCompanion.insert(rawName: key, productId: id));
-    return id;
-  }
+  /// Links printed names to products (see [ProductLinker]).
+  Future<ProductLinker> productLinker() => ProductLinker.load(this);
 
   /// Links receipt rows and pantry lots saved without a product (before
   /// products were linked on save): rows by their printed name, lots
   /// through their receipt rows, else by their name.
   Future<void> linkProducts() => transaction(() async {
+    final linker = await productLinker();
     final rows =
         await (select(receiptItems)
               ..where((r) => r.productId.isNull())
               ..orderBy([(r) => OrderingTerm.asc(r.id)]))
             .get();
     for (final row in rows) {
-      final id = await productIdFor(
+      final id = (await linker.link(
         row.rawName,
         categoryId: row.categoryId,
         unit: row.unit,
-      );
+      ))?.id;
       if (id == null) continue;
       await (update(receiptItems)..where((r) => r.id.equals(row.id))).write(
         ReceiptItemsCompanion(productId: Value(id)),
@@ -183,11 +155,11 @@ class AppDatabase extends _$AppDatabase {
               .getSingleOrNull();
       final id =
           row?.productId ??
-          await productIdFor(
+          (await linker.link(
             lot.name,
             categoryId: lot.categoryId,
             unit: lot.unit,
-          );
+          ))?.id;
       if (id == null) continue;
       await (update(pantryLots)..where((l) => l.id.equals(lot.id))).write(
         PantryLotsCompanion(productId: Value(id)),

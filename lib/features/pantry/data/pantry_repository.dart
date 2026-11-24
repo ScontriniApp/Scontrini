@@ -169,6 +169,17 @@ class PantryRepository {
     return lotId;
   });
 
+  /// Puts every product of a confirmed receipt in the pantry, one lot per
+  /// [triageCards] card (rows already in the pantry and untracked products
+  /// such as bags are left out). Returns how many lots were added.
+  Future<int> addAllFromReceipt(int receiptId) => _db.transaction(() async {
+    final cards = await triageCards(receiptId);
+    for (final card in cards) {
+      await addFromReceipt(receiptId, card);
+    }
+    return cards.length;
+  });
+
   /// Adds a lot by hand. Only [PantrySource.manualPurchase] counts as a
   /// purchase; [PantrySource.receipt] is not allowed here.
   Future<int> addManual({

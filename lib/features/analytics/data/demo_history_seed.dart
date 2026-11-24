@@ -84,17 +84,19 @@ class DemoLine {
     this.product,
     this.categoryName,
     this.quantity = 1,
+    this.unit = 'pz',
     this.discountCents = 0,
   });
 
-  /// A line matched to [product], with the product's category.
+  /// A line matched to [product], with the product's category and unit.
   new product(
     DemoProduct this.product, {
     required this.unitPriceCents,
     this.quantity = 1,
     this.discountCents = 0,
   }) : rawName = product.rawName,
-       categoryName = product.categoryName;
+       categoryName = product.categoryName,
+       unit = product.unit;
 
   final String rawName;
 
@@ -106,6 +108,9 @@ class DemoLine {
 
   /// Pieces, or kg for weighed items.
   final double quantity;
+
+  /// `pz`, `kg` or `l`, as in `receipt_items.unit`.
+  final String unit;
 
   /// Per piece or per kg.
   final int unitPriceCents;
@@ -238,6 +243,7 @@ List<DemoPurchase> demoPurchases(DateTime today) {
             rawName: 'ZUCCHINE',
             categoryName: 'Frutta e verdura',
             quantity: 0.5,
+            unit: 'kg',
             unitPriceCents: 249,
           ),
         if (n == 7)
@@ -396,8 +402,8 @@ Future<int> _productId(
 
 /// Writes one purchase as the review screen will save a confirmed receipt.
 /// The only place that maps demo records to rows: with schema v2, add
-/// `receipt_items.unit` and `receipts.transactionHash` here; once the real
-/// save path exists, call it from here instead.
+/// `receipts.transactionHash` here; once the real save path exists, call
+/// it from here instead.
 Future<void> _writePurchase(
   AppDatabase db,
   DemoPurchase purchase,
@@ -424,6 +430,7 @@ Future<void> _writePurchase(
           productId: Value(productIds[line.product]),
           rawName: line.rawName,
           quantity: Value(line.quantity),
+          unit: Value(line.unit),
           unitPriceCents: line.unitPriceCents,
           lineTotalCents: line.lineTotalCents,
           discountCents: Value(line.discountCents),
