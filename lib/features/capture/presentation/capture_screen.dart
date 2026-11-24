@@ -18,18 +18,11 @@ class CaptureScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
 
-    // GLM-OCR takes seconds to load: start while the user frames the photo.
-    // Nothing happens if its model isn't installed; it unloads when idle.
-    // Loads the photo reader while the user takes the photo: GLM-OCR if
-    // installed, else PaddleOCR.
+    // Loads PaddleOCR while the user takes the photo.
     void warmUpPhotoReader() => unawaited(
       ref
-          .read(glmOcrProvider)
-          .then(
-            (glm) => glm != null
-                ? glm.warmUp()
-                : ref.read(paddleOcrProvider).warmUp(),
-          )
+          .read(paddleOcrProvider)
+          .warmUp()
           .onError((error, _) => debugPrint('OCR warm-up failed: $error')),
     );
 

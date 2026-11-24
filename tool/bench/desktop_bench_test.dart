@@ -7,47 +7,24 @@
 //   - saved ML Kit output (*.ocr.json) from device runs, and receipts
 //     exported from the app on a phone ("Esporta come test" +
 //     tool/pull_fixtures.sh, in assets/test_receipts/incoming);
-//   - saved GLM-OCR output (data/ocr_cache/glm/*.ocr.json), and with
-//     BENCH_GLM=true it reads the photos not read yet with the app's own
-//     GlmOcr (llama.cpp through llamadart) and saves them. Needs the
-//     environment variable
-//     LLAMADART_NATIVE_LIB_DIR=<repo>/build/native_assets/windows.
+//   - saved PaddleOCR output from tool/bench/paddle_ocr.py.
 //
 // Options (all optional), as --dart-define=NAME=value:
 //   BENCH_PDFS    folder with the PDFs        (default data/scontrini/scontrini)
 //   BENCH_OCR     folder with ML Kit output   (default data/ocr_cache)
-//   BENCH_PHOTOS  photo folders, comma-separated, for GLM-OCR
-//                 (default data/scontrini_foto_reali,data/foto_render)
-//   BENCH_GLM     true: read new photos with GLM-OCR; `refresh`: read all again
-//   BENCH_GLM_MODEL_DIR folder with GLM-OCR-Q8_0.gguf + mmproj (default:
-//                 LM Studio's ~/.lmstudio/models/ggml-org/GLM-OCR-GGUF)
-//   BENCH_GLM_MODEL another GLM-OCR model file (e.g. a Q4 quantization), with
-//                 mmproj-GLM-OCR-Q8_0.gguf next to it
-//   BENCH_GLM_GPU GPU index for GLM-OCR (Vulkan); -1 = CPU, the default
-//   BENCH_GLM_PLACEMENT `app`: the app's placements (image encoder on a GPU,
-//                 else CPU); `projector`: image encoder on BENCH_GLM_GPU,
-//                 text on CPU
-//   BENCH_GLM_WIDTH one width all photos are scaled to (default: the app rule)
-//   BENCH_GLM_STRIP cut photos into strips at most this tall (default: whole)
 //   BENCH_TRUTH   ground truth folder         (default data/ground_truth)
 //   BENCH_OUT     where reports are written   (default data/bench_runs)
 //   BENCH_ONLY    run only cases whose name contains this text
 
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:llamadart/llamadart.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdfrx/pdfrx.dart';
-import 'package:scontrini/features/extraction/data/glm_ocr.dart';
 import 'package:scontrini/features/extraction/data/mlkit_ocr.dart';
 import 'package:scontrini/features/extraction/data/pdf_text_reader.dart';
 import 'package:scontrini/features/extraction/domain/models/ocr_document.dart';
-import 'package:scontrini/features/extraction/domain/models/text_source.dart';
-import 'package:scontrini/features/extraction/domain/ocr_image_preparation.dart';
-import 'package:scontrini/features/extraction/domain/receipt_strips.dart';
 
 import 'src/bench_case.dart';
 import 'src/bench_runner.dart';
@@ -62,17 +39,6 @@ const _ocr = String.fromEnvironment(
   'BENCH_OCR',
   defaultValue: 'data/ocr_cache',
 );
-const _photos = String.fromEnvironment(
-  'BENCH_PHOTOS',
-  defaultValue: 'data/scontrini_foto_reali,data/foto_render',
-);
-const _glm = String.fromEnvironment('BENCH_GLM');
-const _glmModelDir = String.fromEnvironment('BENCH_GLM_MODEL_DIR');
-const _glmModel = String.fromEnvironment('BENCH_GLM_MODEL');
-const _glmGpu = int.fromEnvironment('BENCH_GLM_GPU', defaultValue: -1);
-const _glmPlacement = String.fromEnvironment('BENCH_GLM_PLACEMENT');
-const _glmWidth = String.fromEnvironment('BENCH_GLM_WIDTH');
-const _glmStrip = String.fromEnvironment('BENCH_GLM_STRIP');
 const _truth = String.fromEnvironment(
   'BENCH_TRUTH',
   defaultValue: 'data/ground_truth',
@@ -85,22 +51,9 @@ const _only = String.fromEnvironment('BENCH_ONLY');
 
 const _pdfGroup = 'PDF';
 const _mlKitGroup = 'photos · ML Kit (saved)';
-const _glmGroup = 'photos · GLM-OCR';
 
 void main() {
   test('extraction benchmark (desktop)', timeout: Timeout.none, () async {
-    final glmCache = p.join(_ocr, 'glm');
-    final glmCached = {
-      for (final c in discoverCases(glmCache, {InputKind.ocrJson})) c.name: c,
-    };
-    final glmToRead = [
-      if (_glm == 'true' || _glm == 'refresh')
-        for (final dir in _photos.split(','))
-          for (final c in discoverCases(dir.trim(), {InputKind.image}))
-            if (_glm == 'refresh' || !glmCached.containsKey(c.name)) c,
-    ];
-    final glmNames = {for (final c in glmToRead) c.name};
-
     final cases = [
       for (final c in discoverCases(_pdfs, {InputKind.pdf}))
         c.withGroup(_pdfGroup),
@@ -110,9 +63,6 @@ void main() {
         InputKind.ocrJson,
       }))
         c.withGroup(_mlKitGroup),
-      for (final c in glmCached.values)
-        if (!glmNames.contains(c.name)) c.withGroup(_glmGroup),
-      for (final c in glmToRead) c.withGroup(_glmGroup),
       // PaddleOCR output from tool/bench/paddle_ocr.py, one folder per model.
       for (final dir in _paddleCaches(_ocr))
         for (final c in discoverCases(dir.path, {InputKind.ocrJson}))
@@ -132,8 +82,6 @@ void main() {
       MlKitOcr(),
       () async => Directory.systemTemp,
     );
-    final glm = glmToRead.isEmpty ? null : _glmOcr();
-    final glmTimes = <String, (Duration, List<int>)>{};
 
     final startedAt = DateTime.now();
     final results = await runBench(
@@ -146,7 +94,10 @@ void main() {
           jsonDecode(File(c.files.single).readAsStringSync())
               as Map<String, Object?>,
         ),
-        InputKind.image => await _readWithGlm(glm!, c, glmCache, glmTimes),
+        // Photos need an OCR engine: run them on the phone.
+        InputKind.image => throw StateError(
+          'photo: run tool/bench/run_device.sh',
+        ),
       },
     );
 
@@ -176,141 +127,10 @@ void main() {
         ).summary(),
       );
     }
-    final placement = glm?.placement;
-    await glm?.close();
-    if (glmTimes.isNotEmpty) {
-      stdout.write(_timeSummary(glmTimes, placement ?? '-'));
-    }
     stdout
       ..writeln()
       ..writeln('Full report: ${file.path}');
   });
-}
-
-/// The app's GLM-OCR reader, with the model files LM Studio downloaded.
-GlmOcr _glmOcr() {
-  final home =
-      Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'] ?? '';
-  final dir = _glmModelDir.isNotEmpty
-      ? _glmModelDir
-      : p.join(home, '.lmstudio', 'models', 'ggml-org', 'GLM-OCR-GGUF');
-  final files = _glmModel.isEmpty
-      ? GlmOcrModelFiles.inDirectory(dir)
-      : GlmOcrModelFiles(
-          model: _glmModel,
-          projector: p.join(
-            p.dirname(_glmModel),
-            GlmOcrModelFiles.projectorFileName,
-          ),
-        );
-  if (!files.exist) throw StateError('GLM-OCR model files not found in $dir');
-  final width = int.tryParse(_glmWidth);
-  final preparation = width == null
-      ? const OcrImagePreparation()
-      : OcrImagePreparation(
-          minWidth: width,
-          enlargeTo: width,
-          maxWidth: width,
-          shrinkTo: width,
-        );
-  final stripHeight = int.tryParse(_glmStrip);
-  final strips = stripHeight == null
-      ? null
-      : ReceiptStrips(maxStripHeight: stripHeight);
-  return GlmOcr(
-    files,
-    preparation: preparation,
-    strips: strips,
-    placements: switch (_glmPlacement) {
-      // What the app does: image encoder on a GPU if any, else the CPU.
-      'app' => null,
-      // Image encoder on GPU _glmGpu (0 = first), text on the CPU.
-      'projector' => [
-        (
-          name: 'projector on GPU $_glmGpu',
-          params: GlmOcr.gpuProjectorParams(
-            GpuBackend.vulkan,
-            gpu: math.max(_glmGpu, 0),
-          ),
-        ),
-      ],
-      _ when _glmGpu >= 0 => [
-        (
-          name: 'all on GPU $_glmGpu',
-          params: GlmOcr.cpuParams.copyWith(
-            device: ComputeDevice.gpu,
-            gpuLayers: -1,
-            preferredBackend: GpuBackend.vulkan,
-            mainGpu: _glmGpu,
-            // One GPU only: split with an integrated GPU it was slower than
-            // the CPU.
-            splitMode: ModelSplitMode.none,
-          ),
-        ),
-      ],
-      _ => [(name: 'cpu', params: GlmOcr.cpuParams)],
-    },
-  );
-}
-
-Future<OcrDocument> _readWithGlm(
-  GlmOcr glm,
-  BenchCase c,
-  String cacheDir,
-  Map<String, (Duration, List<int>)> times,
-) async {
-  final watch = Stopwatch()..start();
-  final document = OcrDocument(
-    source: TextSource.ocr,
-    pages: [for (final path in c.files) await glm.recognizeFile(path)],
-  );
-  times[c.name] = (
-    watch.elapsed,
-    [for (final path in c.files) ..._imageTokens(glm, path)],
-  );
-  // Saved like ML Kit's output, so later runs replay it without the model.
-  final file = File(p.join(cacheDir, '${c.name}.ocr.json'));
-  await file.parent.create(recursive: true);
-  await file.writeAsString(jsonEncode(document.toJson()));
-  return document;
-}
-
-/// Image tokens GLM-OCR spends on each strip of [path]: one per 28×28 px
-/// (14 px patches merged 2×2). Matches LM Studio's counts within a few
-/// percent; on a phone, encoding them is most of the time.
-List<int> _imageTokens(GlmOcr glm, String path) {
-  final image = glm.preparation.prepareImage(File(path).readAsBytesSync());
-  return [
-    for (final (top, bottom) in glm.strips?.cut(image) ?? [(0, image.height)])
-      (image.width / 28).ceil() * ((bottom - top) / 28).ceil(),
-  ];
-}
-
-String _timeSummary(
-  Map<String, (Duration, List<int>)> times,
-  String placement,
-) {
-  final b = StringBuffer()
-    ..writeln()
-    ..writeln(
-      'GLM-OCR on this PC, width ${_glmWidth.isEmpty ? 'rule' : _glmWidth}, '
-      'strips ${_glmStrip.isEmpty ? 'off' : '≤ $_glmStrip px'}, '
-      'placement $placement '
-      '(the first photo includes loading the model)',
-    );
-  var tokens = 0;
-  for (final MapEntry(:key, value: (time, strips)) in times.entries) {
-    final imageTokens = strips.fold(0, (a, b) => a + b);
-    tokens += imageTokens;
-    b.writeln(
-      '  ${key.padRight(32)}'
-      '${(time.inMilliseconds / 1000).toStringAsFixed(1).padLeft(7)} s'
-      '${'$imageTokens'.padLeft(7)} image tokens'
-      '${strips.length > 1 ? ' in ${strips.join(' + ')}' : ''}',
-    );
-  }
-  b.writeln('  ${'total'.padRight(39)}${'$tokens'.padLeft(7)} image tokens');
-  return b.toString();
 }
 
 Future<OcrDocument> _onDesktop(Future<OcrDocument> Function() read) async {

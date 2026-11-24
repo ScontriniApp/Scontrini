@@ -37,20 +37,6 @@ a real phone ("Esporta come test" + `tool/pull_fixtures.sh`) are replayed the sa
 `assets/test_receipts/incoming/`. So work on the row builder and the parser happens on the PC only;
 the device is needed again only for new photos or to test a different OCR setup.
 
-**GLM-OCR on the phone** (speed, memory, which GPU backend works):
-
-```bash
-tool/bench/run_device.sh --glm --only carrefour_1                 # the app's placement: GPU, then CPU
-tool/bench/run_device.sh --glm --glm-placement cpu --glm-threads 4
-```
-
-`--glm` pushes the model files once into the app's external folder (`files/glm-model/`, left there
-for the next run; `--remove-model` deletes them) and reads the photos with `GlmOcr`. Each receipt
-prints its time, the placement it ran on and the process memory (RSS and peak). Options:
-`--glm-model FILE` (e.g. a Q4 requantization, `mmproj-GLM-OCR-Q8_0.gguf` next to it),
-`--glm-placement app|cpu|vulkan|opencl`, `--glm-threads N`, `--glm-strip PX`, `--only TEXT`.
-GLM-OCR's text lands in `data/ocr_cache/glm_device/`, apart from ML Kit's.
-
 **PaddleOCR on the phone and on the PC, with the app's own code.**
 
 ```bash
@@ -63,36 +49,6 @@ the text lands in `data/ocr_cache/paddle_device-v6-<size>/`. On the PC,
 `flutter test tool/bench/paddle_dart_test.dart --dart-define=PADDLE=true` runs the same Dart code
 (`PaddleOcr`) on the bench photos into `data/ocr_cache/paddle_dart-v6-<size>/`: it must score like
 `paddle_ocr.py`, which checks the port (onnxruntime from the Python venv, see the file's header).
-
-**GLM-OCR on the PC, with the app's own code.** The app reads photos with GLM-OCR (a 0.9B
-vision-language OCR model) through `GlmOcr` (`lib/features/extraction/data/glm_ocr.dart`, llama.cpp
-via `llamadart`). The benchmark runs that same class on the PC, image preparation included, so its
-score is the app's score:
-
-```powershell
-# once: the model files (ggml-org/GLM-OCR-GGUF, Q8_0: 950 MB + 484 MB mmproj), e.g. via LM Studio
-$env:LLAMADART_NATIVE_LIB_DIR = (Resolve-Path build/native_assets/windows).Path
-flutter test tool/bench/desktop_bench_test.dart --dart-define=BENCH_GLM=true --dart-define=BENCH_GLM_GPU=1
-```
-
-- `LLAMADART_NATIVE_LIB_DIR`: under `flutter test` on Windows llamadart doesn't find its own DLLs
-  (downloaded by its build hook into `build/native_assets/windows`) without it.
-- `BENCH_GLM_MODEL_DIR`: folder with `GLM-OCR-Q8_0.gguf` and `mmproj-GLM-OCR-Q8_0.gguf` (default:
-  LM Studio's `~/.lmstudio/models/ggml-org/GLM-OCR-GGUF`).
-- `BENCH_GLM_WIDTH`: one width for every photo instead of the app's rule; `BENCH_GLM_STRIP`: read
-  photos in strips at most this many pixels tall. The summary prints the image tokens per strip
-  (one per 28×28 px): on a phone, encoding them is a large part of the time.
-- `BENCH_GLM_MODEL`: another model file, e.g. a Q4 requantization
-  (`llama-quantize --allow-requantize GLM-OCR-Q8_0.gguf GLM-OCR-Q4_K_M.gguf Q4_K_M`), with
-  `mmproj-GLM-OCR-Q8_0.gguf` next to it.
-- `BENCH_GLM_GPU`: Vulkan GPU index, `-1` (default) for CPU.
-- `BENCH_GLM_PLACEMENT=app`: what the app does (image encoder on the first GPU, text on the CPU;
-  the CPU if that fails); `=projector`: image encoder on `BENCH_GLM_GPU`, text on the CPU. On the test laptop the RTX is `1`:
-  ~4 s per photo, against ~27 s on the CPU; split with the integrated Radeon it took 49 s.
-
-It reads the photos in `data/scontrini_foto_reali` and `data/foto_render` (`BENCH_PHOTOS`) that it
-has not read yet, saves the text in `data/ocr_cache/glm/` and prints the time per photo. Later runs
-replay the saved text without the model; `BENCH_GLM=refresh` reads everything again.
 
 **PaddleOCR on the PC (no device, same models as on Android).** `paddle_ocr.py` reads the photos
 with PP-OCR ONNX models through RapidOCR and onnxruntime, the same runtime the app would use on
@@ -124,13 +80,12 @@ how an engine reads damaged photos, never tune the parser to it.
     --photos data/dataset_sintetico/foto --out data/dataset_sintetico/ocr_cache/paddle_v6-medium
 flutter test tool/bench/desktop_bench_test.dart --dart-define=BENCH_PDFS=data/none \
     --dart-define=BENCH_OCR=data/dataset_sintetico/ocr_cache \
-    --dart-define=BENCH_TRUTH=data/dataset_sintetico/ground_truth \
-    --dart-define=BENCH_PHOTOS=data/dataset_sintetico/foto   # + BENCH_GLM=true for GLM-OCR
+    --dart-define=BENCH_TRUTH=data/dataset_sintetico/ground_truth
 ```
 
 ## What it measures
 
-One summary per group (PDF, photos · ML Kit, photos · GLM-OCR), printed and saved in full in
+One summary per group (PDF, photos · ML Kit, photos · PaddleOCR), printed and saved in full in
 `data/bench_runs/`:
 
 | Step | Measures | Against |

@@ -86,10 +86,6 @@ void main() {
           appDatabaseProvider.overrideWithValue(db),
           receiptCaptureServiceProvider.overrideWithValue(capture),
           textExtractorProvider.overrideWithValue(extractor),
-          // No platform folders in tests: no GLM-OCR model installed.
-          glmOcrModelDirectoryProvider.overrideWithValue(
-            Future.value('/nonexistent/models/glm-ocr'),
-          ),
         ],
         child: const ScontriniApp(),
       ),

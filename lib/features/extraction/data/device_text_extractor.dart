@@ -6,7 +6,7 @@ import 'package:scontrini/features/extraction/domain/models/ocr_page.dart';
 import 'package:scontrini/features/extraction/domain/models/text_source.dart';
 import 'package:scontrini/features/extraction/domain/text_extractor.dart';
 
-/// [TextExtractor] for photos (PaddleOCR, GLM-OCR or ML Kit) and PDFs
+/// [TextExtractor] for photos (PaddleOCR or ML Kit) and PDFs
 /// (pdfrx).
 class DeviceTextExtractor implements TextExtractor {
   new(this._images, this._pdf);
