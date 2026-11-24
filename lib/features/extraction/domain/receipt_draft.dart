@@ -38,6 +38,10 @@ class ReceiptDraft {
       ),
   ]);
 
+  /// A receipt typed in by hand: dated [date], no store, no rows yet.
+  factory empty(DateTime date) =>
+      ReceiptDraft._(ParsedReceipt(purchaseDate: date, items: const []), []);
+
   new _(ParsedReceipt receipt, this.items)
     : receipt = _withWarnings(receipt, items);
 

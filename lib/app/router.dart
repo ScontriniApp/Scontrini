@@ -6,7 +6,10 @@ import 'package:scontrini/features/analytics/presentation/dashboard_screen.dart'
 import 'package:scontrini/features/capture/domain/receipt_source.dart';
 import 'package:scontrini/features/capture/presentation/capture_screen.dart';
 import 'package:scontrini/features/extraction/presentation/extraction_screen.dart';
+import 'package:scontrini/features/extraction/presentation/receipt_review_screen.dart';
 import 'package:scontrini/features/pantry/presentation/pantry_screen.dart';
+import 'package:scontrini/features/products/presentation/product_stats_screen.dart';
+import 'package:scontrini/features/receipts/presentation/receipt_detail_screen.dart';
 import 'package:scontrini/features/receipts/presentation/receipts_screen.dart';
 import 'package:scontrini/features/settings/presentation/settings_screen.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
@@ -14,6 +17,15 @@ import 'package:scontrini/l10n/app_localizations.dart';
 abstract final class Routes {
   static const dashboard = '/';
   static const receipts = '/receipts';
+
+  /// One receipt of the history (inside the history tab).
+  static String receipt(int id) => '$receipts/$id';
+
+  /// One product's statistics (prices paid, purchases, pantry).
+  static String product(int id) => '/products/$id';
+
+  /// A receipt typed in by hand; pops with the saved receipt's id.
+  static const manualReceipt = '/manual-receipt';
   static const analytics = '/analytics';
   static const pantry = '/pantry';
   static const capture = '/capture';
@@ -49,6 +61,15 @@ GoRouter _createRouter() => GoRouter(
             GoRoute(
               path: Routes.receipts,
               builder: (_, _) => const ReceiptsScreen(),
+              routes: [
+                GoRoute(
+                  path: ':id',
+                  builder: (_, state) => ReceiptDetailScreen(
+                    receiptId:
+                        int.tryParse(state.pathParameters['id'] ?? '') ?? -1,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -80,6 +101,16 @@ GoRouter _createRouter() => GoRouter(
         final ReceiptSource source => ExtractionScreen(source: source),
         _ => const CaptureScreen(),
       },
+    ),
+    GoRoute(
+      path: '/products/:id',
+      builder: (_, state) => ProductStatsScreen(
+        productId: int.tryParse(state.pathParameters['id'] ?? '') ?? -1,
+      ),
+    ),
+    GoRoute(
+      path: Routes.manualReceipt,
+      builder: (_, _) => const ReceiptReviewScreen.manual(),
     ),
     GoRoute(path: Routes.settings, builder: (_, _) => const SettingsScreen()),
   ],

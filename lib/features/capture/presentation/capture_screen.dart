@@ -10,7 +10,7 @@ import 'package:scontrini/features/capture/domain/receipt_source.dart';
 import 'package:scontrini/features/extraction/data/extraction_providers.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
-/// Phase 1: choose how to acquire a receipt.
+/// Phase 1: choose how to acquire a receipt (or type it in by hand).
 class CaptureScreen extends ConsumerWidget {
   const new({super.key});
 
@@ -68,6 +68,11 @@ class CaptureScreen extends ConsumerWidget {
             icon: Icons.picture_as_pdf_outlined,
             label: l10n.capturePdf,
             onTap: () => capture((s) => s.pickPdf()),
+          ),
+          _CaptureOption(
+            icon: Icons.edit_note,
+            label: l10n.captureManual,
+            onTap: () => context.push(Routes.manualReceipt),
           ),
         ],
       ),

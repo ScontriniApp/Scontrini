@@ -1,7 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:scontrini/features/receipts/domain/product_matcher.dart';
+import 'package:scontrini/core/database/product_matcher.dart';
 
 void main() {
+  test('normalise ignores case, accents, spacing and word punctuation', () {
+    expect(ProductMatcher.normalise('Latte intero'), 'LATTE INTERO');
+    expect(ProductMatcher.normalise('  LATTE   INTERO. '), 'LATTE INTERO');
+    expect(ProductMatcher.normalise("Caffè d'orzo"), 'CAFFE D ORZO');
+    expect(ProductMatcher.normalise('POM. 500G'), 'POM 500G');
+    expect(ProductMatcher.normalise('MOZZ.LATTE 1,5L'), 'MOZZ LATTE 1,5L');
+    expect(ProductMatcher.normalise('--- '), isEmpty);
+  });
+
   ProductMatcher matcher() => ProductMatcher(
     products: const [
       MatchableProduct(id: 1, canonicalName: 'LATTE INTERO'),

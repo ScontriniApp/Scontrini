@@ -14,9 +14,10 @@ class MatchableProduct {
 /// match, and creates a product (then [add]s it) when there is none.
 ///
 /// Only the same label matches: a name joins a product when its normalised
-/// form (case and spacing ignored) is the product's canonical name or one
-/// of its aliases. Different labels stay different products, however close
-/// they look; only the user merges them (by adding an alias).
+/// form (case, accents, spacing and punctuation between words ignored) is
+/// the product's canonical name or one of its aliases. Different labels stay
+/// different products, however close they look; only the user merges them
+/// (by adding an alias).
 class ProductMatcher {
   new({
     Iterable<MatchableProduct> products = const [],
@@ -31,9 +32,34 @@ class ProductMatcher {
   /// Normalised name → product id: aliases and canonical names.
   final _names = <String, int>{};
 
-  /// Upper-case, single-spaced and trimmed: `latte  ps 1l` → `LATTE PS 1L`.
-  static String normalise(String name) =>
-      name.trim().toUpperCase().replaceAll(RegExp(r'\s+'), ' ');
+  /// The label two printed names must share: upper case, no accents,
+  /// punctuation between words dropped (kept inside numbers), single spaces.
+  /// `latte  ps 1l` → `LATTE PS 1L`, `POM. 500G` → `POM 500G`,
+  /// `Caffè d'orzo` → `CAFFE D ORZO`; `1,5L` and `1.5L` stay apart.
+  static String normalise(String name) {
+    final buffer = StringBuffer();
+    for (final rune in name.toUpperCase().runes) {
+      final char = String.fromCharCode(rune);
+      buffer.write(_accents[char] ?? char);
+    }
+    return buffer
+        .toString()
+        .replaceAll(
+          RegExp(r'(?<![0-9])[^A-Z0-9\s]+|[^A-Z0-9\s]+(?![0-9])'),
+          ' ',
+        )
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+
+  static const _accents = {
+    'À': 'A', 'Á': 'A', 'Â': 'A', 'Ä': 'A', 'Ã': 'A', //
+    'È': 'E', 'É': 'E', 'Ê': 'E', 'Ë': 'E', //
+    'Ì': 'I', 'Í': 'I', 'Î': 'I', 'Ï': 'I', //
+    'Ò': 'O', 'Ó': 'O', 'Ô': 'O', 'Ö': 'O', 'Õ': 'O', //
+    'Ù': 'U', 'Ú': 'U', 'Û': 'U', 'Ü': 'U', //
+    'Ç': 'C', 'Ñ': 'N',
+  };
 
   /// Makes [product] matchable by its canonical name.
   void add(MatchableProduct product) {

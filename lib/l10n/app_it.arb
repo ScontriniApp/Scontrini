@@ -12,7 +12,7 @@
   "capturePdf": "Importa PDF",
   "comingSoon": "Funzionalità in arrivo",
   "dashboardEmpty": "Nessuno scontrino ancora.\nAggiungi il primo per vedere le tue spese.",
-  "receiptsEmpty": "Lo storico degli acquisti apparirà qui.",
+  "receiptsEmpty": "Nessuno scontrino salvato. Fotografane uno o inseriscilo a mano.",
   "analyticsEmpty": "Grafici e statistiche appariranno qui.",
   "captureFailed": "Impossibile acquisire lo scontrino.",
   "extractionTitle": "Scontrino letto",
@@ -60,7 +60,7 @@
   "pantryEmpty": "La dispensa è vuota.\nAggiungi prodotti da uno scontrino o a mano.",
   "pantryShowClosed": "Mostra finiti e buttati",
   "pantryHideClosed": "Nascondi finiti e buttati",
-  "pantryAdd": "Aggiungi prodotto",
+  "pantryAdd": "Aggiungi scontrino a mano",
   "pantryUncategorised": "Senza categoria",
   "pantryRemaining": "{remaining} di {initial}",
   "@pantryRemaining": {
@@ -125,14 +125,6 @@
   "cancel": "Annulla",
   "delete": "Elimina",
   "save": "Salva",
-  "pantryFieldName": "Nome",
-  "pantryFieldQuantity": "Quantità",
-  "pantryFieldPrice": "Prezzo pagato (facoltativo)",
-  "pantryFieldCategory": "Categoria",
-  "pantryFieldSource": "Provenienza",
-  "pantryInvalidName": "Inserisci un nome",
-  "pantryInvalidQuantity": "Inserisci una quantità maggiore di zero",
-  "pantryInvalidPrice": "Prezzo non valido",
   "unitPieces": "pz",
   "unitKilograms": "kg",
   "unitLitres": "l",
@@ -140,33 +132,6 @@
   "extractionStepFindingLines": "Cerco le righe…",
   "extractionStepReadingLines": "Leggo le righe…",
   "extractionStepParsing": "Ricostruisco lo scontrino…",
-  "triageTitle": "Smista in dispensa",
-  "triageCounter": "{current} di {total}",
-  "@triageCounter": {
-    "placeholders": {
-      "current": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "triageKeep": "In dispensa",
-  "triageSkip": "Salta",
-  "triageDone": "Fatto",
-  "triageFailed": "Impossibile caricare i prodotti.",
-  "triageSummary": "{kept} in dispensa, {skipped} saltati.",
-  "@triageSummary": {
-    "placeholders": {
-      "kept": {
-        "type": "int"
-      },
-      "skipped": {
-        "type": "int"
-      }
-    }
-  },
   "confirmFailed": "Impossibile salvare lo scontrino.",
   "navInsights": "Consigli",
   "insightsEmpty": "I consigli personalizzati appariranno qui.",
@@ -242,6 +207,93 @@
   "pantrySearchHint": "Cerca in dispensa",
   "pantrySearchClear": "Cancella ricerca",
   "pantryNoResults": "Nessun prodotto trovato.",
+  "captureManual": "Inserisci a mano",
+  "manualReceiptTitle": "Scontrino a mano",
+  "manualReceiptNotice": "Aggiungi i prodotti che hai comprato. Salvando, lo scontrino entra nello storico e i prodotti in dispensa.",
+  "receiptsUnknownStore": "Negozio sconosciuto",
+  "receiptsManual": "A mano",
+  "receiptsItemCount": "{count, plural, =1{1 articolo} other{{count} articoli}}",
+  "@receiptsItemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "receiptDelete": "Elimina scontrino",
+  "receiptDeleteConfirm": "Eliminare lo scontrino? Spariscono anche i suoi prodotti in dispensa.",
+  "receiptDeleted": "Scontrino eliminato",
+  "receiptNotFound": "Scontrino non trovato.",
+  "pantryManage": "Gestisci in dispensa",
+  "pantryStatistics": "Visualizza statistiche",
+  "productStatsBought": "Comprato",
+  "productStatsTimes": "{count, plural, =1{1 volta} other{{count} volte}}",
+  "@productStatsTimes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "productStatsLastPurchase": "Ultimo acquisto",
+  "productStatsEvery": "Lo compri ogni",
+  "productStatsDays": "{days, plural, =1{giorno circa} other{{days} giorni circa}}",
+  "@productStatsDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "productStatsTotal": "Speso in tutto",
+  "productStatsPrices": "Prezzi pagati",
+  "productStatsPricePerPiece": "al pezzo",
+  "productStatsPricePerKg": "al kg",
+  "productStatsPricePerLitre": "al litro",
+  "productStatsOnePrice": "Il grafico appare dal secondo acquisto.",
+  "productStatsMin": "Minimo",
+  "productStatsUsual": "Di solito",
+  "productStatsMax": "Massimo",
+  "productStatsChangeUp": "Ultimo prezzo {percent} sopra il solito",
+  "@productStatsChangeUp": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "productStatsChangeDown": "Ultimo prezzo {percent} sotto il solito",
+  "@productStatsChangeDown": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "productStatsChangeSame": "Ultimo prezzo in linea con il solito",
+  "productStatsPurchases": "Acquisti",
+  "productStatsNoPurchases": "Nessun acquisto registrato per questo prodotto.",
+  "productStatsPantry": "In dispensa",
+  "productStatsPantryNow": "Ne hai ancora {quantity}",
+  "@productStatsPantryNow": {
+    "placeholders": {
+      "quantity": {
+        "type": "String"
+      }
+    }
+  },
+  "productStatsPantryNone": "Non ne hai in dispensa",
+  "productStatsLotsEnded": "Finiti: {consumed} · Buttati: {discarded}",
+  "@productStatsLotsEnded": {
+    "placeholders": {
+      "consumed": {
+        "type": "int"
+      },
+      "discarded": {
+        "type": "int"
+      }
+    }
+  },
   "reviewTitle": "Controlla lo scontrino",
   "reviewNotice": "Controlla ogni prodotto: confermalo se è stato letto bene, altrimenti correggilo. Salvando, lo scontrino entra nella dashboard e i prodotti in dispensa.",
   "reviewAddItem": "Aggiungi articolo",

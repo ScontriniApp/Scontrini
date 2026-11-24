@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/router.dart';
+import 'package:scontrini/core/utils/clock.dart';
 import 'package:scontrini/core/utils/money.dart';
 import 'package:scontrini/features/capture/domain/receipt_source.dart';
 import 'package:scontrini/features/extraction/data/extraction_providers.dart';
@@ -18,24 +19,40 @@ import 'package:scontrini/features/pantry/presentation/pantry_providers.dart';
 import 'package:scontrini/features/receipts/data/receipt_providers.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
-/// Phase 3 review, the one screen after a scan: for every product the user
-/// confirms it was read correctly or corrects it by hand (name, quantity,
-/// price, category), adds missed rows and drops wrong ones; the store,
-/// date, total and discount can be corrected too. Warnings follow every
-/// edit. Once every row is confirmed, saving stores the receipt
-/// (`saveConfirmed`, so it reaches the dashboard and statistics), puts all
-/// its products in the pantry and goes to the dashboard.
+/// Phase 3 review, the one screen where a receipt is checked before it is
+/// saved. After a scan, for every product the user confirms it was read
+/// correctly or corrects it by hand (name, quantity, price, category), adds
+/// missed rows and drops wrong ones; the store, date, total and discount can
+/// be corrected too. Typed in by hand ([ReceiptReviewScreen.manual]) it
+/// starts empty, dated now, and every row added is already confirmed.
+///
+/// Warnings follow every edit. Once every row is confirmed, saving stores
+/// the receipt (`saveConfirmed`, so it reaches the history, dashboard and
+/// statistics), puts all its products in the pantry and opens the saved
+/// receipt in the history.
 class ReceiptReviewScreen extends ConsumerStatefulWidget {
   const new({
-    required this.source,
-    required this.result,
-    required this.initialDraft,
+    required ReceiptSource this.source,
+    required ExtractionResult this.result,
+    required ReceiptDraft this.initialDraft,
     super.key,
   });
 
-  final ReceiptSource source;
-  final ExtractionResult result;
-  final ReceiptDraft initialDraft;
+  /// A receipt typed in by hand: no capture, nothing read.
+  const new manual({super.key})
+    : source = null,
+      result = null,
+      initialDraft = null;
+
+  final ReceiptSource? source;
+
+  /// What was read; `null` for a receipt typed in by hand.
+  final ExtractionResult? result;
+
+  /// `null`: an empty receipt dated now.
+  final ReceiptDraft? initialDraft;
+
+  bool get isManual => result == null;
 
   @override
   ConsumerState<ReceiptReviewScreen> createState() =>
@@ -43,7 +60,8 @@ class ReceiptReviewScreen extends ConsumerStatefulWidget {
 }
 
 class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
-  late ReceiptDraft _draft = widget.initialDraft;
+  late ReceiptDraft _draft =
+      widget.initialDraft ?? ReceiptDraft.empty(ref.read(clockProvider)());
   var _edited = false;
   var _saving = false;
   var _saved = false;
@@ -71,9 +89,11 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(l10n.reviewTitle),
+          title: Text(
+            widget.isManual ? l10n.manualReceiptTitle : l10n.reviewTitle,
+          ),
           actions: [
-            if (kDebugMode)
+            if (kDebugMode && !widget.isManual)
               IconButton(
                 icon: const Icon(Icons.bug_report_outlined),
                 tooltip: l10n.exportFixture,
@@ -101,16 +121,20 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.edit_note),
-              title: Text(l10n.reviewNotice),
+              title: Text(
+                widget.isManual ? l10n.manualReceiptNotice : l10n.reviewNotice,
+              ),
             ),
             for (final warning in _draft.receipt.warnings)
-              _WarningTile(
-                warning: warning,
-                draft: _draft,
-                onUseItemsTotal: () => _update(
-                  _draft.withTotal(_draft.receipt.computedTotalCents),
+              // By hand the total is the rows' sum unless one is typed in.
+              if (!(widget.isManual && warning == ParseWarning.missingTotal))
+                _WarningTile(
+                  warning: warning,
+                  draft: _draft,
+                  onUseItemsTotal: () => _update(
+                    _draft.withTotal(_draft.receipt.computedTotalCents),
+                  ),
                 ),
-              ),
             _HeaderCard(draft: _draft, onChanged: _update),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
@@ -156,12 +180,13 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                 onConfirm: (confirmed) =>
                     _update(_draft.withConfirmed(i, confirmed: confirmed)),
               ),
-            if (widget.result.receipt.unparsedLines.isNotEmpty)
+            if (widget.result?.receipt.unparsedLines ?? const <String>[]
+                case final unparsed when unparsed.isNotEmpty)
               ExpansionTile(
                 title: Text(l10n.extractionUnparsed),
                 subtitle: Text(l10n.reviewUnparsedHint),
                 children: [
-                  for (final line in widget.result.receipt.unparsedLines)
+                  for (final line in unparsed)
                     ListTile(
                       dense: true,
                       title: Text(
@@ -171,16 +196,20 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                     ),
                 ],
               ),
-            ExpansionTile(
-              title: Text(l10n.extractionRawText),
-              childrenPadding: const EdgeInsets.all(16),
-              children: [
-                SelectableText(
-                  widget.result.rowsText,
-                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-                ),
-              ],
-            ),
+            if (widget.result case final result?)
+              ExpansionTile(
+                title: Text(l10n.extractionRawText),
+                childrenPadding: const EdgeInsets.all(16),
+                children: [
+                  SelectableText(
+                    result.rowsText,
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
       ),
@@ -189,7 +218,20 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
 
   Future<void> _addItem() async {
     final result = await showReviewItemSheet(context, categories: _categories);
-    if (result is ItemEdited) _update(_draft.addItem(result.item));
+    if (result is! ItemEdited) return;
+    var added = result.item;
+    // No category picked: guess it from the name, as for the rows read.
+    if (added.categoryId == null) {
+      final guessed = await ref.read(receiptRepositoryProvider).guessCategories(
+        [added.item.rawName],
+      );
+      added = DraftItem(
+        item: added.item,
+        categoryId: guessed.single,
+        confirmed: added.confirmed,
+      );
+    }
+    if (mounted) _update(_draft.addItem(added));
   }
 
   Future<void> _editItem(int index) async {
@@ -225,8 +267,9 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
     }
   }
 
-  /// Saves the reviewed receipt, puts its products in the pantry, then goes
-  /// to the dashboard: the receipt is done, so it can't be saved twice.
+  /// Saves the reviewed receipt, puts its products in the pantry, then
+  /// opens it in the history (`go`, so this screen is gone and the receipt
+  /// can't be saved twice).
   Future<void> _confirm() async {
     final messenger = ScaffoldMessenger.of(context);
     final router = GoRouter.of(context);
@@ -238,14 +281,14 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
           .saveConfirmed(
             _draft.receipt,
             categoryIds: _draft.categoryIds,
-            sourcePath: widget.source.paths.firstOrNull,
-            rawOcrText: widget.result.rowsText,
+            sourcePath: widget.source?.paths.firstOrNull,
+            rawOcrText: widget.result?.rowsText,
           );
       final inPantry = await ref
           .read(pantryRepositoryProvider)
           .addAllFromReceipt(receiptId);
       setState(() => _saved = true);
-      router.go(Routes.dashboard);
+      router.go(Routes.receipt(receiptId));
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(l10n.reviewSaved(inPantry))));
@@ -259,7 +302,7 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
   Future<void> _export() async {
     final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context);
-    final name = await ref.read(fixtureExporterProvider).export(widget.result);
+    final name = await ref.read(fixtureExporterProvider).export(widget.result!);
     messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(l10n.exportFixtureDone(name))));

@@ -210,6 +210,65 @@ void main() {
     expect((await pantry.triageCards(id)).map((c) => c.name), ['MOZZARELLA']);
   });
 
+  test('categoryIds needs one entry per item', () {
+    expect(
+      () => receipts.saveConfirmed(_receipt, categoryIds: [null]),
+      throwsArgumentError,
+    );
+  });
+
+  test('history lists confirmed receipts, newest first', () async {
+    final photo = await receipts.saveConfirmed(
+      _receipt,
+      sourcePath: '/receipts/1.jpg',
+    );
+    final manual = await receipts.saveConfirmed(
+      ParsedReceipt(
+        purchaseDate: DateTime(2026, 11, 24, 10),
+        totalCents: 150,
+        items: const [
+          ParsedItem(rawName: 'Pane', unitPriceCents: 150, lineTotalCents: 150),
+        ],
+      ),
+    );
+    await db
+        .into(db.receipts)
+        .insert(
+          ReceiptsCompanion.insert(
+            purchaseDate: DateTime.utc(2026, 11, 25),
+            totalCents: 1,
+            status: ReceiptStatus.draft,
+          ),
+        );
+
+    final history = await receipts.watchHistory().first;
+    expect(history.map((r) => (r.id, r.itemCount, r.manual, r.storeName)), [
+      (manual, 1, true, null),
+      (photo, 3, false, 'CARREFOUR MARKET'),
+    ]);
+    expect(history.last.purchaseDate, DateTime(2026, 11, 23, 18, 30));
+  });
+
+  test('a receipt reads back with its rows and goes on delete', () async {
+    final id = await receipts.saveConfirmed(_receipt);
+    final pantry = PantryRepository(db);
+    await pantry.addFromReceipt(id, (await pantry.triageCards(id)).first);
+
+    final detail = (await receipts.watchReceipt(id).first)!;
+    expect(detail.summary.totalCents, 488);
+    expect(detail.lines.map((l) => (l.name, l.quantity, l.unit, l.netCents)), [
+      ('LATTE INTERO', 1.0, 'pz', 129),
+      ('MELE GOLDEN', 0.5, 'kg', 100),
+      ('MOZZARELLA', 1.0, 'pz', 259),
+    ]);
+
+    final gone = receipts.watchReceipt(id).firstWhere((d) => d == null);
+    await receipts.delete(id);
+    expect(await gone, isNull);
+    expect(await db.select(db.receiptItems).get(), isEmpty);
+    expect(await db.select(db.pantryLots).get(), isEmpty);
+  });
+
   group('products', () {
     Future<List<ReceiptItem>> rowsOf(int receiptId) =>
         (db.select(db.receiptItems)

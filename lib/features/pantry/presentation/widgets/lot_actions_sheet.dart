@@ -32,6 +32,8 @@ Future<LotAction?> showLotActions(BuildContext context, PantryLot lot) {
   return showModalBottomSheet<LotAction>(
     context: context,
     showDragHandle: true,
+    // Above the shell's FAB and navigation bar.
+    useRootNavigator: true,
     isScrollControlled: true,
     builder: (context) => SafeArea(
       child: ListView(

@@ -47,7 +47,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'No receipts yet.\nAdd your first one to see your spending.';
 
   @override
-  String get receiptsEmpty => 'Your purchase history will appear here.';
+  String get receiptsEmpty =>
+      'No receipts yet. Take a photo of one or type it in by hand.';
 
   @override
   String get analyticsEmpty => 'Charts and statistics will appear here.';
@@ -136,7 +137,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pantryHideClosed => 'Hide finished and thrown away';
 
   @override
-  String get pantryAdd => 'Add product';
+  String get pantryAdd => 'Add a receipt by hand';
 
   @override
   String get pantryUncategorised => 'Uncategorised';
@@ -218,30 +219,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get save => 'Save';
 
   @override
-  String get pantryFieldName => 'Name';
-
-  @override
-  String get pantryFieldQuantity => 'Quantity';
-
-  @override
-  String get pantryFieldPrice => 'Price paid (optional)';
-
-  @override
-  String get pantryFieldCategory => 'Category';
-
-  @override
-  String get pantryFieldSource => 'Source';
-
-  @override
-  String get pantryInvalidName => 'Enter a name';
-
-  @override
-  String get pantryInvalidQuantity => 'Enter a quantity above zero';
-
-  @override
-  String get pantryInvalidPrice => 'Invalid price';
-
-  @override
   String get unitPieces => 'pcs';
 
   @override
@@ -261,31 +238,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get extractionStepParsing => 'Putting the receipt together…';
-
-  @override
-  String get triageTitle => 'Sort into the pantry';
-
-  @override
-  String triageCounter(int current, int total) {
-    return '$current of $total';
-  }
-
-  @override
-  String get triageKeep => 'In the pantry';
-
-  @override
-  String get triageSkip => 'Skip';
-
-  @override
-  String get triageDone => 'Done';
-
-  @override
-  String get triageFailed => 'Could not load the products.';
-
-  @override
-  String triageSummary(int kept, int skipped) {
-    return '$kept in the pantry, $skipped skipped.';
-  }
 
   @override
   String get confirmFailed => 'Could not save the receipt.';
@@ -395,6 +347,147 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pantryNoResults => 'No products found.';
+
+  @override
+  String get captureManual => 'Type it in by hand';
+
+  @override
+  String get manualReceiptTitle => 'Receipt by hand';
+
+  @override
+  String get manualReceiptNotice =>
+      'Add the products you bought. Saving adds the receipt to the history and its products to the pantry.';
+
+  @override
+  String get receiptsUnknownStore => 'Unknown store';
+
+  @override
+  String get receiptsManual => 'By hand';
+
+  @override
+  String receiptsItemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get receiptDelete => 'Delete receipt';
+
+  @override
+  String get receiptDeleteConfirm =>
+      'Delete the receipt? Its products leave the pantry too.';
+
+  @override
+  String get receiptDeleted => 'Receipt deleted';
+
+  @override
+  String get receiptNotFound => 'Receipt not found.';
+
+  @override
+  String get pantryManage => 'Manage in the pantry';
+
+  @override
+  String get pantryStatistics => 'View statistics';
+
+  @override
+  String get productStatsBought => 'Bought';
+
+  @override
+  String productStatsTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count times',
+      one: 'once',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get productStatsLastPurchase => 'Last purchase';
+
+  @override
+  String get productStatsEvery => 'You buy it every';
+
+  @override
+  String productStatsDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days or so',
+      one: 'day or so',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get productStatsTotal => 'Spent in all';
+
+  @override
+  String get productStatsPrices => 'Prices paid';
+
+  @override
+  String get productStatsPricePerPiece => 'per piece';
+
+  @override
+  String get productStatsPricePerKg => 'per kg';
+
+  @override
+  String get productStatsPricePerLitre => 'per litre';
+
+  @override
+  String get productStatsOnePrice =>
+      'The chart appears from the second purchase.';
+
+  @override
+  String get productStatsMin => 'Lowest';
+
+  @override
+  String get productStatsUsual => 'Usually';
+
+  @override
+  String get productStatsMax => 'Highest';
+
+  @override
+  String productStatsChangeUp(String percent) {
+    return 'Last price $percent above usual';
+  }
+
+  @override
+  String productStatsChangeDown(String percent) {
+    return 'Last price $percent below usual';
+  }
+
+  @override
+  String get productStatsChangeSame => 'Last price as usual';
+
+  @override
+  String get productStatsPurchases => 'Purchases';
+
+  @override
+  String get productStatsNoPurchases =>
+      'No purchases recorded for this product.';
+
+  @override
+  String get productStatsPantry => 'In the pantry';
+
+  @override
+  String productStatsPantryNow(String quantity) {
+    return 'You still have $quantity';
+  }
+
+  @override
+  String get productStatsPantryNone => 'None in the pantry';
+
+  @override
+  String productStatsLotsEnded(int consumed, int discarded) {
+    return 'Finished: $consumed · Thrown away: $discarded';
+  }
 
   @override
   String get reviewTitle => 'Check the receipt';
