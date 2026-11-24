@@ -68,10 +68,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get retry => 'Riprova';
 
   @override
-  String get extractionPreviewNotice =>
-      'Controlla i dati: confermando, lo scontrino viene salvato e puoi smistarlo in dispensa.';
-
-  @override
   String get fieldStore => 'Negozio';
 
   @override
@@ -256,67 +252,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get unitLitres => 'l';
 
   @override
-  String get settingsPhotoReading => 'Lettura delle foto';
-
-  @override
-  String get glmOcrModelTitle => 'Modello di lettura avanzato';
-
-  @override
-  String get glmOcrModelChecking => 'Verifica…';
-
-  @override
-  String glmOcrModelMissing(String size) {
-    return 'Non installato: le foto si leggono con il riconoscimento standard. GLM-OCR è più preciso ma sui telefoni meno potenti può richiedere minuti per scontrino. Download di $size.';
-  }
-
-  @override
-  String glmOcrModelPartial(String done, String total) {
-    return 'Download interrotto: $done di $total.';
-  }
-
-  @override
-  String glmOcrModelDownloading(String done, String total) {
-    return 'Download: $done di $total';
-  }
-
-  @override
-  String glmOcrModelInstalled(String size) {
-    return 'Installato ($size): le foto si leggono sul telefono con GLM-OCR.';
-  }
-
-  @override
-  String get glmOcrDownload => 'Scarica';
-
-  @override
-  String get glmOcrResume => 'Riprendi';
-
-  @override
-  String get glmOcrDownloadConfirmTitle => 'Scaricare il modello?';
-
-  @override
-  String glmOcrDownloadConfirmBody(String size) {
-    return 'Il modello GLM-OCR ($size) si scarica da Hugging Face: meglio con il Wi-Fi. Gli scontrini non lasciano il telefono, il modello li legge senza connessione.';
-  }
-
-  @override
-  String get glmOcrDeleteConfirmTitle => 'Eliminare il modello?';
-
-  @override
-  String glmOcrDeleteConfirmBody(String size) {
-    return 'Libera $size. Le foto torneranno a essere lette con il riconoscimento standard.';
-  }
-
-  @override
-  String get glmOcrErrorNetwork =>
-      'Download non riuscito: controlla la connessione.';
-
-  @override
-  String get glmOcrErrorCorrupt => 'Il file scaricato è danneggiato: riprova.';
-
-  @override
-  String get glmOcrErrorStorage => 'Spazio insufficiente sul telefono.';
-
-  @override
   String get extractionStepPreparing => 'Preparo la foto…';
 
   @override
@@ -352,9 +287,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String triageSummary(int kept, int skipped) {
     return '$kept in dispensa, $skipped saltati.';
   }
-
-  @override
-  String get confirmAndSort => 'Conferma e smista in dispensa';
 
   @override
   String get confirmFailed => 'Impossibile salvare lo scontrino.';
@@ -465,4 +397,134 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get pantryNoResults => 'Nessun prodotto trovato.';
+
+  @override
+  String get reviewTitle => 'Controlla lo scontrino';
+
+  @override
+  String get reviewNotice =>
+      'Controlla ogni prodotto: confermalo se è stato letto bene, altrimenti correggilo. Salvando, lo scontrino entra nella dashboard e i prodotti in dispensa.';
+
+  @override
+  String get reviewAddItem => 'Aggiungi articolo';
+
+  @override
+  String get reviewEditItem => 'Modifica articolo';
+
+  @override
+  String get reviewFieldName => 'Nome sullo scontrino';
+
+  @override
+  String get reviewFieldQuantity => 'Quantità';
+
+  @override
+  String get reviewFieldUnitPrice => 'Prezzo unitario';
+
+  @override
+  String get reviewFieldAmount => 'Importo';
+
+  @override
+  String get reviewFieldDiscount => 'Sconto (facoltativo)';
+
+  @override
+  String get reviewFieldCategory => 'Categoria';
+
+  @override
+  String get reviewInvalidName => 'Inserisci un nome';
+
+  @override
+  String get reviewInvalidQuantity => 'Inserisci una quantità maggiore di zero';
+
+  @override
+  String get reviewInvalidAmount => 'Importo non valido';
+
+  @override
+  String get reviewDiscountTooLarge => 'Lo sconto supera l\'importo';
+
+  @override
+  String get reviewUncategorised => 'Senza categoria';
+
+  @override
+  String get reviewNoItems =>
+      'Nessun articolo: aggiungine almeno uno per confermare.';
+
+  @override
+  String get reviewUnparsedHint => 'Se manca un articolo, aggiungilo a mano.';
+
+  @override
+  String reviewItemDeleted(String name) {
+    return '$name eliminato';
+  }
+
+  @override
+  String get reviewUndo => 'Annulla';
+
+  @override
+  String get reviewDiscardTitle => 'Scartare le modifiche?';
+
+  @override
+  String get reviewDiscardBody => 'Lo scontrino non è ancora stato salvato.';
+
+  @override
+  String get reviewDiscard => 'Scarta';
+
+  @override
+  String reviewMismatchDetail(String items, String total) {
+    return 'Somma articoli $items, totale $total';
+  }
+
+  @override
+  String get reviewMissingDateHint => 'Senza data, viene usata quella di oggi.';
+
+  @override
+  String get reviewMissingTotalHint =>
+      'Senza totale, viene usata la somma degli articoli.';
+
+  @override
+  String get reviewUseItemsTotal => 'Usa la somma';
+
+  @override
+  String get reviewSave => 'Salva scontrino';
+
+  @override
+  String reviewSaveBlocked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Mancano $count prodotti da controllare',
+      one: 'Manca 1 prodotto da controllare',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reviewItemsPending(int count, int pending) {
+    return 'Articoli ($count), $pending da controllare';
+  }
+
+  @override
+  String get reviewConfirmItem => 'Corretto';
+
+  @override
+  String get reviewCorrectItem => 'Correggi';
+
+  @override
+  String get reviewUnconfirmItem => 'Da ricontrollare';
+
+  @override
+  String reviewSaved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Scontrino salvato, $count prodotti in dispensa.',
+      one: 'Scontrino salvato, 1 prodotto in dispensa.',
+      zero: 'Scontrino salvato.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reviewConfirmAll(int count) {
+    return 'Conferma tutti ($count)';
+  }
 }

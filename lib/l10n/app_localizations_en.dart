@@ -68,10 +68,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retry => 'Retry';
 
   @override
-  String get extractionPreviewNotice =>
-      'Check the data: confirming saves the receipt and lets you sort it into the pantry.';
-
-  @override
   String get fieldStore => 'Store';
 
   @override
@@ -255,66 +251,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unitLitres => 'l';
 
   @override
-  String get settingsPhotoReading => 'Reading photos';
-
-  @override
-  String get glmOcrModelTitle => 'Advanced reading model';
-
-  @override
-  String get glmOcrModelChecking => 'Checking…';
-
-  @override
-  String glmOcrModelMissing(String size) {
-    return 'Not installed: photos are read with standard recognition. GLM-OCR is more accurate but can take minutes per receipt on less powerful phones. $size download.';
-  }
-
-  @override
-  String glmOcrModelPartial(String done, String total) {
-    return 'Download stopped: $done of $total.';
-  }
-
-  @override
-  String glmOcrModelDownloading(String done, String total) {
-    return 'Downloading: $done of $total';
-  }
-
-  @override
-  String glmOcrModelInstalled(String size) {
-    return 'Installed ($size): photos are read on the phone with GLM-OCR.';
-  }
-
-  @override
-  String get glmOcrDownload => 'Download';
-
-  @override
-  String get glmOcrResume => 'Resume';
-
-  @override
-  String get glmOcrDownloadConfirmTitle => 'Download the model?';
-
-  @override
-  String glmOcrDownloadConfirmBody(String size) {
-    return 'The GLM-OCR model ($size) is downloaded from Hugging Face: Wi-Fi is best. Receipts never leave the phone, the model reads them offline.';
-  }
-
-  @override
-  String get glmOcrDeleteConfirmTitle => 'Delete the model?';
-
-  @override
-  String glmOcrDeleteConfirmBody(String size) {
-    return 'Frees $size. Photos will be read with standard recognition again.';
-  }
-
-  @override
-  String get glmOcrErrorNetwork => 'Download failed: check the connection.';
-
-  @override
-  String get glmOcrErrorCorrupt => 'The downloaded file is damaged: try again.';
-
-  @override
-  String get glmOcrErrorStorage => 'Not enough space on the phone.';
-
-  @override
   String get extractionStepPreparing => 'Preparing the photo…';
 
   @override
@@ -350,9 +286,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String triageSummary(int kept, int skipped) {
     return '$kept in the pantry, $skipped skipped.';
   }
-
-  @override
-  String get confirmAndSort => 'Confirm and sort into the pantry';
 
   @override
   String get confirmFailed => 'Could not save the receipt.';
@@ -462,4 +395,133 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pantryNoResults => 'No products found.';
+
+  @override
+  String get reviewTitle => 'Check the receipt';
+
+  @override
+  String get reviewNotice =>
+      'Check each product: confirm it if it was read correctly, otherwise correct it. Saving adds the receipt to the dashboard and its products to the pantry.';
+
+  @override
+  String get reviewAddItem => 'Add item';
+
+  @override
+  String get reviewEditItem => 'Edit item';
+
+  @override
+  String get reviewFieldName => 'Name on the receipt';
+
+  @override
+  String get reviewFieldQuantity => 'Quantity';
+
+  @override
+  String get reviewFieldUnitPrice => 'Unit price';
+
+  @override
+  String get reviewFieldAmount => 'Amount';
+
+  @override
+  String get reviewFieldDiscount => 'Discount (optional)';
+
+  @override
+  String get reviewFieldCategory => 'Category';
+
+  @override
+  String get reviewInvalidName => 'Enter a name';
+
+  @override
+  String get reviewInvalidQuantity => 'Enter a quantity greater than zero';
+
+  @override
+  String get reviewInvalidAmount => 'Invalid amount';
+
+  @override
+  String get reviewDiscountTooLarge => 'The discount is more than the amount';
+
+  @override
+  String get reviewUncategorised => 'Uncategorised';
+
+  @override
+  String get reviewNoItems => 'No items: add at least one to confirm.';
+
+  @override
+  String get reviewUnparsedHint => 'If an item is missing, add it by hand.';
+
+  @override
+  String reviewItemDeleted(String name) {
+    return '$name deleted';
+  }
+
+  @override
+  String get reviewUndo => 'Undo';
+
+  @override
+  String get reviewDiscardTitle => 'Discard changes?';
+
+  @override
+  String get reviewDiscardBody => 'The receipt hasn\'t been saved yet.';
+
+  @override
+  String get reviewDiscard => 'Discard';
+
+  @override
+  String reviewMismatchDetail(String items, String total) {
+    return 'Items sum $items, total $total';
+  }
+
+  @override
+  String get reviewMissingDateHint => 'Without a date, today\'s is used.';
+
+  @override
+  String get reviewMissingTotalHint =>
+      'Without a total, the items\' sum is used.';
+
+  @override
+  String get reviewUseItemsTotal => 'Use the sum';
+
+  @override
+  String get reviewSave => 'Save receipt';
+
+  @override
+  String reviewSaveBlocked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count products left to check',
+      one: '1 product left to check',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reviewItemsPending(int count, int pending) {
+    return 'Items ($count), $pending to check';
+  }
+
+  @override
+  String get reviewConfirmItem => 'Correct';
+
+  @override
+  String get reviewCorrectItem => 'Fix';
+
+  @override
+  String get reviewUnconfirmItem => 'Check again';
+
+  @override
+  String reviewSaved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Receipt saved, $count products in the pantry.',
+      one: 'Receipt saved, 1 product in the pantry.',
+      zero: 'Receipt saved.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String reviewConfirmAll(int count) {
+    return 'Confirm all ($count)';
+  }
 }

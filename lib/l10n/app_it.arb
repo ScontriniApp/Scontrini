@@ -19,7 +19,6 @@
   "extractionLoading": "Lettura dello scontrino…",
   "extractionFailed": "Impossibile leggere lo scontrino.",
   "retry": "Riprova",
-  "extractionPreviewNotice": "Controlla i dati: confermando, lo scontrino viene salvato e puoi smistarlo in dispensa.",
   "fieldStore": "Negozio",
   "fieldDate": "Data",
   "fieldTotal": "Totale",
@@ -137,70 +136,6 @@
   "unitPieces": "pz",
   "unitKilograms": "kg",
   "unitLitres": "l",
-  "settingsPhotoReading": "Lettura delle foto",
-  "glmOcrModelTitle": "Modello di lettura avanzato",
-  "glmOcrModelChecking": "Verifica…",
-  "glmOcrModelMissing": "Non installato: le foto si leggono con il riconoscimento standard. GLM-OCR è più preciso ma sui telefoni meno potenti può richiedere minuti per scontrino. Download di {size}.",
-  "@glmOcrModelMissing": {
-    "placeholders": {
-      "size": {
-        "type": "String"
-      }
-    }
-  },
-  "glmOcrModelPartial": "Download interrotto: {done} di {total}.",
-  "@glmOcrModelPartial": {
-    "placeholders": {
-      "done": {
-        "type": "String"
-      },
-      "total": {
-        "type": "String"
-      }
-    }
-  },
-  "glmOcrModelDownloading": "Download: {done} di {total}",
-  "@glmOcrModelDownloading": {
-    "placeholders": {
-      "done": {
-        "type": "String"
-      },
-      "total": {
-        "type": "String"
-      }
-    }
-  },
-  "glmOcrModelInstalled": "Installato ({size}): le foto si leggono sul telefono con GLM-OCR.",
-  "@glmOcrModelInstalled": {
-    "placeholders": {
-      "size": {
-        "type": "String"
-      }
-    }
-  },
-  "glmOcrDownload": "Scarica",
-  "glmOcrResume": "Riprendi",
-  "glmOcrDownloadConfirmTitle": "Scaricare il modello?",
-  "glmOcrDownloadConfirmBody": "Il modello GLM-OCR ({size}) si scarica da Hugging Face: meglio con il Wi-Fi. Gli scontrini non lasciano il telefono, il modello li legge senza connessione.",
-  "@glmOcrDownloadConfirmBody": {
-    "placeholders": {
-      "size": {
-        "type": "String"
-      }
-    }
-  },
-  "glmOcrDeleteConfirmTitle": "Eliminare il modello?",
-  "glmOcrDeleteConfirmBody": "Libera {size}. Le foto torneranno a essere lette con il riconoscimento standard.",
-  "@glmOcrDeleteConfirmBody": {
-    "placeholders": {
-      "size": {
-        "type": "String"
-      }
-    }
-  },
-  "glmOcrErrorNetwork": "Download non riuscito: controlla la connessione.",
-  "glmOcrErrorCorrupt": "Il file scaricato è danneggiato: riprova.",
-  "glmOcrErrorStorage": "Spazio insufficiente sul telefono.",
   "extractionStepPreparing": "Preparo la foto…",
   "extractionStepFindingLines": "Cerco le righe…",
   "extractionStepReadingLines": "Leggo le righe…",
@@ -232,7 +167,6 @@
       }
     }
   },
-  "confirmAndSort": "Conferma e smista in dispensa",
   "confirmFailed": "Impossibile salvare lo scontrino.",
   "navInsights": "Consigli",
   "insightsEmpty": "I consigli personalizzati appariranno qui.",
@@ -307,5 +241,87 @@
   },
   "pantrySearchHint": "Cerca in dispensa",
   "pantrySearchClear": "Cancella ricerca",
-  "pantryNoResults": "Nessun prodotto trovato."
+  "pantryNoResults": "Nessun prodotto trovato.",
+  "reviewTitle": "Controlla lo scontrino",
+  "reviewNotice": "Controlla ogni prodotto: confermalo se è stato letto bene, altrimenti correggilo. Salvando, lo scontrino entra nella dashboard e i prodotti in dispensa.",
+  "reviewAddItem": "Aggiungi articolo",
+  "reviewEditItem": "Modifica articolo",
+  "reviewFieldName": "Nome sullo scontrino",
+  "reviewFieldQuantity": "Quantità",
+  "reviewFieldUnitPrice": "Prezzo unitario",
+  "reviewFieldAmount": "Importo",
+  "reviewFieldDiscount": "Sconto (facoltativo)",
+  "reviewFieldCategory": "Categoria",
+  "reviewInvalidName": "Inserisci un nome",
+  "reviewInvalidQuantity": "Inserisci una quantità maggiore di zero",
+  "reviewInvalidAmount": "Importo non valido",
+  "reviewDiscountTooLarge": "Lo sconto supera l'importo",
+  "reviewUncategorised": "Senza categoria",
+  "reviewNoItems": "Nessun articolo: aggiungine almeno uno per confermare.",
+  "reviewUnparsedHint": "Se manca un articolo, aggiungilo a mano.",
+  "reviewItemDeleted": "{name} eliminato",
+  "@reviewItemDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewUndo": "Annulla",
+  "reviewDiscardTitle": "Scartare le modifiche?",
+  "reviewDiscardBody": "Lo scontrino non è ancora stato salvato.",
+  "reviewDiscard": "Scarta",
+  "reviewMismatchDetail": "Somma articoli {items}, totale {total}",
+  "@reviewMismatchDetail": {
+    "placeholders": {
+      "items": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewMissingDateHint": "Senza data, viene usata quella di oggi.",
+  "reviewMissingTotalHint": "Senza totale, viene usata la somma degli articoli.",
+  "reviewUseItemsTotal": "Usa la somma",
+  "reviewSave": "Salva scontrino",
+  "reviewSaveBlocked": "{count, plural, =1{Manca 1 prodotto da controllare} other{Mancano {count} prodotti da controllare}}",
+  "@reviewSaveBlocked": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewItemsPending": "Articoli ({count}), {pending} da controllare",
+  "@reviewItemsPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "pending": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewConfirmItem": "Corretto",
+  "reviewCorrectItem": "Correggi",
+  "reviewUnconfirmItem": "Da ricontrollare",
+  "reviewSaved": "{count, plural, =0{Scontrino salvato.} =1{Scontrino salvato, 1 prodotto in dispensa.} other{Scontrino salvato, {count} prodotti in dispensa.}}",
+  "@reviewSaved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewConfirmAll": "Conferma tutti ({count})",
+  "@reviewConfirmAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
