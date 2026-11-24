@@ -1,20 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:scontrini/app/router.dart';
 import 'package:scontrini/core/widgets/placeholder_view.dart';
 import 'package:scontrini/features/pantry/data/pantry_providers.dart';
 import 'package:scontrini/features/pantry/domain/pantry_category.dart';
 import 'package:scontrini/features/pantry/domain/pantry_lot.dart';
 import 'package:scontrini/features/pantry/presentation/category_sprites.dart';
-import 'package:scontrini/features/pantry/presentation/manual_add_sheet.dart';
 import 'package:scontrini/features/pantry/presentation/pantry_providers.dart';
 import 'package:scontrini/features/pantry/presentation/quantity_format.dart';
+import 'package:scontrini/features/pantry/presentation/widgets/category_section_header.dart';
 import 'package:scontrini/features/pantry/presentation/widgets/lot_actions_sheet.dart';
-import 'package:scontrini/features/pantry/presentation/widgets/lot_avatar.dart';
 import 'package:scontrini/features/pantry/presentation/widgets/pantry_lot_tile.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 /// The pantry tab: lots grouped by category, a slider per lot, actions on
-/// tap, manual add in the app bar.
+/// tap. The app bar's add opens a receipt typed in by hand, so what is
+/// bought without a photo still lands in the history and the statistics.
 class PantryScreen extends ConsumerStatefulWidget {
   const new({super.key});
 
@@ -63,7 +65,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
           IconButton(
             tooltip: l10n.pantryAdd,
             icon: const Icon(Icons.add),
-            onPressed: () => _addManual(categories),
+            onPressed: () => context.push<int>(Routes.manualReceipt),
           ),
         ],
       ),
@@ -84,7 +86,6 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     List<PantryLot> lots,
     List<PantryCategory> categories,
   ) {
-    final theme = Theme.of(context);
     final byId = {for (final c in categories) c.id: c};
     final query = _normalise(_query);
     final groups = <int?, List<PantryLot>>{};
@@ -130,12 +131,12 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                   padding: const EdgeInsets.only(bottom: 96),
                   children: [
                     for (final key in keys) ...[
-                      _SectionHeader(
+                      CategorySectionHeader(
                         title: key == null
                             ? l10n.pantryUncategorised
                             : byId[key]!.name,
                         sprite: categorySprite(byId[key]?.name),
-                        count: groups[key]!.length,
+                        trailing: '${groups[key]!.length}',
                         // While searching, every section with a match is
                         // open; otherwise the user opens them.
                         open: query.isNotEmpty || _open.contains(key),
@@ -146,7 +147,6 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                                     ? _open.remove(key)
                                     : _open.add(key),
                               ),
-                        color: theme.colorScheme.primary,
                       ),
                       if (query.isNotEmpty || _open.contains(key))
                         for (final lot in groups[key]!)
@@ -158,7 +158,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                                 : Color(byId[key]!.color),
                             onSetRemaining: (value) =>
                                 _setRemaining(lot, value),
-                            onTap: () => _actions(lot),
+                            onTap: () => _choose(lot),
                           ),
                     ],
                   ],
@@ -190,6 +190,51 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
           formatQuantity(l10n, used, lot.unit),
         ),
       );
+    }
+  }
+
+  /// A tap on a lot: manage it in the pantry, or see its product's
+  /// statistics (only for lots linked to a product).
+  Future<void> _choose(PantryLot lot) async {
+    final l10n = AppLocalizations.of(context);
+    final productId = lot.productId;
+    final choice = await showModalBottomSheet<_LotChoice>(
+      context: context,
+      showDragHandle: true,
+      // Above the shell's FAB and navigation bar.
+      useRootNavigator: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: Text(
+                lot.name,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.kitchen_outlined),
+              title: Text(l10n.pantryManage),
+              onTap: () => Navigator.of(context).pop(_LotChoice.manage),
+            ),
+            ListTile(
+              leading: const Icon(Icons.insights_outlined),
+              title: Text(l10n.pantryStatistics),
+              enabled: productId != null,
+              onTap: () => Navigator.of(context).pop(_LotChoice.statistics),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted) return;
+    switch (choice) {
+      case _LotChoice.manage:
+        await _actions(lot);
+      case _LotChoice.statistics when productId != null:
+        await context.push(Routes.product(productId));
+      case _:
     }
   }
 
@@ -229,23 +274,6 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     }
   }
 
-  Future<void> _addManual(List<PantryCategory> categories) async {
-    final draft = await showManualAddSheet(context, categories);
-    if (draft == null) return;
-    await ref
-        .read(pantryRepositoryProvider)
-        .addManual(
-          name: draft.name,
-          quantity: draft.quantity,
-          unit: draft.unit,
-          source: draft.source,
-          priceCents: draft.priceCents,
-          categoryId: draft.categoryId,
-        );
-    // Show the new lot: its section opens.
-    if (mounted) setState(() => _open.add(draft.categoryId));
-  }
-
   void _undoable(PantryLot lot, String message) {
     if (!mounted) return;
     final l10n = AppLocalizations.of(context);
@@ -271,48 +299,5 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
   }
 }
 
-/// A category's heading: sprite, name, number of lots and a chevron. A tap
-/// opens or closes the section ([onTap] null while searching: open).
-class _SectionHeader extends StatelessWidget {
-  const new({
-    required this.title,
-    required this.count,
-    required this.open,
-    required this.onTap,
-    required this.color,
-    this.sprite,
-  });
-
-  final String title;
-  final String? sprite;
-  final int count;
-  final bool open;
-  final VoidCallback? onTap;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-        child: Row(
-          spacing: 12,
-          children: [
-            if (sprite case final sprite?)
-              CategorySpriteImage(sprite, size: 40),
-            Expanded(
-              child: Text(
-                title,
-                style: theme.textTheme.titleLarge?.copyWith(color: color),
-              ),
-            ),
-            Text('$count', style: theme.textTheme.titleMedium),
-            Icon(open ? Icons.expand_less : Icons.expand_more),
-          ],
-        ),
-      ),
-    );
-  }
-}
+/// The two ways into a lot from the pantry list.
+enum _LotChoice { manage, statistics }

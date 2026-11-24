@@ -12,7 +12,7 @@
   "capturePdf": "Importa PDF",
   "comingSoon": "Funzionalità in arrivo",
   "dashboardEmpty": "Nessuno scontrino ancora.\nAggiungi il primo per vedere le tue spese.",
-  "receiptsEmpty": "Lo storico degli acquisti apparirà qui.",
+  "receiptsEmpty": "Nessuno scontrino salvato. Fotografane uno o inseriscilo a mano.",
   "analyticsEmpty": "Grafici e statistiche appariranno qui.",
   "captureFailed": "Impossibile acquisire lo scontrino.",
   "extractionTitle": "Scontrino letto",
@@ -61,7 +61,7 @@
   "pantryEmpty": "La dispensa è vuota.\nAggiungi prodotti da uno scontrino o a mano.",
   "pantryShowClosed": "Mostra finiti e buttati",
   "pantryHideClosed": "Nascondi finiti e buttati",
-  "pantryAdd": "Aggiungi prodotto",
+  "pantryAdd": "Aggiungi scontrino a mano",
   "pantryUncategorised": "Senza categoria",
   "pantryRemaining": "{remaining} di {initial}",
   "@pantryRemaining": {
@@ -128,9 +128,7 @@
   "save": "Salva",
   "pantryFieldName": "Nome",
   "pantryFieldQuantity": "Quantità",
-  "pantryFieldPrice": "Prezzo pagato (facoltativo)",
   "pantryFieldCategory": "Categoria",
-  "pantryFieldSource": "Provenienza",
   "pantryInvalidName": "Inserisci un nome",
   "pantryInvalidQuantity": "Inserisci una quantità maggiore di zero",
   "pantryInvalidPrice": "Prezzo non valido",
@@ -307,5 +305,110 @@
   },
   "pantrySearchHint": "Cerca in dispensa",
   "pantrySearchClear": "Cancella ricerca",
-  "pantryNoResults": "Nessun prodotto trovato."
+  "pantryNoResults": "Nessun prodotto trovato.",
+  "captureManual": "Inserisci a mano",
+  "manualReceiptTitle": "Scontrino a mano",
+  "manualReceiptStore": "Negozio (facoltativo)",
+  "manualReceiptDate": "Data",
+  "manualReceiptItem": "Articolo {index}",
+  "@manualReceiptItem": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "manualReceiptAddItem": "Aggiungi articolo",
+  "manualReceiptRemoveItem": "Rimuovi articolo",
+  "manualReceiptPrice": "Prezzo pagato",
+  "manualReceiptCategoryAuto": "Automatica (dal nome)",
+  "manualReceiptTotal": "Totale",
+  "manualReceiptToPantry": "Metti gli articoli in dispensa",
+  "manualReceiptSave": "Salva scontrino",
+  "manualReceiptSaved": "Scontrino salvato nello storico",
+  "manualReceiptFailed": "Impossibile salvare lo scontrino.",
+  "receiptsUnknownStore": "Negozio sconosciuto",
+  "receiptsManual": "A mano",
+  "receiptsItemCount": "{count, plural, =1{1 articolo} other{{count} articoli}}",
+  "@receiptsItemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "receiptDelete": "Elimina scontrino",
+  "receiptDeleteConfirm": "Eliminare lo scontrino? Spariscono anche i suoi prodotti in dispensa.",
+  "receiptDeleted": "Scontrino eliminato",
+  "receiptNotFound": "Scontrino non trovato.",
+  "pantryManage": "Gestisci in dispensa",
+  "pantryStatistics": "Visualizza statistiche",
+  "productStatsBought": "Comprato",
+  "productStatsTimes": "{count, plural, =1{1 volta} other{{count} volte}}",
+  "@productStatsTimes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "productStatsLastPurchase": "Ultimo acquisto",
+  "productStatsEvery": "Lo compri ogni",
+  "productStatsDays": "{days, plural, =1{giorno circa} other{{days} giorni circa}}",
+  "@productStatsDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "productStatsTotal": "Speso in tutto",
+  "productStatsPrices": "Prezzi pagati",
+  "productStatsPricePerPiece": "al pezzo",
+  "productStatsPricePerKg": "al kg",
+  "productStatsPricePerLitre": "al litro",
+  "productStatsOnePrice": "Il grafico appare dal secondo acquisto.",
+  "productStatsMin": "Minimo",
+  "productStatsUsual": "Di solito",
+  "productStatsMax": "Massimo",
+  "productStatsChangeUp": "Ultimo prezzo {percent} sopra il solito",
+  "@productStatsChangeUp": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "productStatsChangeDown": "Ultimo prezzo {percent} sotto il solito",
+  "@productStatsChangeDown": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "productStatsChangeSame": "Ultimo prezzo in linea con il solito",
+  "productStatsPurchases": "Acquisti",
+  "productStatsNoPurchases": "Nessun acquisto registrato per questo prodotto.",
+  "productStatsPantry": "In dispensa",
+  "productStatsPantryNow": "Ne hai ancora {quantity}",
+  "@productStatsPantryNow": {
+    "placeholders": {
+      "quantity": {
+        "type": "String"
+      }
+    }
+  },
+  "productStatsPantryNone": "Non ne hai in dispensa",
+  "productStatsLotsEnded": "Finiti: {consumed} · Buttati: {discarded}",
+  "@productStatsLotsEnded": {
+    "placeholders": {
+      "consumed": {
+        "type": "int"
+      },
+      "discarded": {
+        "type": "int"
+      }
+    }
+  }
 }

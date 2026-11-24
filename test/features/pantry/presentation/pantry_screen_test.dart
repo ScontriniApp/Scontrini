@@ -6,8 +6,11 @@ import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/app.dart';
 import 'package:scontrini/core/database/app_database.dart';
 import 'package:scontrini/core/database/database_provider.dart';
+import 'package:scontrini/features/extraction/domain/models/parsed_item.dart';
+import 'package:scontrini/features/extraction/domain/models/parsed_receipt.dart';
 import 'package:scontrini/features/pantry/data/pantry_repository.dart';
 import 'package:scontrini/features/pantry/domain/lot_ledger.dart';
+import 'package:scontrini/features/receipts/data/receipt_repository.dart';
 
 void main() {
   late AppDatabase db;
@@ -156,38 +159,6 @@ void main() {
     await closeApp(tester);
   });
 
-  testWidgets('manual add creates a lot with the chosen source', (
-    tester,
-  ) async {
-    await openPantry(tester);
-
-    await tester.tap(find.byTooltip('Aggiungi prodotto'));
-    await settle(tester);
-    await tester.tap(find.text('Salva'));
-    await settle(tester);
-    expect(find.text('Inserisci un nome'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Nome'),
-      'Farina',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Quantità'),
-      '1,5',
-    );
-    await tester.tap(find.text('kg'));
-    await tester.tap(find.text('Salva'));
-    await settle(tester);
-
-    expect(find.text('Farina'), findsOneWidget);
-    final lot = (await tester.runAsync(() => repo.watchLots().first))!.single;
-    expect(lot.initialQuantity, 1.5);
-    expect(lot.unit, 'kg');
-    expect(lot.source, PantrySource.initialStock);
-
-    await closeApp(tester);
-  });
-
   testWidgets('throwing away shows an undo that restores the lot', (
     tester,
   ) async {
@@ -204,6 +175,8 @@ void main() {
 
     await tester.tap(find.text('Pane'));
     await settle(tester);
+    await tester.tap(find.text('Gestisci in dispensa'));
+    await settle(tester);
     await tester.tap(find.text('Butta via: Andato a male'));
     await settle(tester);
 
@@ -217,6 +190,47 @@ void main() {
     final ledger = LotLedger((await tester.runAsync(() => repo.events(id)))!);
     expect(ledger.discarded, 0);
     expect(ledger.status, PantryLotStatus.active);
+
+    await closeApp(tester);
+  });
+
+  testWidgets('a lot opens its product statistics', (tester) async {
+    await tester.runAsync(() async {
+      final receipts = ReceiptRepository(db);
+      ParsedReceipt milk(DateTime date, int cents) => ParsedReceipt(
+        storeName: 'CONAD',
+        purchaseDate: date,
+        totalCents: cents,
+        items: [
+          ParsedItem(
+            rawName: 'LATTE INTERO',
+            unitPriceCents: cents,
+            lineTotalCents: cents,
+          ),
+        ],
+      );
+      await receipts.saveConfirmed(milk(DateTime(2026, 11, 2, 10), 129));
+      final id = await receipts.saveConfirmed(
+        milk(DateTime(2026, 11, 16, 10), 139),
+      );
+      await repo.addFromReceipt(id, (await repo.triageCards(id)).single);
+    });
+    await openPantry(tester);
+    await tester.tap(find.text('Latticini e uova'));
+    await settle(tester);
+
+    await tester.tap(find.text('LATTE INTERO'));
+    await settle(tester);
+    expect(find.text('Gestisci in dispensa'), findsOneWidget);
+    await tester.tap(find.text('Visualizza statistiche'));
+    await settle(tester);
+
+    expect(find.text('2 volte'), findsOneWidget);
+    expect(find.text('14 giorni circa'), findsOneWidget);
+    expect(find.text('Prezzi pagati · al pezzo'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Acquisti'), 200);
+    expect(find.textContaining('CONAD · 1 pz'), findsWidgets);
+    await tester.scrollUntilVisible(find.text('Ne hai ancora 1 pz'), 200);
 
     await closeApp(tester);
   });

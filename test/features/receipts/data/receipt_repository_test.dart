@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' hide isNull;
+import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scontrini/core/database/app_database.dart';
@@ -125,5 +125,99 @@ void main() {
     ]);
     // Only the skipped card is left for a later triage.
     expect((await pantry.triageCards(id)).map((c) => c.name), ['MOZZARELLA']);
+  });
+
+  test('categories chosen by hand win over the keywords', () async {
+    final frozen = await (db.select(
+      db.categories,
+    )..where((c) => c.name.equals('Surgelati'))).getSingle();
+    await receipts.saveConfirmed(
+      _receipt,
+      categoryIds: [null, frozen.id, null],
+    );
+    final rows = await (db.select(
+      db.receiptItems,
+    )..orderBy([(r) => OrderingTerm.asc(r.id)])).get();
+    expect(rows[1].categoryId, frozen.id);
+    expect(rows[0].categoryId, isNotNull); // LATTE: from the keywords
+    expect(
+      () => receipts.saveConfirmed(_receipt, categoryIds: [null]),
+      throwsArgumentError,
+    );
+  });
+
+  test('history lists confirmed receipts, newest first', () async {
+    final photo = await receipts.saveConfirmed(
+      _receipt,
+      sourcePath: '/receipts/1.jpg',
+    );
+    final manual = await receipts.saveConfirmed(
+      ParsedReceipt(
+        purchaseDate: DateTime(2026, 11, 24, 10),
+        totalCents: 150,
+        items: const [
+          ParsedItem(rawName: 'Pane', unitPriceCents: 150, lineTotalCents: 150),
+        ],
+      ),
+    );
+    await db
+        .into(db.receipts)
+        .insert(
+          ReceiptsCompanion.insert(
+            purchaseDate: DateTime.utc(2026, 11, 25),
+            totalCents: 1,
+            status: ReceiptStatus.draft,
+          ),
+        );
+
+    final history = await receipts.watchHistory().first;
+    expect(history.map((r) => (r.id, r.itemCount, r.manual, r.storeName)), [
+      (manual, 1, true, null),
+      (photo, 3, false, 'CARREFOUR MARKET'),
+    ]);
+    expect(history.last.purchaseDate, DateTime(2026, 11, 23, 18, 30));
+  });
+
+  test('a receipt reads back with its rows and goes on delete', () async {
+    final id = await receipts.saveConfirmed(_receipt);
+    final pantry = PantryRepository(db);
+    await pantry.addFromReceipt(id, (await pantry.triageCards(id)).first);
+
+    final detail = (await receipts.watchReceipt(id).first)!;
+    expect(detail.summary.totalCents, 488);
+    expect(detail.lines.map((l) => (l.name, l.quantity, l.unit, l.netCents)), [
+      ('LATTE INTERO', 1.0, 'pz', 129),
+      ('MELE GOLDEN', 0.5, 'kg', 100),
+      ('MOZZARELLA', 1.0, 'pz', 259),
+    ]);
+
+    final gone = receipts.watchReceipt(id).firstWhere((d) => d == null);
+    await receipts.delete(id);
+    expect(await gone, isNull);
+    expect(await db.select(db.receiptItems).get(), isEmpty);
+    expect(await db.select(db.pantryLots).get(), isEmpty);
+  });
+
+  test('rows are linked to a product by name, across receipts', () async {
+    await receipts.saveConfirmed(_receipt);
+    await receipts.saveConfirmed(
+      ParsedReceipt(
+        purchaseDate: DateTime(2026, 11, 24, 10),
+        totalCents: 129,
+        items: const [
+          ParsedItem(
+            rawName: 'Latte intero',
+            unitPriceCents: 129,
+            lineTotalCents: 129,
+          ),
+        ],
+      ),
+    );
+    final rows = await (db.select(
+      db.receiptItems,
+    )..orderBy([(r) => OrderingTerm.asc(r.id)])).get();
+    expect(rows.every((r) => r.productId != null), isTrue);
+    expect(rows.last.productId, rows.first.productId);
+    expect(await db.select(db.products).get(), hasLength(3));
   });
 }

@@ -47,7 +47,8 @@ class AppLocalizationsIt extends AppLocalizations {
       'Nessuno scontrino ancora.\nAggiungi il primo per vedere le tue spese.';
 
   @override
-  String get receiptsEmpty => 'Lo storico degli acquisti apparirà qui.';
+  String get receiptsEmpty =>
+      'Nessuno scontrino salvato. Fotografane uno o inseriscilo a mano.';
 
   @override
   String get analyticsEmpty => 'Grafici e statistiche appariranno qui.';
@@ -141,7 +142,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get pantryHideClosed => 'Nascondi finiti e buttati';
 
   @override
-  String get pantryAdd => 'Aggiungi prodotto';
+  String get pantryAdd => 'Aggiungi scontrino a mano';
 
   @override
   String get pantryUncategorised => 'Senza categoria';
@@ -229,13 +230,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get pantryFieldQuantity => 'Quantità';
 
   @override
-  String get pantryFieldPrice => 'Prezzo pagato (facoltativo)';
-
-  @override
   String get pantryFieldCategory => 'Categoria';
-
-  @override
-  String get pantryFieldSource => 'Provenienza';
 
   @override
   String get pantryInvalidName => 'Inserisci un nome';
@@ -465,4 +460,178 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get pantryNoResults => 'Nessun prodotto trovato.';
+
+  @override
+  String get captureManual => 'Inserisci a mano';
+
+  @override
+  String get manualReceiptTitle => 'Scontrino a mano';
+
+  @override
+  String get manualReceiptStore => 'Negozio (facoltativo)';
+
+  @override
+  String get manualReceiptDate => 'Data';
+
+  @override
+  String manualReceiptItem(int index) {
+    return 'Articolo $index';
+  }
+
+  @override
+  String get manualReceiptAddItem => 'Aggiungi articolo';
+
+  @override
+  String get manualReceiptRemoveItem => 'Rimuovi articolo';
+
+  @override
+  String get manualReceiptPrice => 'Prezzo pagato';
+
+  @override
+  String get manualReceiptCategoryAuto => 'Automatica (dal nome)';
+
+  @override
+  String get manualReceiptTotal => 'Totale';
+
+  @override
+  String get manualReceiptToPantry => 'Metti gli articoli in dispensa';
+
+  @override
+  String get manualReceiptSave => 'Salva scontrino';
+
+  @override
+  String get manualReceiptSaved => 'Scontrino salvato nello storico';
+
+  @override
+  String get manualReceiptFailed => 'Impossibile salvare lo scontrino.';
+
+  @override
+  String get receiptsUnknownStore => 'Negozio sconosciuto';
+
+  @override
+  String get receiptsManual => 'A mano';
+
+  @override
+  String receiptsItemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count articoli',
+      one: '1 articolo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get receiptDelete => 'Elimina scontrino';
+
+  @override
+  String get receiptDeleteConfirm =>
+      'Eliminare lo scontrino? Spariscono anche i suoi prodotti in dispensa.';
+
+  @override
+  String get receiptDeleted => 'Scontrino eliminato';
+
+  @override
+  String get receiptNotFound => 'Scontrino non trovato.';
+
+  @override
+  String get pantryManage => 'Gestisci in dispensa';
+
+  @override
+  String get pantryStatistics => 'Visualizza statistiche';
+
+  @override
+  String get productStatsBought => 'Comprato';
+
+  @override
+  String productStatsTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count volte',
+      one: '1 volta',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get productStatsLastPurchase => 'Ultimo acquisto';
+
+  @override
+  String get productStatsEvery => 'Lo compri ogni';
+
+  @override
+  String productStatsDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days giorni circa',
+      one: 'giorno circa',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get productStatsTotal => 'Speso in tutto';
+
+  @override
+  String get productStatsPrices => 'Prezzi pagati';
+
+  @override
+  String get productStatsPricePerPiece => 'al pezzo';
+
+  @override
+  String get productStatsPricePerKg => 'al kg';
+
+  @override
+  String get productStatsPricePerLitre => 'al litro';
+
+  @override
+  String get productStatsOnePrice => 'Il grafico appare dal secondo acquisto.';
+
+  @override
+  String get productStatsMin => 'Minimo';
+
+  @override
+  String get productStatsUsual => 'Di solito';
+
+  @override
+  String get productStatsMax => 'Massimo';
+
+  @override
+  String productStatsChangeUp(String percent) {
+    return 'Ultimo prezzo $percent sopra il solito';
+  }
+
+  @override
+  String productStatsChangeDown(String percent) {
+    return 'Ultimo prezzo $percent sotto il solito';
+  }
+
+  @override
+  String get productStatsChangeSame => 'Ultimo prezzo in linea con il solito';
+
+  @override
+  String get productStatsPurchases => 'Acquisti';
+
+  @override
+  String get productStatsNoPurchases =>
+      'Nessun acquisto registrato per questo prodotto.';
+
+  @override
+  String get productStatsPantry => 'In dispensa';
+
+  @override
+  String productStatsPantryNow(String quantity) {
+    return 'Ne hai ancora $quantity';
+  }
+
+  @override
+  String get productStatsPantryNone => 'Non ne hai in dispensa';
+
+  @override
+  String productStatsLotsEnded(int consumed, int discarded) {
+    return 'Finiti: $consumed · Buttati: $discarded';
+  }
 }

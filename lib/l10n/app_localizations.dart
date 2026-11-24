@@ -173,7 +173,7 @@ abstract class AppLocalizations {
   /// No description provided for @receiptsEmpty.
   ///
   /// In it, this message translates to:
-  /// **'Lo storico degli acquisti apparirà qui.'**
+  /// **'Nessuno scontrino salvato. Fotografane uno o inseriscilo a mano.'**
   String get receiptsEmpty;
 
   /// No description provided for @analyticsEmpty.
@@ -341,7 +341,7 @@ abstract class AppLocalizations {
   /// No description provided for @pantryAdd.
   ///
   /// In it, this message translates to:
-  /// **'Aggiungi prodotto'**
+  /// **'Aggiungi scontrino a mano'**
   String get pantryAdd;
 
   /// No description provided for @pantryUncategorised.
@@ -494,23 +494,11 @@ abstract class AppLocalizations {
   /// **'Quantità'**
   String get pantryFieldQuantity;
 
-  /// No description provided for @pantryFieldPrice.
-  ///
-  /// In it, this message translates to:
-  /// **'Prezzo pagato (facoltativo)'**
-  String get pantryFieldPrice;
-
   /// No description provided for @pantryFieldCategory.
   ///
   /// In it, this message translates to:
   /// **'Categoria'**
   String get pantryFieldCategory;
-
-  /// No description provided for @pantryFieldSource.
-  ///
-  /// In it, this message translates to:
-  /// **'Provenienza'**
-  String get pantryFieldSource;
 
   /// No description provided for @pantryInvalidName.
   ///
@@ -871,6 +859,282 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Nessun prodotto trovato.'**
   String get pantryNoResults;
+
+  /// No description provided for @captureManual.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci a mano'**
+  String get captureManual;
+
+  /// No description provided for @manualReceiptTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Scontrino a mano'**
+  String get manualReceiptTitle;
+
+  /// No description provided for @manualReceiptStore.
+  ///
+  /// In it, this message translates to:
+  /// **'Negozio (facoltativo)'**
+  String get manualReceiptStore;
+
+  /// No description provided for @manualReceiptDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data'**
+  String get manualReceiptDate;
+
+  /// No description provided for @manualReceiptItem.
+  ///
+  /// In it, this message translates to:
+  /// **'Articolo {index}'**
+  String manualReceiptItem(int index);
+
+  /// No description provided for @manualReceiptAddItem.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi articolo'**
+  String get manualReceiptAddItem;
+
+  /// No description provided for @manualReceiptRemoveItem.
+  ///
+  /// In it, this message translates to:
+  /// **'Rimuovi articolo'**
+  String get manualReceiptRemoveItem;
+
+  /// No description provided for @manualReceiptPrice.
+  ///
+  /// In it, this message translates to:
+  /// **'Prezzo pagato'**
+  String get manualReceiptPrice;
+
+  /// No description provided for @manualReceiptCategoryAuto.
+  ///
+  /// In it, this message translates to:
+  /// **'Automatica (dal nome)'**
+  String get manualReceiptCategoryAuto;
+
+  /// No description provided for @manualReceiptTotal.
+  ///
+  /// In it, this message translates to:
+  /// **'Totale'**
+  String get manualReceiptTotal;
+
+  /// No description provided for @manualReceiptToPantry.
+  ///
+  /// In it, this message translates to:
+  /// **'Metti gli articoli in dispensa'**
+  String get manualReceiptToPantry;
+
+  /// No description provided for @manualReceiptSave.
+  ///
+  /// In it, this message translates to:
+  /// **'Salva scontrino'**
+  String get manualReceiptSave;
+
+  /// No description provided for @manualReceiptSaved.
+  ///
+  /// In it, this message translates to:
+  /// **'Scontrino salvato nello storico'**
+  String get manualReceiptSaved;
+
+  /// No description provided for @manualReceiptFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Impossibile salvare lo scontrino.'**
+  String get manualReceiptFailed;
+
+  /// No description provided for @receiptsUnknownStore.
+  ///
+  /// In it, this message translates to:
+  /// **'Negozio sconosciuto'**
+  String get receiptsUnknownStore;
+
+  /// No description provided for @receiptsManual.
+  ///
+  /// In it, this message translates to:
+  /// **'A mano'**
+  String get receiptsManual;
+
+  /// No description provided for @receiptsItemCount.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 articolo} other{{count} articoli}}'**
+  String receiptsItemCount(int count);
+
+  /// No description provided for @receiptDelete.
+  ///
+  /// In it, this message translates to:
+  /// **'Elimina scontrino'**
+  String get receiptDelete;
+
+  /// No description provided for @receiptDeleteConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Eliminare lo scontrino? Spariscono anche i suoi prodotti in dispensa.'**
+  String get receiptDeleteConfirm;
+
+  /// No description provided for @receiptDeleted.
+  ///
+  /// In it, this message translates to:
+  /// **'Scontrino eliminato'**
+  String get receiptDeleted;
+
+  /// No description provided for @receiptNotFound.
+  ///
+  /// In it, this message translates to:
+  /// **'Scontrino non trovato.'**
+  String get receiptNotFound;
+
+  /// No description provided for @pantryManage.
+  ///
+  /// In it, this message translates to:
+  /// **'Gestisci in dispensa'**
+  String get pantryManage;
+
+  /// No description provided for @pantryStatistics.
+  ///
+  /// In it, this message translates to:
+  /// **'Visualizza statistiche'**
+  String get pantryStatistics;
+
+  /// No description provided for @productStatsBought.
+  ///
+  /// In it, this message translates to:
+  /// **'Comprato'**
+  String get productStatsBought;
+
+  /// No description provided for @productStatsTimes.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 volta} other{{count} volte}}'**
+  String productStatsTimes(int count);
+
+  /// No description provided for @productStatsLastPurchase.
+  ///
+  /// In it, this message translates to:
+  /// **'Ultimo acquisto'**
+  String get productStatsLastPurchase;
+
+  /// No description provided for @productStatsEvery.
+  ///
+  /// In it, this message translates to:
+  /// **'Lo compri ogni'**
+  String get productStatsEvery;
+
+  /// No description provided for @productStatsDays.
+  ///
+  /// In it, this message translates to:
+  /// **'{days, plural, =1{giorno circa} other{{days} giorni circa}}'**
+  String productStatsDays(int days);
+
+  /// No description provided for @productStatsTotal.
+  ///
+  /// In it, this message translates to:
+  /// **'Speso in tutto'**
+  String get productStatsTotal;
+
+  /// No description provided for @productStatsPrices.
+  ///
+  /// In it, this message translates to:
+  /// **'Prezzi pagati'**
+  String get productStatsPrices;
+
+  /// No description provided for @productStatsPricePerPiece.
+  ///
+  /// In it, this message translates to:
+  /// **'al pezzo'**
+  String get productStatsPricePerPiece;
+
+  /// No description provided for @productStatsPricePerKg.
+  ///
+  /// In it, this message translates to:
+  /// **'al kg'**
+  String get productStatsPricePerKg;
+
+  /// No description provided for @productStatsPricePerLitre.
+  ///
+  /// In it, this message translates to:
+  /// **'al litro'**
+  String get productStatsPricePerLitre;
+
+  /// No description provided for @productStatsOnePrice.
+  ///
+  /// In it, this message translates to:
+  /// **'Il grafico appare dal secondo acquisto.'**
+  String get productStatsOnePrice;
+
+  /// No description provided for @productStatsMin.
+  ///
+  /// In it, this message translates to:
+  /// **'Minimo'**
+  String get productStatsMin;
+
+  /// No description provided for @productStatsUsual.
+  ///
+  /// In it, this message translates to:
+  /// **'Di solito'**
+  String get productStatsUsual;
+
+  /// No description provided for @productStatsMax.
+  ///
+  /// In it, this message translates to:
+  /// **'Massimo'**
+  String get productStatsMax;
+
+  /// No description provided for @productStatsChangeUp.
+  ///
+  /// In it, this message translates to:
+  /// **'Ultimo prezzo {percent} sopra il solito'**
+  String productStatsChangeUp(String percent);
+
+  /// No description provided for @productStatsChangeDown.
+  ///
+  /// In it, this message translates to:
+  /// **'Ultimo prezzo {percent} sotto il solito'**
+  String productStatsChangeDown(String percent);
+
+  /// No description provided for @productStatsChangeSame.
+  ///
+  /// In it, this message translates to:
+  /// **'Ultimo prezzo in linea con il solito'**
+  String get productStatsChangeSame;
+
+  /// No description provided for @productStatsPurchases.
+  ///
+  /// In it, this message translates to:
+  /// **'Acquisti'**
+  String get productStatsPurchases;
+
+  /// No description provided for @productStatsNoPurchases.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun acquisto registrato per questo prodotto.'**
+  String get productStatsNoPurchases;
+
+  /// No description provided for @productStatsPantry.
+  ///
+  /// In it, this message translates to:
+  /// **'In dispensa'**
+  String get productStatsPantry;
+
+  /// No description provided for @productStatsPantryNow.
+  ///
+  /// In it, this message translates to:
+  /// **'Ne hai ancora {quantity}'**
+  String productStatsPantryNow(String quantity);
+
+  /// No description provided for @productStatsPantryNone.
+  ///
+  /// In it, this message translates to:
+  /// **'Non ne hai in dispensa'**
+  String get productStatsPantryNone;
+
+  /// No description provided for @productStatsLotsEnded.
+  ///
+  /// In it, this message translates to:
+  /// **'Finiti: {consumed} · Buttati: {discarded}'**
+  String productStatsLotsEnded(int consumed, int discarded);
 }
 
 class _AppLocalizationsDelegate
