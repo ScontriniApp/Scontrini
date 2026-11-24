@@ -579,4 +579,9 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String reviewConfirmAll(int count) {
+    return 'Confirm all ($count)';
+  }
 }

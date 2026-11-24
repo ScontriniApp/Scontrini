@@ -583,4 +583,9 @@ class AppLocalizationsIt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String reviewConfirmAll(int count) {
+    return 'Conferma tutti ($count)';
+  }
 }

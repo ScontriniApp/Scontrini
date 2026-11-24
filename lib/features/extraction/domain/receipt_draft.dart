@@ -54,6 +54,11 @@ class ReceiptDraft {
   /// Whether the receipt can be saved: it has rows, all confirmed.
   bool get canSave => items.isNotEmpty && pendingCount == 0;
 
+  /// Marks every row as read correctly.
+  ReceiptDraft confirmAll() => ReceiptDraft._(receipt, [
+    for (final item in items) item.withConfirmed(true),
+  ]);
+
   /// Marks row [index] as read correctly (or not, to look at it again).
   ReceiptDraft withConfirmed(int index, {bool confirmed = true}) =>
       ReceiptDraft._(

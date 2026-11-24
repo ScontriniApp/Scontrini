@@ -280,6 +280,16 @@ void main() {
     expect(find.text('Manca 1 prodotto da controllare'), findsOneWidget);
   });
 
+  testWidgets('confirm all confirms every product at once', (tester) async {
+    await openReview(tester);
+    await tester.tap(find.text('Conferma tutti (2)'));
+    await tester.pumpAndSettle();
+    expect(find.text('Articoli (2)'), findsOneWidget);
+    expect(find.text('Corretto'), findsNothing);
+    expect(find.textContaining('Conferma tutti'), findsNothing);
+    expect(saveButton(tester).onPressed, isNotNull);
+  });
+
   testWidgets('saving stores the receipt and puts its products in the pantry', (
     tester,
   ) async {

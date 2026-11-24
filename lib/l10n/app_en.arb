@@ -159,5 +159,6 @@
   "reviewConfirmItem": "Correct",
   "reviewCorrectItem": "Fix",
   "reviewUnconfirmItem": "Check again",
-  "reviewSaved": "{count, plural, =0{Receipt saved.} =1{Receipt saved, 1 product in the pantry.} other{Receipt saved, {count} products in the pantry.}}"
+  "reviewSaved": "{count, plural, =0{Receipt saved.} =1{Receipt saved, 1 product in the pantry.} other{Receipt saved, {count} products in the pantry.}}",
+  "reviewConfirmAll": "Confirm all ({count})"
 }

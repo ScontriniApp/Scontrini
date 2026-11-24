@@ -1057,6 +1057,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'{count, plural, =0{Scontrino salvato.} =1{Scontrino salvato, 1 prodotto in dispensa.} other{Scontrino salvato, {count} prodotti in dispensa.}}'**
   String reviewSaved(int count);
+
+  /// No description provided for @reviewConfirmAll.
+  ///
+  /// In it, this message translates to:
+  /// **'Conferma tutti ({count})'**
+  String reviewConfirmAll(int count);
 }
 
 class _AppLocalizationsDelegate

@@ -135,6 +135,18 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                 ],
               ),
             ),
+            if (_draft.pendingCount > 1)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.done_all),
+                    label: Text(l10n.reviewConfirmAll(_draft.pendingCount)),
+                    onPressed: () => _update(_draft.confirmAll()),
+                  ),
+                ),
+              ),
             if (_draft.items.isEmpty) ListTile(title: Text(l10n.reviewNoItems)),
             for (final (i, item) in _draft.items.indexed)
               _ItemTile(

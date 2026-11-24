@@ -144,4 +144,10 @@ void main() {
     expect(draft.removeItem(0).canSave, isTrue);
     expect(draft.removeItem(0).removeItem(0).canSave, isFalse);
   });
+
+  test('confirm all confirms every row', () {
+    final draft = _draft().withConfirmed(0).confirmAll();
+    expect(draft.items.map((i) => i.confirmed), [true, true]);
+    expect(draft.canSave, isTrue);
+  });
 }
