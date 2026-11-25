@@ -164,5 +164,12 @@
   "reviewCorrectItem": "Fix",
   "reviewUnconfirmItem": "Check again",
   "reviewSaved": "{count, plural, =0{Receipt saved.} =1{Receipt saved, 1 product in the pantry.} other{Receipt saved, {count} products in the pantry.}}",
-  "reviewConfirmAll": "Confirm all ({count})"
+  "reviewConfirmAll": "Confirm all ({count})",
+  "exportTitle": "Export the collected data",
+  "exportSummary": "{receipts, plural, =1{1 receipt} other{{receipts} receipts}} · {items, plural, =1{1 item} other{{items} items}}, in a CSV file",
+  "exportNothing": "No receipts to export",
+  "exportWarning": "Every item of the confirmed receipts, one per row, in a CSV file that opens in Excel, Google Sheets or an analysis tool.\n\nThe file is not encrypted: anyone who opens it sees your purchases.",
+  "exportConfirm": "Export",
+  "exportDone": "{count, plural, =1{Exported 1 item} other{Exported {count} items}} to {fileName}",
+  "exportFailed": "The export failed."
 }
