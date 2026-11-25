@@ -249,6 +249,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsEmpty => 'Categories, backup and security.';
 
   @override
+  String get shaderLabTitle => 'Paper lab';
+
+  @override
+  String get shaderLabHint => 'Tune the crumpled receipt look.';
+
+  @override
+  String get shaderLabInkUnsupported =>
+      'Shader ink isn\'t available here (needs Impeller): the text is drawn on top of the paper.';
+
+  @override
+  String get shaderLabInk => 'Shader ink';
+
+  @override
+  String get shaderLabTornEdge => 'Torn edge';
+
+  @override
+  String get shaderLabNewSeed => 'New creases';
+
+  @override
+  String get shaderLabReset => 'Reset';
+
+  @override
+  String get shaderLabCopy => 'Copy values';
+
+  @override
+  String get shaderLabCopied => 'Values copied to the clipboard';
+
+  @override
+  String get shaderLabHideControls => 'Show/hide the controls';
+
+  @override
   String get demoDataTitle => 'Demo data (debug only)';
 
   @override

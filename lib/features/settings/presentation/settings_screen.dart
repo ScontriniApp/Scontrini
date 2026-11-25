@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/features/analytics/presentation/demo_data_section.dart';
 import 'package:scontrini/features/export/presentation/export_data_tile.dart';
+import 'package:scontrini/features/shader_lab/presentation/shader_lab_screen.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -15,6 +16,8 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         children: const [
           ExportDataTile(),
+          // Receipt paper shader tuning, debug builds only.
+          if (kDebugMode) ShaderLabTile(),
           // Demo purchase history, debug builds only.
           if (kDebugMode) SafeArea(top: false, child: DemoDataSection()),
         ],

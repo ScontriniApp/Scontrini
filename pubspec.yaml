@@ -86,6 +86,10 @@ flutter:
     # 8-bit category sprites (16x16, drawn without smoothing).
     - assets/sprites/categories/
 
+  # Fragment shaders (compiled by impellerc at build time).
+  shaders:
+    - shaders/receipt_paper.frag
+
   # VT323 (SIL Open Font License 1.1, assets/fonts/VT323-OFL.txt): the app's
   # font, bundled because the app makes no network calls.
   fonts:
