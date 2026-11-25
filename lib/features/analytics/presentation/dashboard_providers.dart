@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:scontrini/core/utils/async_values.dart';
 import 'package:scontrini/core/utils/clock.dart';
 import 'package:scontrini/features/analytics/data/analytics_providers.dart';
 import 'package:scontrini/features/analytics/domain/dashboard_metrics.dart';
@@ -11,9 +12,10 @@ import 'package:scontrini/features/analytics/domain/shopping_suggestions.dart';
 final Provider<AsyncValue<DashboardSummary>> dashboardSummaryProvider =
     Provider.autoDispose<AsyncValue<DashboardSummary>>((ref) {
       final today = ref.watch(clockProvider)();
-      return ref
-          .watch(purchaseHistoryProvider(DashboardMetrics.window(today)))
-          .whenData((history) => DashboardMetrics.summary(history, today));
+      return mapAsync(
+        ref.watch(purchaseHistoryProvider(DashboardMetrics.window(today))),
+        (history) => DashboardMetrics.summary(history, today),
+      );
     });
 
 /// The next-shopping list for today, updated as receipts and the pantry
@@ -26,15 +28,9 @@ shoppingSuggestionsProvider =
         purchaseHistoryProvider(ShoppingSuggestions.window(today)),
       );
       final pantry = ref.watch(pantryHistoryProvider);
-      return switch ((purchases, pantry)) {
-        (AsyncData(value: final p), AsyncData(value: final q)) => AsyncData(
-          ShoppingSuggestions.forToday(p, q, today),
-        ),
-        (AsyncError(:final error, :final stackTrace), _) ||
-        (
-          _,
-          AsyncError(:final error, :final stackTrace),
-        ) => AsyncError(error, stackTrace),
-        _ => const AsyncLoading(),
-      };
+      return combineAsync(
+        purchases,
+        pantry,
+        (p, q) => ShoppingSuggestions.forToday(p, q, today),
+      );
     });

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:scontrini/core/utils/async_values.dart';
 import 'package:scontrini/core/utils/clock.dart';
 import 'package:scontrini/features/analytics/data/analytics_providers.dart';
 import 'package:scontrini/features/analytics/domain/analytics_metrics.dart';
@@ -16,8 +17,19 @@ analyticsPeriodProvider = NotifierProvider(AnalyticsPeriodNotifier.new);
 class AnalyticsPeriodNotifier extends Notifier<AnalyticsPeriod> {
   DateTime get _today => ref.read(clockProvider)();
 
+  /// When the current period was chosen, for [followToday].
+  late DateTime _chosenOn;
+
+  void _set(AnalyticsPeriod period) {
+    _chosenOn = _today;
+    state = period;
+  }
+
   @override
-  AnalyticsPeriod build() => AnalyticsPeriod.of(PeriodKind.month, _today);
+  AnalyticsPeriod build() {
+    _chosenOn = _today;
+    return AnalyticsPeriod.of(PeriodKind.month, _chosenOn);
+  }
 
   /// Switches to [kind], on the period that holds the last day shown so far
   /// (so going from October to "week" shows October's last week).
@@ -27,16 +39,28 @@ class AnalyticsPeriodNotifier extends Notifier<AnalyticsPeriod> {
     final lastDay = shown.isEmpty
         ? shown.start
         : DateTime(shown.end.year, shown.end.month, shown.end.day - 1);
-    state = AnalyticsPeriod.of(kind, lastDay);
+    _set(AnalyticsPeriod.of(kind, lastDay));
   }
 
   /// One period back (-1) or forward (+1); never past today.
   void shift(int steps) {
     if (steps > 0 && !state.hasNext(_today)) return;
-    state = state.shift(steps);
+    _set(state.shift(steps));
   }
 
-  void custom(DateRange range) => state = AnalyticsPeriod.custom(range);
+  void custom(DateRange range) => _set(AnalyticsPeriod.custom(range));
+
+  /// After a refresh: when the period held the day it was chosen on (the
+  /// current week, month, …) and no longer holds today, the day changed
+  /// while the app was open, so move to the period that holds today. A
+  /// period the user went back to, or a custom range, stays.
+  void followToday() {
+    final today = _today;
+    if (state.kind == PeriodKind.custom) return;
+    if (state.range.contains(_chosenOn) && !state.range.contains(today)) {
+      _set(AnalyticsPeriod.of(state.kind, today));
+    }
+  }
 }
 
 /// The analytics tab's numbers for the selected period, updated whenever a
@@ -45,13 +69,12 @@ final Provider<AsyncValue<AnalyticsOverview>> analyticsOverviewProvider =
     Provider.autoDispose<AsyncValue<AnalyticsOverview>>((ref) {
       final today = ref.watch(clockProvider)();
       final period = ref.watch(analyticsPeriodProvider);
-      return ref
-          .watch(
-            purchaseHistoryProvider(AnalyticsMetrics.window(period, today)),
-          )
-          .whenData(
-            (history) => AnalyticsMetrics.overview(history, period, today),
-          );
+      return mapAsync(
+        ref.watch(
+          purchaseHistoryProvider(AnalyticsMetrics.window(period, today)),
+        ),
+        (history) => AnalyticsMetrics.overview(history, period, today),
+      );
     });
 
 /// The "Dispensa" sub-tab's numbers for the selected period: the same
@@ -64,15 +87,9 @@ final Provider<AsyncValue<PantryOverview>> pantryOverviewProvider =
         purchaseHistoryProvider(AnalyticsMetrics.window(period, today)),
       );
       final pantry = ref.watch(pantryHistoryProvider);
-      return switch ((purchases, pantry)) {
-        (AsyncData(value: final p), AsyncData(value: final q)) => AsyncData(
-          PantryMetrics.overview(p, q, period, today),
-        ),
-        (AsyncError(:final error, :final stackTrace), _) ||
-        (
-          _,
-          AsyncError(:final error, :final stackTrace),
-        ) => AsyncError(error, stackTrace),
-        _ => const AsyncLoading(),
-      };
+      return combineAsync(
+        purchases,
+        pantry,
+        (p, q) => PantryMetrics.overview(p, q, period, today),
+      );
     });

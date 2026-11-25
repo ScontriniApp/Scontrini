@@ -27,6 +27,7 @@ class ProductsTab extends StatelessWidget {
         overview.priceRises.isEmpty && overview.priceDrops.isEmpty;
 
     return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
       children: [
         Card(

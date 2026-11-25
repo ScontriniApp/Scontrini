@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:scontrini/app/tab_reselect.dart';
 import 'package:scontrini/features/analytics/presentation/analytics_screen.dart';
 import 'package:scontrini/features/analytics/presentation/dashboard_screen.dart';
 import 'package:scontrini/features/capture/domain/receipt_source.dart';
@@ -116,13 +117,13 @@ GoRouter _createRouter() => GoRouter(
   ],
 );
 
-class _AppShell extends StatelessWidget {
+class _AppShell extends ConsumerWidget {
   const new({required this.shell});
 
   final StatefulNavigationShell shell;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: shell,
@@ -133,8 +134,12 @@ class _AppShell extends StatelessWidget {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: shell.currentIndex,
-        onDestinationSelected: (index) =>
-            shell.goBranch(index, initialLocation: index == shell.currentIndex),
+        onDestinationSelected: (index) {
+          final again = index == shell.currentIndex;
+          shell.goBranch(index, initialLocation: again);
+          // A tap on the open tab also asks its screen to refresh.
+          if (again) ref.read(tabReselectProvider.notifier).reselect(index);
+        },
         destinations: [
           NavigationDestination(
             icon: const Icon(Icons.home_outlined),
