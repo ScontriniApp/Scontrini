@@ -623,7 +623,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardInsightsEmpty.
   ///
   /// In it, this message translates to:
-  /// **'Qui appariranno 2–3 consigli sui tuoi acquisti: prezzi in aumento, occasioni di risparmio, categorie in crescita.'**
+  /// **'Nessun consiglio per ora. Qui appariranno le categorie in cui spendi più del solito e i prodotti che butti spesso.'**
   String get dashboardInsightsEmpty;
 
   /// No description provided for @dashboardCategoryHint.
@@ -1483,6 +1483,30 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'tra {days} giorni'**
   String shoppingInDays(int days);
+
+  /// No description provided for @insightSpikeTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'{category}: {change} rispetto al solito'**
+  String insightSpikeTitle(String category, String change);
+
+  /// No description provided for @insightSpikeBody.
+  ///
+  /// In it, this message translates to:
+  /// **'{amount} finora questo mese; di solito {usual} a questo punto ({months, plural, =1{nell\'ultimo mese} other{media degli ultimi {months} mesi}})'**
+  String insightSpikeBody(String amount, String usual, int months);
+
+  /// No description provided for @insightWasteTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Butti spesso: {product}'**
+  String insightWasteTitle(String product);
+
+  /// No description provided for @insightWasteBody.
+  ///
+  /// In it, this message translates to:
+  /// **'{wasted} volte su {total} negli ultimi {days} giorni, {amount} buttati. Prova a prenderne meno.'**
+  String insightWasteBody(int wasted, int total, int days, String amount);
 }
 
 class _AppLocalizationsDelegate

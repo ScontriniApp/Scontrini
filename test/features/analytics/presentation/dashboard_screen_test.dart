@@ -109,4 +109,27 @@ void main() {
       findsNWidgets(2),
     );
   });
+
+  testWidgets('the suggestions show the drinks spike and products often '
+      'thrown away, ranked', (tester) async {
+    await pumpDashboard(tester, seed: true);
+
+    await tester.scrollUntilVisible(find.text('Consigli'), 200);
+    await tester.scrollUntilVisible(find.textContaining('Bevande: +'), 200);
+    expect(find.textContaining('rispetto al solito'), findsOneWidget);
+    expect(find.text('Butti spesso: Macinato di manzo 500 g'), findsOneWidget);
+    // Three shown, the rest behind "Mostra tutti".
+    expect(find.textContaining('Butti spesso:'), findsNWidgets(2));
+    await tester.scrollUntilVisible(find.text('Mostra tutti (5)'), 200);
+    await tester.ensureVisible(find.text('Mostra tutti (5)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mostra tutti (5)'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Butti spesso: Latte intero 1 l'),
+      200,
+    );
+    expect(find.text('Butti spesso: Latte intero 1 l'), findsOneWidget);
+    expect(find.text('Mostra meno'), findsOneWidget);
+  });
 }

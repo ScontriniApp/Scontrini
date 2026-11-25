@@ -309,7 +309,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardInsightsEmpty =>
-      '2–3 suggestions about your shopping will appear here: rising prices, ways to save, growing categories.';
+      'No suggestions for now. Categories where you spend more than usual and products you often throw away will appear here.';
 
   @override
   String get dashboardCategoryHint => 'Tap a category to see its items';
@@ -899,5 +899,31 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String shoppingInDays(int days) {
     return 'in $days days';
+  }
+
+  @override
+  String insightSpikeTitle(String category, String change) {
+    return '$category: $change vs usual';
+  }
+
+  @override
+  String insightSpikeBody(String amount, String usual, int months) {
+    String _temp0 = intl.Intl.pluralLogic(
+      months,
+      locale: localeName,
+      other: 'average of the last $months months',
+      one: 'last month',
+    );
+    return '$amount so far this month; usually $usual by now ($_temp0)';
+  }
+
+  @override
+  String insightWasteTitle(String product) {
+    return 'Often thrown away: $product';
+  }
+
+  @override
+  String insightWasteBody(int wasted, int total, int days, String amount) {
+    return '$wasted times out of $total in the last $days days, $amount thrown away. Try buying less.';
   }
 }

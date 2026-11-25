@@ -177,7 +177,7 @@
   "dashboardCategoriesEmpty": "Nessuna spesa questo mese",
   "dashboardRestSlice": "Altro e senza categoria",
   "dashboardInsightsTitle": "Consigli",
-  "dashboardInsightsEmpty": "Qui appariranno 2–3 consigli sui tuoi acquisti: prezzi in aumento, occasioni di risparmio, categorie in crescita.",
+  "dashboardInsightsEmpty": "Nessun consiglio per ora. Qui appariranno le categorie in cui spendi più del solito e i prodotti che butti spesso.",
   "dashboardCategoryHint": "Tocca una categoria per vederne gli articoli",
   "dashboardItemCount": "{count, plural, =0{Nessun articolo} =1{1 articolo} other{{count} articoli}}",
   "@dashboardItemCount": {
@@ -582,6 +582,56 @@
     "placeholders": {
       "days": {
         "type": "int"
+      }
+    }
+  },
+  "insightSpikeTitle": "{category}: {change} rispetto al solito",
+  "@insightSpikeTitle": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "insightSpikeBody": "{amount} finora questo mese; di solito {usual} a questo punto ({months, plural, =1{nell'ultimo mese} other{media degli ultimi {months} mesi}})",
+  "@insightSpikeBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "usual": {
+        "type": "String"
+      },
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "insightWasteTitle": "Butti spesso: {product}",
+  "@insightWasteTitle": {
+    "placeholders": {
+      "product": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWasteBody": "{wasted} volte su {total} negli ultimi {days} giorni, {amount} buttati. Prova a prenderne meno.",
+  "@insightWasteBody": {
+    "placeholders": {
+      "wasted": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
       }
     }
   }
