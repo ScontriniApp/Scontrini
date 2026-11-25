@@ -37,7 +37,8 @@ class _DashboardInsightsSectionState
             ?.where((s) => s.category?.id == categoryId)
             .firstOrNull;
         if (slice != null) unawaited(showCategoryPurchases(context, slice));
-      case FrequentWasteInsight(:final productId?):
+      case FrequentWasteInsight(:final productId?) ||
+          PriceRiseInsight(:final productId):
         unawaited(context.push(Routes.product(productId)));
       case FrequentWasteInsight():
         break;
@@ -81,6 +82,27 @@ class _DashboardInsightsSectionState
             closedLots,
             days,
             Money.format(wastedCents),
+          ),
+        );
+      case PriceRiseInsight(
+        :final productName,
+        :final latestCents,
+        :final usualCents,
+        :final unit,
+        :final storeName,
+      ):
+        final perUnit = unit == 'kg' || unit == 'l' ? '/$unit' : '';
+        final change = NumberFormat.percentPattern(l10n.localeName)
+            .format(insight.priceChange ?? 0);
+        return (
+          icon: Icons.sell_outlined,
+          title: l10n.insightPriceTitle(productName),
+          body: l10n.insightPriceBody(
+            '${Money.format(latestCents)}$perUnit',
+            '${Money.format(usualCents)}$perUnit',
+            storeName ?? 'none',
+            '+$change',
+            Money.format(insight.monthlyImpactCents),
           ),
         );
     }

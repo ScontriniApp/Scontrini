@@ -177,7 +177,7 @@
   "dashboardCategoriesEmpty": "Nessuna spesa questo mese",
   "dashboardRestSlice": "Altro e senza categoria",
   "dashboardInsightsTitle": "Consigli",
-  "dashboardInsightsEmpty": "Nessun consiglio per ora. Qui appariranno le categorie in cui spendi più del solito e i prodotti che butti spesso.",
+  "dashboardInsightsEmpty": "Nessun consiglio per ora. Qui appariranno i prezzi in aumento, le categorie in cui spendi più del solito e i prodotti che butti spesso.",
   "dashboardCategoryHint": "Tocca una categoria per vederne gli articoli",
   "dashboardItemCount": "{count, plural, =0{Nessun articolo} =1{1 articolo} other{{count} articoli}}",
   "@dashboardItemCount": {
@@ -629,6 +629,34 @@
       },
       "days": {
         "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "insightPriceTitle": "Prezzo in aumento: {product}",
+  "@insightPriceTitle": {
+    "placeholders": {
+      "product": {
+        "type": "String"
+      }
+    }
+  },
+  "insightPriceBody": "{latest} contro {usual} di solito{store, select, none{} other{ da {store}}} ({change}). Circa {amount} in più al mese per quanto ne compri.",
+  "@insightPriceBody": {
+    "placeholders": {
+      "latest": {
+        "type": "String"
+      },
+      "usual": {
+        "type": "String"
+      },
+      "store": {
+        "type": "String"
+      },
+      "change": {
+        "type": "String"
       },
       "amount": {
         "type": "String"

@@ -56,12 +56,13 @@ extension InsightPatterns on Insight {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CategorySpikeInsight value)?  categorySpike,TResult Function( FrequentWasteInsight value)?  frequentWaste,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CategorySpikeInsight value)?  categorySpike,TResult Function( FrequentWasteInsight value)?  frequentWaste,TResult Function( PriceRiseInsight value)?  priceRise,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case CategorySpikeInsight() when categorySpike != null:
 return categorySpike(_that);case FrequentWasteInsight() when frequentWaste != null:
-return frequentWaste(_that);case _:
+return frequentWaste(_that);case PriceRiseInsight() when priceRise != null:
+return priceRise(_that);case _:
   return orElse();
 
 }
@@ -79,12 +80,13 @@ return frequentWaste(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CategorySpikeInsight value)  categorySpike,required TResult Function( FrequentWasteInsight value)  frequentWaste,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CategorySpikeInsight value)  categorySpike,required TResult Function( FrequentWasteInsight value)  frequentWaste,required TResult Function( PriceRiseInsight value)  priceRise,}){
 final _that = this;
 switch (_that) {
 case CategorySpikeInsight():
 return categorySpike(_that);case FrequentWasteInsight():
-return frequentWaste(_that);}
+return frequentWaste(_that);case PriceRiseInsight():
+return priceRise(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -98,12 +100,13 @@ return frequentWaste(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CategorySpikeInsight value)?  categorySpike,TResult? Function( FrequentWasteInsight value)?  frequentWaste,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CategorySpikeInsight value)?  categorySpike,TResult? Function( FrequentWasteInsight value)?  frequentWaste,TResult? Function( PriceRiseInsight value)?  priceRise,}){
 final _that = this;
 switch (_that) {
 case CategorySpikeInsight() when categorySpike != null:
 return categorySpike(_that);case FrequentWasteInsight() when frequentWaste != null:
-return frequentWaste(_that);case _:
+return frequentWaste(_that);case PriceRiseInsight() when priceRise != null:
+return priceRise(_that);case _:
   return null;
 
 }
@@ -120,11 +123,12 @@ return frequentWaste(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( int categoryId,  String categoryName,  int cents,  int usualCents,  int monthsCompared)?  categorySpike,TResult Function( String productName,  int wastedLots,  int closedLots,  int wastedCents,  int days,  int? productId)?  frequentWaste,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( int categoryId,  String categoryName,  int cents,  int usualCents,  int monthsCompared)?  categorySpike,TResult Function( String productName,  int wastedLots,  int closedLots,  int wastedCents,  int days,  int? productId)?  frequentWaste,TResult Function( int productId,  String productName,  int latestCents,  int usualCents,  int referenceCount,  double monthlyQuantity,  String? unit,  String? storeName)?  priceRise,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case CategorySpikeInsight() when categorySpike != null:
 return categorySpike(_that.categoryId,_that.categoryName,_that.cents,_that.usualCents,_that.monthsCompared);case FrequentWasteInsight() when frequentWaste != null:
-return frequentWaste(_that.productName,_that.wastedLots,_that.closedLots,_that.wastedCents,_that.days,_that.productId);case _:
+return frequentWaste(_that.productName,_that.wastedLots,_that.closedLots,_that.wastedCents,_that.days,_that.productId);case PriceRiseInsight() when priceRise != null:
+return priceRise(_that.productId,_that.productName,_that.latestCents,_that.usualCents,_that.referenceCount,_that.monthlyQuantity,_that.unit,_that.storeName);case _:
   return orElse();
 
 }
@@ -142,11 +146,12 @@ return frequentWaste(_that.productName,_that.wastedLots,_that.closedLots,_that.w
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( int categoryId,  String categoryName,  int cents,  int usualCents,  int monthsCompared)  categorySpike,required TResult Function( String productName,  int wastedLots,  int closedLots,  int wastedCents,  int days,  int? productId)  frequentWaste,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( int categoryId,  String categoryName,  int cents,  int usualCents,  int monthsCompared)  categorySpike,required TResult Function( String productName,  int wastedLots,  int closedLots,  int wastedCents,  int days,  int? productId)  frequentWaste,required TResult Function( int productId,  String productName,  int latestCents,  int usualCents,  int referenceCount,  double monthlyQuantity,  String? unit,  String? storeName)  priceRise,}) {final _that = this;
 switch (_that) {
 case CategorySpikeInsight():
 return categorySpike(_that.categoryId,_that.categoryName,_that.cents,_that.usualCents,_that.monthsCompared);case FrequentWasteInsight():
-return frequentWaste(_that.productName,_that.wastedLots,_that.closedLots,_that.wastedCents,_that.days,_that.productId);}
+return frequentWaste(_that.productName,_that.wastedLots,_that.closedLots,_that.wastedCents,_that.days,_that.productId);case PriceRiseInsight():
+return priceRise(_that.productId,_that.productName,_that.latestCents,_that.usualCents,_that.referenceCount,_that.monthlyQuantity,_that.unit,_that.storeName);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -160,11 +165,12 @@ return frequentWaste(_that.productName,_that.wastedLots,_that.closedLots,_that.w
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( int categoryId,  String categoryName,  int cents,  int usualCents,  int monthsCompared)?  categorySpike,TResult? Function( String productName,  int wastedLots,  int closedLots,  int wastedCents,  int days,  int? productId)?  frequentWaste,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( int categoryId,  String categoryName,  int cents,  int usualCents,  int monthsCompared)?  categorySpike,TResult? Function( String productName,  int wastedLots,  int closedLots,  int wastedCents,  int days,  int? productId)?  frequentWaste,TResult? Function( int productId,  String productName,  int latestCents,  int usualCents,  int referenceCount,  double monthlyQuantity,  String? unit,  String? storeName)?  priceRise,}) {final _that = this;
 switch (_that) {
 case CategorySpikeInsight() when categorySpike != null:
 return categorySpike(_that.categoryId,_that.categoryName,_that.cents,_that.usualCents,_that.monthsCompared);case FrequentWasteInsight() when frequentWaste != null:
-return frequentWaste(_that.productName,_that.wastedLots,_that.closedLots,_that.wastedCents,_that.days,_that.productId);case _:
+return frequentWaste(_that.productName,_that.wastedLots,_that.closedLots,_that.wastedCents,_that.days,_that.productId);case PriceRiseInsight() when priceRise != null:
+return priceRise(_that.productId,_that.productName,_that.latestCents,_that.usualCents,_that.referenceCount,_that.monthlyQuantity,_that.unit,_that.storeName);case _:
   return null;
 
 }
@@ -259,7 +265,7 @@ class FrequentWasteInsight extends Insight {
   
 
  final  String productName;
-/// Lots of it that had something thrown away, out of [closedLots].
+/// Lots of it that had something thrown away, out of `closedLots`.
  final  int wastedLots;
 /// Lots of it finished or thrown away in the window.
  final  int closedLots;
@@ -328,6 +334,94 @@ as int,wastedCents: null == wastedCents ? _self.wastedCents : wastedCents // ign
 as int,days: null == days ? _self.days : days // ignore: cast_nullable_to_non_nullable
 as int,productId: freezed == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as int?,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class PriceRiseInsight extends Insight {
+  const PriceRiseInsight({required this.productId, required this.productName, required this.latestCents, required this.usualCents, required this.referenceCount, required this.monthlyQuantity, this.unit, this.storeName}): super._();
+  
+
+ final  int productId;
+ final  String productName;
+/// Full (shelf) price per piece, kg or l of the latest purchase.
+ final  int latestCents;
+/// Median full unit price of the earlier purchases at the same store.
+ final  int usualCents;
+/// How many earlier purchases [usualCents] is the median of.
+ final  int referenceCount;
+/// How much of it is bought in a month, in [unit] (from the reference
+/// window), for the monthly cost of the rise.
+ final  double monthlyQuantity;
+/// `pz`, `kg` or `l`; null when unknown.
+ final  String? unit;
+ final  String? storeName;
+
+/// Create a copy of Insight
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$PriceRiseInsightCopyWith<PriceRiseInsight> get copyWith => _$PriceRiseInsightCopyWithImpl<PriceRiseInsight>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is PriceRiseInsight&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.latestCents, latestCents) || other.latestCents == latestCents)&&(identical(other.usualCents, usualCents) || other.usualCents == usualCents)&&(identical(other.referenceCount, referenceCount) || other.referenceCount == referenceCount)&&(identical(other.monthlyQuantity, monthlyQuantity) || other.monthlyQuantity == monthlyQuantity)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.storeName, storeName) || other.storeName == storeName));
+}
+
+
+@override
+int get hashCode {
+    return Object.hash(runtimeType,productId,productName,latestCents,usualCents,referenceCount,monthlyQuantity,unit,storeName);
+}
+
+@override
+String toString() {
+    return 'Insight.priceRise(productId: $productId, productName: $productName, latestCents: $latestCents, usualCents: $usualCents, referenceCount: $referenceCount, monthlyQuantity: $monthlyQuantity, unit: $unit, storeName: $storeName)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $PriceRiseInsightCopyWith<$Res> implements $InsightCopyWith<$Res> {
+  factory $PriceRiseInsightCopyWith(PriceRiseInsight value, $Res Function(PriceRiseInsight) _then) = _$PriceRiseInsightCopyWithImpl;
+@useResult
+$Res call({
+ int productId, String productName, int latestCents, int usualCents, int referenceCount, double monthlyQuantity, String? unit, String? storeName
+});
+
+
+
+
+}
+/// @nodoc
+class _$PriceRiseInsightCopyWithImpl<$Res>
+    implements $PriceRiseInsightCopyWith<$Res> {
+  _$PriceRiseInsightCopyWithImpl(this._self, this._then);
+
+  final PriceRiseInsight _self;
+  final $Res Function(PriceRiseInsight) _then;
+
+/// Create a copy of Insight
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? productId = null,Object? productName = null,Object? latestCents = null,Object? usualCents = null,Object? referenceCount = null,Object? monthlyQuantity = null,Object? unit = freezed,Object? storeName = freezed,}) {
+  return _then(PriceRiseInsight(
+productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
+as int,productName: null == productName ? _self.productName : productName // ignore: cast_nullable_to_non_nullable
+as String,latestCents: null == latestCents ? _self.latestCents : latestCents // ignore: cast_nullable_to_non_nullable
+as int,usualCents: null == usualCents ? _self.usualCents : usualCents // ignore: cast_nullable_to_non_nullable
+as int,referenceCount: null == referenceCount ? _self.referenceCount : referenceCount // ignore: cast_nullable_to_non_nullable
+as int,monthlyQuantity: null == monthlyQuantity ? _self.monthlyQuantity : monthlyQuantity // ignore: cast_nullable_to_non_nullable
+as double,unit: freezed == unit ? _self.unit : unit // ignore: cast_nullable_to_non_nullable
+as String?,storeName: freezed == storeName ? _self.storeName : storeName // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

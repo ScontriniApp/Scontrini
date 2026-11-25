@@ -310,7 +310,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get dashboardInsightsEmpty =>
-      'Nessun consiglio per ora. Qui appariranno le categorie in cui spendi più del solito e i prodotti che butti spesso.';
+      'Nessun consiglio per ora. Qui appariranno i prezzi in aumento, le categorie in cui spendi più del solito e i prodotti che butti spesso.';
 
   @override
   String get dashboardCategoryHint =>
@@ -927,5 +927,25 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String insightWasteBody(int wasted, int total, int days, String amount) {
     return '$wasted volte su $total negli ultimi $days giorni, $amount buttati. Prova a prenderne meno.';
+  }
+
+  @override
+  String insightPriceTitle(String product) {
+    return 'Prezzo in aumento: $product';
+  }
+
+  @override
+  String insightPriceBody(
+    String latest,
+    String usual,
+    String store,
+    String change,
+    String amount,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(store, {
+      'none': '',
+      'other': ' da $store',
+    });
+    return '$latest contro $usual di solito$_temp0 ($change). Circa $amount in più al mese per quanto ne compri.';
   }
 }

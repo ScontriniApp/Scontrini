@@ -623,7 +623,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardInsightsEmpty.
   ///
   /// In it, this message translates to:
-  /// **'Nessun consiglio per ora. Qui appariranno le categorie in cui spendi più del solito e i prodotti che butti spesso.'**
+  /// **'Nessun consiglio per ora. Qui appariranno i prezzi in aumento, le categorie in cui spendi più del solito e i prodotti che butti spesso.'**
   String get dashboardInsightsEmpty;
 
   /// No description provided for @dashboardCategoryHint.
@@ -1507,6 +1507,24 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'{wasted} volte su {total} negli ultimi {days} giorni, {amount} buttati. Prova a prenderne meno.'**
   String insightWasteBody(int wasted, int total, int days, String amount);
+
+  /// No description provided for @insightPriceTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Prezzo in aumento: {product}'**
+  String insightPriceTitle(String product);
+
+  /// No description provided for @insightPriceBody.
+  ///
+  /// In it, this message translates to:
+  /// **'{latest} contro {usual} di solito{store, select, none{} other{ da {store}}} ({change}). Circa {amount} in più al mese per quanto ne compri.'**
+  String insightPriceBody(
+    String latest,
+    String usual,
+    String store,
+    String change,
+    String amount,
+  );
 }
 
 class _AppLocalizationsDelegate
