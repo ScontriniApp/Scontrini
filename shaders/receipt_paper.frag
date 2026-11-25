@@ -7,16 +7,16 @@
 // - CustomPaint behind the text (uInk = 0), where shader image filters are
 //   not supported (Skia): paper only, uTexture is a dummy.
 //
-// Creases: two layers of Voronoi cells, each cell a flat facet with its own
-// random tilt (a sheet balled up and flattened again). Facet edges are the
-// fold lines. Everything is deterministic for a given uSeed.
+// Creases: two layers of short straight folds (ridges and valleys), big and
+// small, summed into a slope that is lit from one side (a sheet balled up
+// and flattened again). Everything is deterministic for a given uSeed.
 
 #include <flutter/runtime_effect.glsl>
 
 uniform vec2 uSize;        // set by the engine for image filters
 uniform float uSeed;
-uniform float uCells;      // big facets across the width
-uniform float uDepth;      // how strongly facets are tilted (light contrast)
+uniform float uCells;      // big folds across the width
+uniform float uDepth;      // how deep the folds are (light contrast)
 uniform float uFine;       // weight of the small wrinkle layer
 uniform float uLightAngle; // radians, direction the light comes from
 uniform float uFibres;     // paper fibre noise
@@ -28,6 +28,7 @@ uniform float uWarp;       // text displacement along the folds, px
 uniform float uInkFade;    // 0 = fresh print, 1 = very faded
 uniform float uLines;      // thermal print-head row banding
 uniform float uDropout;    // missing dots and vertical head streaks
+uniform float uRound;      // crease rounding, in big-fold cells (0 = sharp)
 
 uniform sampler2D uTexture;
 
@@ -68,30 +69,39 @@ float fbm(vec2 p) {
   return sum;
 }
 
-// One Voronoi layer. Returns the tilt (xy) of the nearest cell's facet and,
-// in z, the distance to the nearest edge (F2 - F1, small on a fold).
-vec3 facets(vec2 p) {
-  vec2 cell = floor(p);
-  vec2 local = fract(p);
-  float f1 = 8.0;
-  float f2 = 8.0;
-  vec2 nearest = vec2(0.0);
+// One layer of folds. Every grid cell holds one straight fold: a line with a
+// random direction through a random point, a ridge or a valley, fading out
+// along its length and away from it. Height of one fold:
+//   h = s * r(across) * w,  w = exp(-along^2 / A - across^2 / B)
+// where r is a rounded |x|: sqrt(x^2 + R^2) - R (R = 0 gives a sharp crease).
+// Returns the slope of the summed height (xy) and how close the point is to
+// a crease line (z, 0..1).
+vec3 folds(vec2 q, float R) {
+  vec2 cell = floor(q);
+  vec2 slope = vec2(0.0);
+  float crease = 0.0;
+  const float A = 0.55; // length of a fold, cells^2
+  const float B = 0.35; // reach of a fold's slope, cells^2
   for (int y = -1; y <= 1; y++) {
     for (int x = -1; x <= 1; x++) {
-      vec2 offset = vec2(float(x), float(y));
-      vec2 point = offset + hash2(cell + offset);
-      float d = length(point - local);
-      if (d < f1) {
-        f2 = f1;
-        f1 = d;
-        nearest = cell + offset;
-      } else if (d < f2) {
-        f2 = d;
-      }
+      vec2 id = cell + vec2(float(x), float(y));
+      vec2 local = q - (id + hash2(id));
+      float angle = hash1(id + 3.1) * 6.2831853;
+      vec2 t = vec2(cos(angle), sin(angle));
+      vec2 n = vec2(-t.y, t.x);
+      float along = dot(local, t);
+      float across = dot(local, n);
+      float w = exp(-along * along / A - across * across / B);
+      float s = hash1(id + 7.7) * 2.0 - 1.0;
+      vec2 gradW = w * (-2.0 * along / A * t - 2.0 * across / B * n);
+      float bend = sqrt(across * across + R * R);
+      slope += s * (across / max(bend, 1e-4) * n * w + (bend - R) * gradW);
+      // The pinch line widens and fades as the crease gets rounder.
+      float line = 1.0 - smoothstep(0.0, 0.03 + R, abs(across));
+      crease = max(crease, w * abs(s) * line * (0.03 / (0.03 + R)));
     }
   }
-  vec2 tilt = hash2(nearest + 31.7) * 2.0 - 1.0;
-  return vec3(tilt, f2 - f1);
+  return vec3(slope, crease);
 }
 
 float bayer2(vec2 a) {
@@ -115,21 +125,21 @@ void main() {
   vec2 p = vec2(uv.x, uv.y * uSize.y / uSize.x);
 
   // --- Creases -----------------------------------------------------------
-  vec3 big = facets(p * uCells);
-  vec3 small = facets(p * uCells * 3.7 + 11.0);
-  vec2 tilt = big.xy + small.xy * uFine;
-  vec3 normal = normalize(vec3(tilt * uDepth, 1.0));
+  vec3 big = folds(p * uCells, uRound);
+  vec3 small = folds(p * uCells * 3.3 + 11.0, uRound);
+  // Slope of the paper, in "height per cell of the big layer".
+  vec2 tilt = (big.xy + small.xy * uFine * 0.5) * uDepth;
+  vec3 normal = normalize(vec3(-tilt, 1.0));
 
-  vec3 light = normalize(vec3(cos(uLightAngle), sin(uLightAngle), 1.4));
+  // Low, raking light so small slopes show.
+  vec3 light = normalize(vec3(cos(uLightAngle), sin(uLightAngle), 0.9));
   float diffuse = dot(normal, light);
-  // Flat paper faces the light at dot(z, light): keep that as mid shade.
-  float flatDiffuse = light.z;
-  float shade = 1.0 + (diffuse - flatDiffuse) * 0.9;
+  // Flat paper faces the light at light.z: that is the base shade, a little
+  // under 1 so lit slopes still have room before white.
+  float shade = 0.94 + (diffuse - light.z) * 1.1;
 
-  // Fold lines: a thin dark crease where facets meet, sharper for big ones.
-  float fold = 1.0 - smoothstep(0.0, 0.035, big.z);
-  float fineFold = 1.0 - smoothstep(0.0, 0.05, small.z);
-  shade -= fold * 0.10 * uDepth + fineFold * 0.05 * uFine * uDepth;
+  // A thin line along each crease, where the paper was pinched.
+  shade -= (big.z * 0.07 + small.z * 0.04 * uFine) * min(uDepth, 1.0);
 
   // --- Paper -------------------------------------------------------------
   float fibres = fbm(vec2(p.x * 220.0, p.y * 40.0)) - 0.5;
@@ -150,7 +160,8 @@ void main() {
 
   // --- Ink ---------------------------------------------------------------
   if (uInk > 0.5) {
-    // Text follows the facet it sits on, so it breaks slightly at folds.
+    // Text follows the slope it sits on, so it breaks slightly at creases.
+    // Flat paper (depth 0) means straight text.
     vec2 shift = tilt * uWarp / uSize;
 #ifdef IMPELLER_TARGET_OPENGLES
     shift.y = -shift.y;

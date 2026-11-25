@@ -21,18 +21,19 @@ class PaperParams {
     this.inkFade = 0.05,
     this.lines = 0.2,
     this.dropout = 0.1,
+    this.round = 0.08,
   });
 
   /// Which crumple: the same seed always gives the same wrinkles.
   final double seed;
 
-  /// Big facets across the width of the sheet.
+  /// Big folds across the width of the sheet.
   final double cells;
 
-  /// How strongly the facets are tilted (light and shadow contrast).
+  /// How deep the folds are (light and shadow contrast). 0 = flat paper.
   final double depth;
 
-  /// Weight of the small wrinkles on top of the big facets.
+  /// Weight of the small wrinkles on top of the big folds.
   final double fine;
 
   /// Direction the light comes from, in radians.
@@ -55,7 +56,7 @@ class PaperParams {
   /// normally on top of the paper.
   final bool ink;
 
-  /// How far the text shifts with the facet it sits on, in logical pixels.
+  /// How far the text shifts with the slope it sits on, in logical pixels.
   final double warp;
 
   /// 0 = fresh print, 1 = almost gone.
@@ -66,6 +67,9 @@ class PaperParams {
 
   /// Missing dots and vertical streaks from a dirty print head.
   final double dropout;
+
+  /// How rounded the creases are, in big-fold cells: 0 = sharp folds.
+  final double round;
 
   PaperParams copyWith({
     double? seed,
@@ -82,6 +86,7 @@ class PaperParams {
     double? inkFade,
     double? lines,
     double? dropout,
+    double? round,
   }) => PaperParams(
     seed: seed ?? this.seed,
     cells: cells ?? this.cells,
@@ -97,6 +102,7 @@ class PaperParams {
     inkFade: inkFade ?? this.inkFade,
     lines: lines ?? this.lines,
     dropout: dropout ?? this.dropout,
+    round: round ?? this.round,
   );
 
   /// Dart source for these values, to paste back as the new defaults.
@@ -108,7 +114,7 @@ class PaperParams {
         'fibres: ${n(fibres)}, edge: ${n(edge)}, levels: ${n(levels)}, '
         'pixel: ${n(pixel)}, ink: $ink, warp: ${n(warp)}, '
         'inkFade: ${n(inkFade)}, lines: ${n(lines)}, '
-        'dropout: ${n(dropout)})';
+        'dropout: ${n(dropout)}, round: ${n(round)})';
   }
 
   @override
@@ -127,7 +133,8 @@ class PaperParams {
       other.warp == warp &&
       other.inkFade == inkFade &&
       other.lines == lines &&
-      other.dropout == dropout;
+      other.dropout == dropout &&
+      other.round == round;
 
   @override
   int get hashCode => Object.hash(
@@ -145,5 +152,6 @@ class PaperParams {
     inkFade,
     lines,
     dropout,
+    round,
   );
 }

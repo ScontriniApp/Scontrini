@@ -130,6 +130,9 @@ class _ShaderLabScreenState extends State<ShaderLabScreen> {
                       _knob('depth', _params.depth, 0, 1.5, (v) {
                         _update(_params.copyWith(depth: v));
                       }),
+                      _knob('round', _params.round, 0, 0.4, (v) {
+                        _update(_params.copyWith(round: v));
+                      }),
                       _knob('fine', _params.fine, 0, 1, (v) {
                         _update(_params.copyWith(fine: v));
                       }),

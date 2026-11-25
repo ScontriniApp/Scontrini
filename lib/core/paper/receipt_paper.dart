@@ -186,4 +186,5 @@ void _setUniforms(
   set(p.inkFade);
   set(p.lines);
   set(p.dropout);
+  set(p.round);
 }
