@@ -745,4 +745,110 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get analyticsNoPriceChanges =>
       'Nessuna variazione di prezzo di rilievo in questo periodo';
+
+  @override
+  String get analyticsTabPantry => 'Dispensa';
+
+  @override
+  String get analyticsPantryEmpty =>
+      'La dispensa è vuota.\nSalva uno scontrino per vedere cosa usi e cosa butti.';
+
+  @override
+  String get analyticsFateTitle => 'Dove è finita la spesa';
+
+  @override
+  String analyticsFateSubtitle(String amount) {
+    return '$amount spesi in questo periodo';
+  }
+
+  @override
+  String get analyticsFateUsed => 'Usato';
+
+  @override
+  String get analyticsFateWasted => 'Buttato';
+
+  @override
+  String get analyticsFateInPantry => 'Ancora in dispensa';
+
+  @override
+  String get analyticsFateNotInPantry => 'Non in dispensa';
+
+  @override
+  String get analyticsFateNotInPantryHint =>
+      'prodotti non seguiti, sconti sul totale e righe senza prodotto';
+
+  @override
+  String analyticsFateCoverage(int untouched, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      untouched,
+      locale: localeName,
+      other:
+          '$untouched prodotti su $count non sono mai stati aggiornati: contano come ancora in dispensa.',
+      one:
+          '1 prodotto su $count non è mai stato aggiornato: conta come ancora in dispensa.',
+      zero: 'Tutti i $count prodotti sono stati aggiornati in dispensa.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get analyticsFateNoReceipts => 'Nessuno scontrino in questo periodo';
+
+  @override
+  String get analyticsWasteTitle => 'Sprechi';
+
+  @override
+  String get analyticsWasteSubtitle =>
+      'Buttato in questo periodo, qualunque sia la data d\'acquisto';
+
+  @override
+  String analyticsWasteRate(String percent) {
+    return '$percent di ciò che è uscito dalla dispensa';
+  }
+
+  @override
+  String get analyticsWasteNone => 'Niente buttato in questo periodo';
+
+  @override
+  String analyticsWasteUnpriced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Più $count prodotti senza prezzo',
+      one: 'Più 1 prodotto senza prezzo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get analyticsWasteReasons => 'Perché';
+
+  @override
+  String get analyticsWasteReasonExpired => 'Scaduto';
+
+  @override
+  String get analyticsWasteReasonSpoiled => 'Andato a male';
+
+  @override
+  String get analyticsWasteReasonOther => 'Altro';
+
+  @override
+  String get analyticsWasteCategories => 'Per categoria';
+
+  @override
+  String get analyticsWasteProducts => 'Prodotti più buttati';
+
+  @override
+  String analyticsWasteLots(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count volte',
+      one: '1 volta',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get analyticsNoCategory => 'Senza categoria';
 }

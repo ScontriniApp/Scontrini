@@ -5,6 +5,8 @@ import 'package:scontrini/features/analytics/domain/analytics_metrics.dart';
 import 'package:scontrini/features/analytics/domain/models/analytics_overview.dart';
 import 'package:scontrini/features/analytics/domain/models/analytics_period.dart';
 import 'package:scontrini/features/analytics/domain/models/date_range.dart';
+import 'package:scontrini/features/analytics/domain/models/pantry_overview.dart';
+import 'package:scontrini/features/analytics/domain/pantry_metrics.dart';
 
 /// The period the analytics tab shows; both sub-tabs share it. Starts on the
 /// current month and is kept while the app runs.
@@ -50,4 +52,27 @@ final Provider<AsyncValue<AnalyticsOverview>> analyticsOverviewProvider =
           .whenData(
             (history) => AnalyticsMetrics.overview(history, period, today),
           );
+    });
+
+/// The "Dispensa" sub-tab's numbers for the selected period: the same
+/// purchase history as [analyticsOverviewProvider] plus the pantry.
+final Provider<AsyncValue<PantryOverview>> pantryOverviewProvider =
+    Provider.autoDispose<AsyncValue<PantryOverview>>((ref) {
+      final today = ref.watch(clockProvider)();
+      final period = ref.watch(analyticsPeriodProvider);
+      final purchases = ref.watch(
+        purchaseHistoryProvider(AnalyticsMetrics.window(period, today)),
+      );
+      final pantry = ref.watch(pantryHistoryProvider);
+      return switch ((purchases, pantry)) {
+        (AsyncData(value: final p), AsyncData(value: final q)) => AsyncData(
+          PantryMetrics.overview(p, q, period, today),
+        ),
+        (AsyncError(:final error, :final stackTrace), _) ||
+        (
+          _,
+          AsyncError(:final error, :final stackTrace),
+        ) => AsyncError(error, stackTrace),
+        _ => const AsyncLoading(),
+      };
     });

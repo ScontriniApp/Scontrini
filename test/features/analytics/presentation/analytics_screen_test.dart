@@ -89,6 +89,9 @@ void main() {
     await tester.tap(find.text('Prodotti'));
     await tester.pumpAndSettle();
     expect(find.text('Nessuno scontrino in questo periodo'), findsOneWidget);
+    await tester.tap(find.widgetWithText(Tab, 'Dispensa'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('La dispensa è vuota'), findsOneWidget);
   });
 
   testWidgets('Spesa shows the month against the same days of October', (
@@ -167,6 +170,47 @@ void main() {
     await tester.ensureVisible(coffee);
     await tester.pumpAndSettle();
     await tester.tap(coffee);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('product '), findsOneWidget);
+  });
+
+  testWidgets('Dispensa shows where the spending went and the waste', (
+    tester,
+  ) async {
+    await pumpAnalytics(tester, seed: true);
+    await tester.tap(find.widgetWithText(Tab, 'Dispensa'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dove è finita la spesa'), findsOneWidget);
+    expect(
+      find.text('${Money.format(10518)} spesi in questo periodo'),
+      findsOne,
+    );
+    expect(find.text('Usato'), findsOneWidget);
+    expect(find.text(Money.format(6022)), findsOneWidget);
+    expect(find.text('Ancora in dispensa'), findsOneWidget);
+    expect(find.textContaining('non sono mai stati aggiornati'), findsOne);
+
+    await tester.scrollUntilVisible(
+      find.text('Sprechi'),
+      300,
+      scrollable: list,
+    );
+    expect(find.text(Money.format(1230)), findsOneWidget);
+    expect(find.textContaining('rispetto a 1 ott – 23 ott 2026'), findsOne);
+    await tester.scrollUntilVisible(
+      find.text('Prodotti più buttati'),
+      300,
+      scrollable: list,
+    );
+    expect(find.text('Andato a male'), findsOneWidget);
+    expect(find.text('Scaduto'), findsOneWidget);
+
+    final chicken = find.text('Petto di pollo');
+    await tester.scrollUntilVisible(chicken, 300, scrollable: list);
+    await tester.ensureVisible(chicken);
+    await tester.pumpAndSettle();
+    await tester.tap(chicken);
     await tester.pumpAndSettle();
     expect(find.textContaining('product '), findsOneWidget);
   });

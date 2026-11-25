@@ -1,16 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:scontrini/core/utils/clock.dart';
 import 'package:scontrini/core/widgets/placeholder_view.dart';
 import 'package:scontrini/features/analytics/domain/models/analytics_overview.dart';
 import 'package:scontrini/features/analytics/presentation/analytics_overview_providers.dart';
+import 'package:scontrini/features/analytics/presentation/period_format.dart';
+import 'package:scontrini/features/analytics/presentation/widgets/pantry_tab.dart';
 import 'package:scontrini/features/analytics/presentation/widgets/period_bar.dart';
 import 'package:scontrini/features/analytics/presentation/widgets/products_tab.dart';
 import 'package:scontrini/features/analytics/presentation/widgets/spending_tab.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
-/// The analytics tab: a period picker shared by two sub-tabs, "Spesa"
-/// (totals, chart, categories, stores, savings) and "Prodotti" (most bought,
-/// price changes; a tap opens the product's statistics).
+/// The analytics tab: a period picker shared by three sub-tabs, "Spesa"
+/// (totals, chart, categories, stores, savings), "Prodotti" (most bought,
+/// price changes; a tap opens the product's statistics) and "Dispensa"
+/// (where the spending went, waste).
 class AnalyticsScreen extends ConsumerWidget {
   const new({super.key});
 
@@ -18,6 +22,14 @@ class AnalyticsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final overview = ref.watch(analyticsOverviewProvider);
+    final pantry = ref.watch(pantryOverviewProvider);
+    final period = ref.watch(analyticsPeriodProvider);
+    final today = ref.watch(clockProvider)();
+    final comparedLabel = PeriodFormat.range(
+      period.comparison(today),
+      l10n.localeName,
+      kind: period.kind,
+    );
 
     Widget tab(Widget Function(AnalyticsOverview) builder) =>
         switch (overview) {
@@ -30,8 +42,21 @@ class AnalyticsScreen extends ConsumerWidget {
           _ => const Center(child: CircularProgressIndicator()),
         };
 
+    final pantryTab = switch (pantry) {
+      AsyncData(:final value) when !value.hasPantry => PlaceholderView(
+        icon: Icons.kitchen_outlined,
+        message: l10n.analyticsPantryEmpty,
+      ),
+      AsyncData(:final value) => PantryTab(
+        overview: value,
+        comparedLabel: comparedLabel,
+      ),
+      AsyncError(:final error) => Center(child: Text('$error')),
+      _ => const Center(child: CircularProgressIndicator()),
+    };
+
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.navAnalytics),
@@ -39,6 +64,7 @@ class AnalyticsScreen extends ConsumerWidget {
             tabs: [
               Tab(text: l10n.analyticsTabSpending),
               Tab(text: l10n.analyticsTabProducts),
+              Tab(text: l10n.analyticsTabPantry),
             ],
           ),
         ),
@@ -51,6 +77,7 @@ class AnalyticsScreen extends ConsumerWidget {
                 children: [
                   tab((o) => SpendingTab(overview: o)),
                   tab((o) => ProductsTab(overview: o)),
+                  pantryTab,
                 ],
               ),
             ),

@@ -270,4 +270,51 @@ void main() {
       expect(history.receipts.single.totalCents, 700);
     },
   );
+
+  test('loadPantry reads every lot with its events in order, and '
+      'watchPantry follows pantry changes', () async {
+    final receiptId = await addReceipt(DateTime(2026, 11, 5), 300);
+    final lotId = await db
+        .into(db.pantryLots)
+        .insert(
+          PantryLotsCompanion.insert(
+            receiptId: Value(receiptId),
+            name: 'Latte',
+            source: PantrySource.receipt,
+            initialQuantity: 2,
+            priceCents: const Value(300),
+            addedAt: DateTime.utc(2026, 11, 5),
+          ),
+        );
+    Future<int> addEvent(PantryEventKind kind, double delta) => db
+        .into(db.pantryEvents)
+        .insert(
+          PantryEventsCompanion.insert(
+            lotId: lotId,
+            kind: kind,
+            delta: delta,
+            at: DateTime.utc(2026, 11, 6),
+          ),
+        );
+    await addEvent(PantryEventKind.stockIn, 2);
+    await addEvent(PantryEventKind.consume, -1);
+
+    final pantry = await dao.loadPantry();
+    final lot = pantry.lots.single;
+    expect(lot.receiptId, receiptId);
+    expect(lot.priceCents, 300);
+    expect(lot.events.map((e) => e.kind), [
+      PantryEventKind.stockIn,
+      PantryEventKind.consume,
+    ]);
+    expect(lot.events.last.at.isUtc, isTrue);
+
+    final updates = StreamIterator(dao.watchPantry());
+    addTearDown(updates.cancel);
+    expect(await updates.moveNext(), isTrue);
+    expect(updates.current.lots.single.events, hasLength(2));
+    await addEvent(PantryEventKind.discard, -1);
+    expect(await updates.moveNext(), isTrue);
+    expect(updates.current.lots.single.events, hasLength(3));
+  });
 }

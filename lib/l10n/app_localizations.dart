@@ -1279,6 +1279,150 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Nessuna variazione di prezzo di rilievo in questo periodo'**
   String get analyticsNoPriceChanges;
+
+  /// No description provided for @analyticsTabPantry.
+  ///
+  /// In it, this message translates to:
+  /// **'Dispensa'**
+  String get analyticsTabPantry;
+
+  /// No description provided for @analyticsPantryEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'La dispensa è vuota.\nSalva uno scontrino per vedere cosa usi e cosa butti.'**
+  String get analyticsPantryEmpty;
+
+  /// No description provided for @analyticsFateTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Dove è finita la spesa'**
+  String get analyticsFateTitle;
+
+  /// No description provided for @analyticsFateSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'{amount} spesi in questo periodo'**
+  String analyticsFateSubtitle(String amount);
+
+  /// No description provided for @analyticsFateUsed.
+  ///
+  /// In it, this message translates to:
+  /// **'Usato'**
+  String get analyticsFateUsed;
+
+  /// No description provided for @analyticsFateWasted.
+  ///
+  /// In it, this message translates to:
+  /// **'Buttato'**
+  String get analyticsFateWasted;
+
+  /// No description provided for @analyticsFateInPantry.
+  ///
+  /// In it, this message translates to:
+  /// **'Ancora in dispensa'**
+  String get analyticsFateInPantry;
+
+  /// No description provided for @analyticsFateNotInPantry.
+  ///
+  /// In it, this message translates to:
+  /// **'Non in dispensa'**
+  String get analyticsFateNotInPantry;
+
+  /// No description provided for @analyticsFateNotInPantryHint.
+  ///
+  /// In it, this message translates to:
+  /// **'prodotti non seguiti, sconti sul totale e righe senza prodotto'**
+  String get analyticsFateNotInPantryHint;
+
+  /// No description provided for @analyticsFateCoverage.
+  ///
+  /// In it, this message translates to:
+  /// **'{untouched, plural, =0{Tutti i {count} prodotti sono stati aggiornati in dispensa.} =1{1 prodotto su {count} non è mai stato aggiornato: conta come ancora in dispensa.} other{{untouched} prodotti su {count} non sono mai stati aggiornati: contano come ancora in dispensa.}}'**
+  String analyticsFateCoverage(int untouched, int count);
+
+  /// No description provided for @analyticsFateNoReceipts.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuno scontrino in questo periodo'**
+  String get analyticsFateNoReceipts;
+
+  /// No description provided for @analyticsWasteTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Sprechi'**
+  String get analyticsWasteTitle;
+
+  /// No description provided for @analyticsWasteSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Buttato in questo periodo, qualunque sia la data d\'acquisto'**
+  String get analyticsWasteSubtitle;
+
+  /// No description provided for @analyticsWasteRate.
+  ///
+  /// In it, this message translates to:
+  /// **'{percent} di ciò che è uscito dalla dispensa'**
+  String analyticsWasteRate(String percent);
+
+  /// No description provided for @analyticsWasteNone.
+  ///
+  /// In it, this message translates to:
+  /// **'Niente buttato in questo periodo'**
+  String get analyticsWasteNone;
+
+  /// No description provided for @analyticsWasteUnpriced.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{Più 1 prodotto senza prezzo} other{Più {count} prodotti senza prezzo}}'**
+  String analyticsWasteUnpriced(int count);
+
+  /// No description provided for @analyticsWasteReasons.
+  ///
+  /// In it, this message translates to:
+  /// **'Perché'**
+  String get analyticsWasteReasons;
+
+  /// No description provided for @analyticsWasteReasonExpired.
+  ///
+  /// In it, this message translates to:
+  /// **'Scaduto'**
+  String get analyticsWasteReasonExpired;
+
+  /// No description provided for @analyticsWasteReasonSpoiled.
+  ///
+  /// In it, this message translates to:
+  /// **'Andato a male'**
+  String get analyticsWasteReasonSpoiled;
+
+  /// No description provided for @analyticsWasteReasonOther.
+  ///
+  /// In it, this message translates to:
+  /// **'Altro'**
+  String get analyticsWasteReasonOther;
+
+  /// No description provided for @analyticsWasteCategories.
+  ///
+  /// In it, this message translates to:
+  /// **'Per categoria'**
+  String get analyticsWasteCategories;
+
+  /// No description provided for @analyticsWasteProducts.
+  ///
+  /// In it, this message translates to:
+  /// **'Prodotti più buttati'**
+  String get analyticsWasteProducts;
+
+  /// No description provided for @analyticsWasteLots.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 volta} other{{count} volte}}'**
+  String analyticsWasteLots(int count);
+
+  /// No description provided for @analyticsNoCategory.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza categoria'**
+  String get analyticsNoCategory;
 }
 
 class _AppLocalizationsDelegate

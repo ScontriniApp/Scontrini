@@ -112,6 +112,10 @@ parsing → receipt review → confirm ──→ analytics (purchases)
 - over-buying: occasions where stock was still > 0.
 
 **Global**: current pantry value, monthly waste in euros, most-wasted categories.
+Waste in euros, most-wasted categories and products, and where a period's spending went (used,
+thrown away, still at home, not in the pantry) are on the analytics tab's "Dispensa" sub-tab
+(`PantryMetrics`, 2026-11-25). A discarded share of a lot is worth that share of its price, taken
+of consumed + discarded + left. Current pantry value is still to do.
 
 ## Grouping
 

@@ -478,5 +478,67 @@
     }
   },
   "analyticsPriceChangesHint": "Prezzo pieno dell'ultimo acquisto rispetto alla mediana dei 90 giorni prima (almeno 3 acquisti). Le offerte non contano.",
-  "analyticsNoPriceChanges": "Nessuna variazione di prezzo di rilievo in questo periodo"
+  "analyticsNoPriceChanges": "Nessuna variazione di prezzo di rilievo in questo periodo",
+  "analyticsTabPantry": "Dispensa",
+  "analyticsPantryEmpty": "La dispensa è vuota.\nSalva uno scontrino per vedere cosa usi e cosa butti.",
+  "analyticsFateTitle": "Dove è finita la spesa",
+  "analyticsFateSubtitle": "{amount} spesi in questo periodo",
+  "@analyticsFateSubtitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsFateUsed": "Usato",
+  "analyticsFateWasted": "Buttato",
+  "analyticsFateInPantry": "Ancora in dispensa",
+  "analyticsFateNotInPantry": "Non in dispensa",
+  "analyticsFateNotInPantryHint": "prodotti non seguiti, sconti sul totale e righe senza prodotto",
+  "analyticsFateCoverage": "{untouched, plural, =0{Tutti i {count} prodotti sono stati aggiornati in dispensa.} =1{1 prodotto su {count} non è mai stato aggiornato: conta come ancora in dispensa.} other{{untouched} prodotti su {count} non sono mai stati aggiornati: contano come ancora in dispensa.}}",
+  "@analyticsFateCoverage": {
+    "placeholders": {
+      "untouched": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "analyticsFateNoReceipts": "Nessuno scontrino in questo periodo",
+  "analyticsWasteTitle": "Sprechi",
+  "analyticsWasteSubtitle": "Buttato in questo periodo, qualunque sia la data d'acquisto",
+  "analyticsWasteRate": "{percent} di ciò che è uscito dalla dispensa",
+  "@analyticsWasteRate": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsWasteNone": "Niente buttato in questo periodo",
+  "analyticsWasteUnpriced": "{count, plural, =1{Più 1 prodotto senza prezzo} other{Più {count} prodotti senza prezzo}}",
+  "@analyticsWasteUnpriced": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "analyticsWasteReasons": "Perché",
+  "analyticsWasteReasonExpired": "Scaduto",
+  "analyticsWasteReasonSpoiled": "Andato a male",
+  "analyticsWasteReasonOther": "Altro",
+  "analyticsWasteCategories": "Per categoria",
+  "analyticsWasteProducts": "Prodotti più buttati",
+  "analyticsWasteLots": "{count, plural, =1{1 volta} other{{count} volte}}",
+  "@analyticsWasteLots": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "analyticsNoCategory": "Senza categoria"
 }

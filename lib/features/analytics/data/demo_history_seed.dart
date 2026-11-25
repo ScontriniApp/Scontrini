@@ -21,6 +21,13 @@
 /// * a week with no shopping (empty chart bucket);
 /// * a draft receipt (left out of analytics).
 ///
+/// Every confirmed receipt also goes into the pantry, as the scan flow does
+/// (one lot per product), with movements up to `today`: fresh food is used
+/// within about a week and every fourth lot of it is partly thrown away
+/// (vegetables every other one recently: a waste increase), long-life food
+/// is used within three weeks, every ninth lot is never updated, and the
+/// last two days are untouched. See [_writePantry].
+///
 /// Returned items are left out: none have been seen on real receipts.
 /// The demo stores are the marker that [removeDemoHistory] uses, so real
 /// receipts are never touched.
@@ -340,9 +347,27 @@ Future<DemoSeedResult> seedDemoHistory(
   };
 
   var items = 0;
+  var lots = 0;
   for (final purchase in purchases) {
-    await _writePurchase(db, purchase, storeIds, productIds, categoryIds);
+    final rows = await _writePurchase(
+      db,
+      purchase,
+      storeIds,
+      productIds,
+      categoryIds,
+    );
     items += purchase.lines.length;
+    if (purchase.status == ReceiptStatus.confirmed) {
+      lots = await _writePantry(
+        db,
+        purchase,
+        rows,
+        productIds,
+        categoryIds,
+        today,
+        lots,
+      );
+    }
   }
   final drafts = purchases.where((p) => p.status == ReceiptStatus.draft).length;
   return (confirmed: purchases.length - drafts, drafts: drafts, items: items);
@@ -403,8 +428,8 @@ Future<int> _productId(
 /// Writes one purchase as the review screen will save a confirmed receipt.
 /// The only place that maps demo records to rows: with schema v2, add
 /// `receipts.transactionHash` here; once the real save path exists, call
-/// it from here instead.
-Future<void> _writePurchase(
+/// it from here instead. Returns the receipt id and each line's row id.
+Future<({int receiptId, List<int> itemIds})> _writePurchase(
   AppDatabase db,
   DemoPurchase purchase,
   Map<DemoStore, int> storeIds,
@@ -422,20 +447,151 @@ Future<void> _writePurchase(
           status: purchase.status,
         ),
       );
-  await db.batch(
-    (b) => b.insertAll(db.receiptItems, [
-      for (final line in purchase.lines)
-        ReceiptItemsCompanion.insert(
-          receiptId: receiptId,
-          productId: Value(productIds[line.product]),
-          rawName: line.rawName,
-          quantity: Value(line.quantity),
-          unit: Value(line.unit),
-          unitPriceCents: line.unitPriceCents,
-          lineTotalCents: line.lineTotalCents,
-          discountCents: Value(line.discountCents),
-          categoryId: Value(categoryIds[line.categoryName]),
-        ),
-    ]),
-  );
+  final itemIds = <int>[
+    for (final line in purchase.lines)
+      await db
+          .into(db.receiptItems)
+          .insert(
+            ReceiptItemsCompanion.insert(
+              receiptId: receiptId,
+              productId: Value(productIds[line.product]),
+              rawName: line.rawName,
+              quantity: Value(line.quantity),
+              unit: Value(line.unit),
+              unitPriceCents: line.unitPriceCents,
+              lineTotalCents: line.lineTotalCents,
+              discountCents: Value(line.discountCents),
+              categoryId: Value(categoryIds[line.categoryName]),
+            ),
+          ),
+  ];
+  return (receiptId: receiptId, itemIds: itemIds);
 }
+
+/// Fresh food: used within about a week, sometimes thrown away.
+const Set<DemoProduct> _perishable = {
+  DemoProduct.milk,
+  DemoProduct.yogurt,
+  DemoProduct.bread,
+  DemoProduct.apples,
+  DemoProduct.bananas,
+  DemoProduct.tomatoes,
+  DemoProduct.chicken,
+  DemoProduct.beef,
+  DemoProduct.salmon,
+};
+
+const Set<DemoProduct> _vegetables = {
+  DemoProduct.apples,
+  DemoProduct.bananas,
+  DemoProduct.tomatoes,
+};
+
+/// Puts [purchase]'s products in the pantry, one lot per product (as
+/// `PantryRepository.addAllFromReceipt` does), and writes their movements
+/// up to [today]. [seq] counts lots across the whole history, so the
+/// pattern is deterministic; returns it advanced. Lines matched to no
+/// product go in but are never moved.
+Future<int> _writePantry(
+  AppDatabase db,
+  DemoPurchase purchase,
+  ({int receiptId, List<int> itemIds}) rows,
+  Map<DemoProduct, int> productIds,
+  Map<String, int> categoryIds,
+  DateTime today,
+  int seq,
+) async {
+  // Lines of one product (or one printed name) and unit are one lot.
+  final groups = <String, List<int>>{};
+  for (final (i, line) in purchase.lines.indexed) {
+    final key = '${line.product?.name ?? line.rawName}|${line.unit}';
+    (groups[key] ??= []).add(i);
+  }
+
+  final bought = purchase.localDate;
+  final now = today.toLocal();
+  final age = DateTime.utc(
+    now.year,
+    now.month,
+    now.day,
+  ).difference(DateTime.utc(bought.year, bought.month, bought.day)).inDays;
+  var next = seq;
+  for (final indexes in groups.values) {
+    final lines = [for (final i in indexes) purchase.lines[i]];
+    final first = lines.first;
+    final product = first.product;
+    final quantity = _round(
+      lines.fold<double>(0, (sum, l) => sum + l.quantity),
+    );
+    final lotId = await db
+        .into(db.pantryLots)
+        .insert(
+          PantryLotsCompanion.insert(
+            receiptId: Value(rows.receiptId),
+            productId: Value(productIds[product]),
+            categoryId: Value(categoryIds[first.categoryName]),
+            name: product?.canonicalName ?? first.rawName,
+            unit: Value(first.unit),
+            source: PantrySource.receipt,
+            initialQuantity: quantity,
+            priceCents: Value(lines.fold<int>(0, (sum, l) => sum + l.netCents)),
+            addedAt: bought.toUtc(),
+          ),
+        );
+    await (db.update(db.receiptItems)
+          ..where((r) => r.id.isIn([for (final i in indexes) rows.itemIds[i]])))
+        .write(ReceiptItemsCompanion(pantryLotId: Value(lotId)));
+
+    Future<void> event(
+      PantryEventKind kind,
+      double delta,
+      int day, {
+      PantryEventReason? reason,
+    }) => db
+        .into(db.pantryEvents)
+        .insert(
+          PantryEventsCompanion.insert(
+            lotId: lotId,
+            kind: kind,
+            reason: Value(reason),
+            delta: _round(delta),
+            at: DateTime(
+              bought.year,
+              bought.month,
+              bought.day + day,
+              20,
+            ).toUtc(),
+          ),
+        );
+
+    await event(PantryEventKind.stockIn, quantity, 0);
+    next++;
+    if (product == null || next % 9 == 0 || age < 2) continue;
+
+    final fresh = _perishable.contains(product);
+    final shelfDays = fresh ? 6 : 20;
+    final half = _round(quantity / 2);
+    final wasted =
+        fresh &&
+        (next % 4 == 1 ||
+            (age < 28 && _vegetables.contains(product) && next.isOdd));
+
+    await event(PantryEventKind.consume, -half, 2);
+    if (age < shelfDays) continue;
+    if (wasted) {
+      await event(
+        PantryEventKind.discard,
+        -(quantity - half),
+        shelfDays,
+        reason: product == DemoProduct.milk || product == DemoProduct.yogurt
+            ? PantryEventReason.expired
+            : PantryEventReason.spoiled,
+      );
+    } else {
+      await event(PantryEventKind.consume, -(quantity - half), shelfDays - 1);
+    }
+  }
+  return next;
+}
+
+double _round(double q) => (q * 1000).round() / 1000;
