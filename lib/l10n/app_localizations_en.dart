@@ -946,4 +946,48 @@ class AppLocalizationsEn extends AppLocalizations {
     });
     return '$latest vs $usual usually$_temp0 ($change). About $amount more a month for what you buy.';
   }
+
+  @override
+  String get exportTitle => 'Export the collected data';
+
+  @override
+  String exportSummary(int receipts, int items) {
+    String _temp0 = intl.Intl.pluralLogic(
+      receipts,
+      locale: localeName,
+      other: '$receipts receipts',
+      one: '1 receipt',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      items,
+      locale: localeName,
+      other: '$items items',
+      one: '1 item',
+    );
+    return '$_temp0 · $_temp1, in a CSV file';
+  }
+
+  @override
+  String get exportNothing => 'No receipts to export';
+
+  @override
+  String get exportWarning =>
+      'Every item of the confirmed receipts, one per row, in a CSV file that opens in Excel, Google Sheets or an analysis tool.\n\nThe file is not encrypted: anyone who opens it sees your purchases.';
+
+  @override
+  String get exportConfirm => 'Export';
+
+  @override
+  String exportDone(int count, String fileName) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Exported $count items',
+      one: 'Exported 1 item',
+    );
+    return '$_temp0 to $fileName';
+  }
+
+  @override
+  String get exportFailed => 'The export failed.';
 }

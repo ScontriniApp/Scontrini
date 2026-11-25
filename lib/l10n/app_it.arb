@@ -662,5 +662,32 @@
         "type": "String"
       }
     }
-  }
+  },
+  "exportTitle": "Esporta i dati raccolti",
+  "exportSummary": "{receipts, plural, =1{1 scontrino} other{{receipts} scontrini}} · {items, plural, =1{1 articolo} other{{items} articoli}}, in un file CSV",
+  "@exportSummary": {
+    "placeholders": {
+      "receipts": {
+        "type": "int"
+      },
+      "items": {
+        "type": "int"
+      }
+    }
+  },
+  "exportNothing": "Nessuno scontrino da esportare",
+  "exportWarning": "Tutti gli articoli degli scontrini confermati, uno per riga, in un file CSV che si apre con Excel, Fogli Google o un programma di analisi.\n\nIl file non è cifrato: chi lo apre vede i tuoi acquisti.",
+  "exportConfirm": "Esporta",
+  "exportDone": "{count, plural, =1{Esportato 1 articolo} other{Esportati {count} articoli}} in {fileName}",
+  "@exportDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "exportFailed": "Esportazione non riuscita."
 }

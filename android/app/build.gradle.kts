@@ -6,10 +6,7 @@ plugins {
 
 android {
     namespace = "com.swe.scontrini"
-    // 37 instead of flutter.compileSdkVersion (36): permission_handler_android
-    // compiles against SDK 37. Compile SDK is backward compatible; minSdk and
-    // targetSdk are unchanged.
-    compileSdk = 37
+    compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -38,6 +35,19 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
+    }
+}
+
+// Release APKs carry 64-bit ARM only, every phone the app targets. Native
+// libraries (ONNX Runtime, ML Kit, PDFium, SQLite) are stored uncompressed, so
+// each extra ABI adds its full size: x86_64 (emulators) and armeabi-v7a (old
+// 32-bit phones) cost 53 MB together. Debug builds keep them for the emulator.
+// (Build-type abiFilters can't do this: the Flutter plugin resets the list.)
+androidComponents {
+    onVariants(selector().withBuildType("release")) { variant ->
+        variant.packaging.jniLibs.excludes.addAll(
+            listOf("lib/armeabi-v7a/**", "lib/x86/**", "lib/x86_64/**"),
+        )
     }
 }
 

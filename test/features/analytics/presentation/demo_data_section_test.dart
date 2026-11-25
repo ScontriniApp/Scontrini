@@ -51,5 +51,10 @@ void main() {
     await tester.pump();
     expect(await receipts(), 0);
     expect(find.text('Dati demo rimossi'), findsOneWidget);
+
+    // Settings watches the receipts (export entry): unmount before the
+    // database closes, or the open drift stream keeps the test waiting.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(Duration.zero);
   });
 }

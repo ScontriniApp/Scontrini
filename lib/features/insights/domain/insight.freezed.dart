@@ -353,9 +353,9 @@ class PriceRiseInsight extends Insight {
  final  int latestCents;
 /// Median full unit price of the earlier purchases at the same store.
  final  int usualCents;
-/// How many earlier purchases [usualCents] is the median of.
+/// How many earlier purchases `usualCents` is the median of.
  final  int referenceCount;
-/// How much of it is bought in a month, in [unit] (from the reference
+/// How much of it is bought in a month, in `unit` (from the reference
 /// window), for the monthly cost of the rise.
  final  double monthlyQuantity;
 /// `pz`, `kg` or `l`; null when unknown.
