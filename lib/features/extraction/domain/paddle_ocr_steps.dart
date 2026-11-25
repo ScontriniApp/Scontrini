@@ -18,6 +18,29 @@ typedef Quad = List<Point>;
 /// Float32 tensor data with its shape.
 typedef Tensor = ({Float32List data, List<int> shape});
 
+/// Decodes a receipt photo: JPEG (camera, scanner), PNG (screenshots,
+/// rendered PDF pages) or WebP (some galleries). `null` for anything else.
+///
+/// Named decoders instead of `img.decodeImage`, which would compile every
+/// format the `image` package knows (TIFF, PSD, EXR, GIF...) into the app.
+img.Image? decodePhoto(Uint8List bytes) {
+  bool starts(List<int> magic, [int offset = 0]) {
+    if (bytes.length < offset + magic.length) return false;
+    for (var i = 0; i < magic.length; i++) {
+      if (bytes[offset + i] != magic[i]) return false;
+    }
+    return true;
+  }
+
+  if (starts([0xFF, 0xD8, 0xFF])) return img.decodeJpg(bytes);
+  if (starts([0x89, 0x50, 0x4E, 0x47])) return img.decodePng(bytes);
+  // RIFF....WEBP
+  if (starts([0x52, 0x49, 0x46, 0x46]) && starts([0x57, 0x45, 0x42, 0x50], 8)) {
+    return img.decodeWebP(bytes);
+  }
+  return null;
+}
+
 /// Detection input: the photo scaled so its short side is at least
 /// [limitSide], both sides rounded to a multiple of 32, as BGR channels
 /// normalised to -1..1 (NCHW).

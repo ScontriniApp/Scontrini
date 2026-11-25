@@ -928,4 +928,48 @@ class AppLocalizationsIt extends AppLocalizations {
   String insightWasteBody(int wasted, int total, int days, String amount) {
     return '$wasted volte su $total negli ultimi $days giorni, $amount buttati. Prova a prenderne meno.';
   }
+
+  @override
+  String get exportTitle => 'Esporta i dati raccolti';
+
+  @override
+  String exportSummary(int receipts, int items) {
+    String _temp0 = intl.Intl.pluralLogic(
+      receipts,
+      locale: localeName,
+      other: '$receipts scontrini',
+      one: '1 scontrino',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      items,
+      locale: localeName,
+      other: '$items articoli',
+      one: '1 articolo',
+    );
+    return '$_temp0 · $_temp1, in un file CSV';
+  }
+
+  @override
+  String get exportNothing => 'Nessuno scontrino da esportare';
+
+  @override
+  String get exportWarning =>
+      'Tutti gli articoli degli scontrini confermati, uno per riga, in un file CSV che si apre con Excel, Fogli Google o un programma di analisi.\n\nIl file non è cifrato: chi lo apre vede i tuoi acquisti.';
+
+  @override
+  String get exportConfirm => 'Esporta';
+
+  @override
+  String exportDone(int count, String fileName) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Esportati $count articoli',
+      one: 'Esportato 1 articolo',
+    );
+    return '$_temp0 in $fileName';
+  }
+
+  @override
+  String get exportFailed => 'Esportazione non riuscita.';
 }

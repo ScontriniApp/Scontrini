@@ -107,7 +107,7 @@ class PaddleOcr implements ImageTextReader {
     }
 
     load();
-    var image = img.decodeImage(await File(imagePath).readAsBytes());
+    var image = decodePhoto(await File(imagePath).readAsBytes());
     if (image == null) throw FormatException('not an image: $imagePath');
     image = img.bakeOrientation(image);
     final width = image.width;

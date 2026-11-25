@@ -1507,6 +1507,48 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'{wasted} volte su {total} negli ultimi {days} giorni, {amount} buttati. Prova a prenderne meno.'**
   String insightWasteBody(int wasted, int total, int days, String amount);
+
+  /// No description provided for @exportTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Esporta i dati raccolti'**
+  String get exportTitle;
+
+  /// No description provided for @exportSummary.
+  ///
+  /// In it, this message translates to:
+  /// **'{receipts, plural, =1{1 scontrino} other{{receipts} scontrini}} · {items, plural, =1{1 articolo} other{{items} articoli}}, in un file CSV'**
+  String exportSummary(int receipts, int items);
+
+  /// No description provided for @exportNothing.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuno scontrino da esportare'**
+  String get exportNothing;
+
+  /// No description provided for @exportWarning.
+  ///
+  /// In it, this message translates to:
+  /// **'Tutti gli articoli degli scontrini confermati, uno per riga, in un file CSV che si apre con Excel, Fogli Google o un programma di analisi.\n\nIl file non è cifrato: chi lo apre vede i tuoi acquisti.'**
+  String get exportWarning;
+
+  /// No description provided for @exportConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Esporta'**
+  String get exportConfirm;
+
+  /// No description provided for @exportDone.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{Esportato 1 articolo} other{Esportati {count} articoli}} in {fileName}'**
+  String exportDone(int count, String fileName);
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Esportazione non riuscita.'**
+  String get exportFailed;
 }
 
 class _AppLocalizationsDelegate

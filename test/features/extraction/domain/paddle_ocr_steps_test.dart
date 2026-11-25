@@ -23,6 +23,14 @@ Float32List _map(
 }
 
 void main() {
+  test('decodePhoto reads JPEG and PNG, rejects other bytes', () {
+    final photo = img.Image(width: 4, height: 3);
+    expect(decodePhoto(img.encodeJpg(photo))?.width, 4);
+    expect(decodePhoto(img.encodePng(photo))?.height, 3);
+    expect(decodePhoto(img.encodeBmp(photo)), isNull);
+    expect(decodePhoto(Uint8List(2)), isNull);
+  });
+
   group('detectionInput', () {
     test('scales the short side to 736, sides multiples of 32', () {
       final input = detectionInput(img.Image(width: 100, height: 400));
