@@ -8,8 +8,10 @@ import 'package:scontrini/features/analytics/domain/spending_metrics.dart';
 
 /// Builds the dashboard's [DashboardSummary] from the metrics.
 abstract final class DashboardMetrics {
-  /// Categories drawn on their own; smaller ones join the rest slice.
-  static const maxCategorySlices = 4;
+  /// Distinct colours the charts have (`ChartPalette`, presentation). A
+  /// category past them (by id) has no colour of its own, so the dashboard
+  /// folds it into the grey rest slice rather than inventing a hue.
+  static const paletteSlots = 8;
 
   /// Earlier months the usual spending is averaged over.
   static const comparedMonths = 3;
@@ -58,15 +60,22 @@ abstract final class DashboardMetrics {
       usualCents: earlier.isEmpty
           ? null
           : (earlier.reduce((a, b) => a + b) / earlier.length).round(),
-      slices: _slices(history, monthToDate),
+      slices: slices(history, monthToDate, colorSlots: paletteSlots),
       hasHistory: history.receipts.isNotEmpty,
     );
   }
 
-  static List<DashboardSlice> _slices(
+  /// Category slices of [range], largest first: every category with
+  /// spending, then one slice with the rest (uncategorised items, the gap to
+  /// the receipt totals). With [colorSlots], categories whose colour slot
+  /// (position by id) is [colorSlots] or more join the rest too, so every
+  /// drawn slice has a colour of its own. Each slice lists its items, newest
+  /// first.
+  static List<DashboardSlice> slices(
     PurchaseHistory history,
-    DateRange range,
-  ) {
+    DateRange range, {
+    int? colorSlots,
+  }) {
     final shares = SpendingMetrics.spendingByCategory(history, range);
     final ids = history.categories.keys.toList()..sort();
 
@@ -74,7 +83,10 @@ abstract final class DashboardMetrics {
       for (final s in shares)
         if (s.kind == CategoryShareKind.category && s.cents > 0) s,
     ];
-    final drawn = named.take(maxCategorySlices).toList();
+    final drawn = [
+      for (final s in named)
+        if (colorSlots == null || ids.indexOf(s.categoryId!) < colorSlots) s,
+    ];
     final rest =
         shares.fold<int>(0, (sum, s) => sum + s.cents) -
         drawn.fold<int>(0, (sum, s) => sum + s.cents);

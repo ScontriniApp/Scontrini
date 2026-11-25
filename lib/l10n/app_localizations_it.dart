@@ -51,9 +51,6 @@ class AppLocalizationsIt extends AppLocalizations {
       'Nessuno scontrino salvato. Fotografane uno o inseriscilo a mano.';
 
   @override
-  String get analyticsEmpty => 'Grafici e statistiche appariranno qui.';
-
-  @override
   String get captureFailed => 'Impossibile acquisire lo scontrino.';
 
   @override
@@ -306,14 +303,14 @@ class AppLocalizationsIt extends AppLocalizations {
   String get dashboardCategoriesEmpty => 'Nessuna spesa questo mese';
 
   @override
-  String get dashboardOtherCategories => 'Altre categorie';
+  String get dashboardRestSlice => 'Altro e senza categoria';
 
   @override
   String get dashboardInsightsTitle => 'Consigli';
 
   @override
   String get dashboardInsightsEmpty =>
-      'Qui appariranno 2–3 consigli sui tuoi acquisti: prezzi in aumento, occasioni di risparmio, categorie in crescita.';
+      'Nessun consiglio per ora. Qui appariranno le categorie in cui spendi più del solito e i prodotti che butti spesso.';
 
   @override
   String get dashboardCategoryHint =>
@@ -619,4 +616,360 @@ class AppLocalizationsIt extends AppLocalizations {
   String reviewConfirmAll(int count) {
     return 'Conferma tutti ($count)';
   }
+
+  @override
+  String get analyticsTabSpending => 'Spesa';
+
+  @override
+  String get analyticsTabProducts => 'Prodotti';
+
+  @override
+  String get analyticsPeriodWeek => 'Settimana';
+
+  @override
+  String get analyticsPeriodMonth => 'Mese';
+
+  @override
+  String get analyticsPeriodQuarter => '3 mesi';
+
+  @override
+  String get analyticsPeriodYear => 'Anno';
+
+  @override
+  String get analyticsPickDates => 'Scegli le date';
+
+  @override
+  String get analyticsPreviousPeriod => 'Periodo precedente';
+
+  @override
+  String get analyticsNextPeriod => 'Periodo successivo';
+
+  @override
+  String get analyticsNoReceipts => 'Nessuno scontrino in questo periodo';
+
+  @override
+  String get analyticsSpent => 'Speso';
+
+  @override
+  String analyticsComparedWith(String period, String amount) {
+    return '$period: $amount';
+  }
+
+  @override
+  String analyticsNothingBefore(String period) {
+    return 'Nessuna spesa nel periodo prima ($period)';
+  }
+
+  @override
+  String analyticsChangeVs(String change, String period) {
+    return '$change rispetto a $period';
+  }
+
+  @override
+  String get analyticsOverTime => 'Andamento';
+
+  @override
+  String get analyticsOverTimeHint => 'Tocca una barra per vederne il totale';
+
+  @override
+  String get analyticsCategoriesTitle => 'Categorie';
+
+  @override
+  String get analyticsUncategorised => 'Senza categoria e altro';
+
+  @override
+  String get analyticsStoresTitle => 'Negozi';
+
+  @override
+  String get analyticsUnknownStore => 'Negozio sconosciuto';
+
+  @override
+  String analyticsStoreVisits(int count, String amount) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count visite',
+      one: '1 visita',
+    );
+    return '$_temp0 · spesa media $amount';
+  }
+
+  @override
+  String get analyticsSavingsTitle => 'Risparmiato con gli sconti';
+
+  @override
+  String analyticsSavingsRate(String percent) {
+    return '$percent del prezzo pieno';
+  }
+
+  @override
+  String get analyticsMostBoughtTitle => 'Più acquistati';
+
+  @override
+  String analyticsTimesBought(int count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count volte',
+      one: '1 volta',
+    );
+    return '$_temp0 · ultimo acquisto $date';
+  }
+
+  @override
+  String analyticsShowAll(int count) {
+    return 'Mostra tutti ($count)';
+  }
+
+  @override
+  String get analyticsShowLess => 'Mostra meno';
+
+  @override
+  String get analyticsPriceChangesTitle => 'Variazioni di prezzo';
+
+  @override
+  String get analyticsPriceRises => 'In aumento';
+
+  @override
+  String get analyticsPriceDrops => 'In calo';
+
+  @override
+  String analyticsPriceVsUsual(String latest, String usual) {
+    return '$latest contro $usual di solito';
+  }
+
+  @override
+  String get analyticsPriceChangesHint =>
+      'Prezzo pieno dell\'ultimo acquisto rispetto alla mediana dei 90 giorni prima (almeno 3 acquisti). Le offerte non contano.';
+
+  @override
+  String get analyticsNoPriceChanges =>
+      'Nessuna variazione di prezzo di rilievo in questo periodo';
+
+  @override
+  String get analyticsTabPantry => 'Dispensa';
+
+  @override
+  String get analyticsPantryEmpty =>
+      'La dispensa è vuota.\nSalva uno scontrino per vedere cosa usi e cosa butti.';
+
+  @override
+  String get analyticsFateTitle => 'Dove è finita la spesa';
+
+  @override
+  String analyticsFateSubtitle(String amount) {
+    return '$amount spesi in questo periodo';
+  }
+
+  @override
+  String get analyticsFateUsed => 'Usato';
+
+  @override
+  String get analyticsFateWasted => 'Buttato';
+
+  @override
+  String get analyticsFateInPantry => 'Ancora in dispensa';
+
+  @override
+  String get analyticsFateNotInPantry => 'Non in dispensa';
+
+  @override
+  String get analyticsFateNotInPantryHint =>
+      'prodotti non seguiti, sconti sul totale e righe senza prodotto';
+
+  @override
+  String analyticsFateCoverage(int untouched, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      untouched,
+      locale: localeName,
+      other:
+          '$untouched prodotti su $count non sono mai stati aggiornati: contano come ancora in dispensa.',
+      one:
+          '1 prodotto su $count non è mai stato aggiornato: conta come ancora in dispensa.',
+      zero: 'Tutti i $count prodotti sono stati aggiornati in dispensa.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get analyticsFateNoReceipts => 'Nessuno scontrino in questo periodo';
+
+  @override
+  String get analyticsWasteTitle => 'Sprechi';
+
+  @override
+  String get analyticsWasteSubtitle =>
+      'Buttato in questo periodo, qualunque sia la data d\'acquisto';
+
+  @override
+  String analyticsWasteRate(String percent) {
+    return '$percent di ciò che è uscito dalla dispensa';
+  }
+
+  @override
+  String get analyticsWasteNone => 'Niente buttato in questo periodo';
+
+  @override
+  String analyticsWasteUnpriced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Più $count prodotti senza prezzo',
+      one: 'Più 1 prodotto senza prezzo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get analyticsWasteReasons => 'Perché';
+
+  @override
+  String get analyticsWasteReasonExpired => 'Scaduto';
+
+  @override
+  String get analyticsWasteReasonSpoiled => 'Andato a male';
+
+  @override
+  String get analyticsWasteReasonOther => 'Altro';
+
+  @override
+  String get analyticsWasteCategories => 'Per categoria';
+
+  @override
+  String get analyticsWasteProducts => 'Prodotti più buttati';
+
+  @override
+  String analyticsWasteLots(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count volte',
+      one: '1 volta',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get analyticsNoCategory => 'Senza categoria';
+
+  @override
+  String get shoppingTitle => 'Prossima spesa';
+
+  @override
+  String get shoppingEmpty => 'Niente da ricomprare nei prossimi giorni';
+
+  @override
+  String get shoppingHint =>
+      'In base a quanto usi in dispensa e a quanto spesso compri';
+
+  @override
+  String get shoppingFinished => 'Finito in dispensa';
+
+  @override
+  String shoppingRunningLow(String quantity, String when) {
+    return 'Ne resta $quantity: finisce $when';
+  }
+
+  @override
+  String shoppingUsual(int days, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days giorni',
+      one: 'giorno',
+    );
+    return 'Di solito ogni $_temp0, l\'ultima volta il $date';
+  }
+
+  @override
+  String shoppingEvery(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days giorni',
+      one: 'giorno',
+    );
+    return 'di solito ogni $_temp0';
+  }
+
+  @override
+  String get shoppingToday => 'oggi';
+
+  @override
+  String get shoppingTomorrow => 'domani';
+
+  @override
+  String shoppingInDays(int days) {
+    return 'tra $days giorni';
+  }
+
+  @override
+  String insightSpikeTitle(String category, String change) {
+    return '$category: $change rispetto al solito';
+  }
+
+  @override
+  String insightSpikeBody(String amount, String usual, int months) {
+    String _temp0 = intl.Intl.pluralLogic(
+      months,
+      locale: localeName,
+      other: 'media degli ultimi $months mesi',
+      one: 'nell\'ultimo mese',
+    );
+    return '$amount finora questo mese; di solito $usual a questo punto ($_temp0)';
+  }
+
+  @override
+  String insightWasteTitle(String product) {
+    return 'Butti spesso: $product';
+  }
+
+  @override
+  String insightWasteBody(int wasted, int total, int days, String amount) {
+    return '$wasted volte su $total negli ultimi $days giorni, $amount buttati. Prova a prenderne meno.';
+  }
+
+  @override
+  String get exportTitle => 'Esporta i dati raccolti';
+
+  @override
+  String exportSummary(int receipts, int items) {
+    String _temp0 = intl.Intl.pluralLogic(
+      receipts,
+      locale: localeName,
+      other: '$receipts scontrini',
+      one: '1 scontrino',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      items,
+      locale: localeName,
+      other: '$items articoli',
+      one: '1 articolo',
+    );
+    return '$_temp0 · $_temp1, in un file CSV';
+  }
+
+  @override
+  String get exportNothing => 'Nessuno scontrino da esportare';
+
+  @override
+  String get exportWarning =>
+      'Tutti gli articoli degli scontrini confermati, uno per riga, in un file CSV che si apre con Excel, Fogli Google o un programma di analisi.\n\nIl file non è cifrato: chi lo apre vede i tuoi acquisti.';
+
+  @override
+  String get exportConfirm => 'Esporta';
+
+  @override
+  String exportDone(int count, String fileName) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Esportati $count articoli',
+      one: 'Esportato 1 articolo',
+    );
+    return '$_temp0 in $fileName';
+  }
+
+  @override
+  String get exportFailed => 'Esportazione non riuscita.';
 }

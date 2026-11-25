@@ -122,7 +122,6 @@ void main() {
       expect((apple.quantity, apple.unit, apple.paidCents), (0.5, 'kg', 90));
       expect(apple.pantryState, ExportPantryState.active);
       expect(apple.remaining, closeTo(0.3, 1e-9));
-
     },
   );
 

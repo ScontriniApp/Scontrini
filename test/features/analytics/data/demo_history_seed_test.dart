@@ -4,10 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:scontrini/core/database/app_database.dart';
 import 'package:scontrini/features/analytics/data/analytics_dao.dart';
 import 'package:scontrini/features/analytics/data/demo_history_seed.dart';
+import 'package:scontrini/features/analytics/domain/models/analytics_period.dart';
 import 'package:scontrini/features/analytics/domain/models/category_share.dart';
 import 'package:scontrini/features/analytics/domain/models/date_range.dart';
 import 'package:scontrini/features/analytics/domain/models/granularity.dart';
 import 'package:scontrini/features/analytics/domain/models/purchase_history.dart';
+import 'package:scontrini/features/analytics/domain/pantry_metrics.dart';
 import 'package:scontrini/features/analytics/domain/price_metrics.dart';
 import 'package:scontrini/features/analytics/domain/spending_metrics.dart';
 
@@ -147,6 +149,33 @@ void main() {
       }
     });
 
+    test('puts every confirmed receipt in the pantry, with vegetable '
+        'waste rising recently', () async {
+      final pantry = await AnalyticsDao(db).loadPantry();
+      final confirmed = {for (final r in history.receipts) r.id};
+      expect(pantry.lots, isNotEmpty);
+      expect(pantry.lots.every((l) => confirmed.contains(l.receiptId)), isTrue);
+      expect(
+        pantry.lots.every(
+          (l) => l.events.first.kind == PantryEventKind.stockIn,
+        ),
+        isTrue,
+      );
+
+      int vegetableWaste(int daysBack) {
+        final end = DateTime(today.year, today.month, today.day + 1 - daysBack);
+        final period = AnalyticsPeriod.custom(
+          DateRange(DateTime(end.year, end.month, end.day - 28), end),
+        );
+        final o = PantryMetrics.overview(history, pantry, period, today);
+        return o.categories
+            .where((c) => c.category?.name == 'Frutta e verdura')
+            .fold(0, (sum, c) => sum + c.cents);
+      }
+
+      expect(vegetableWaste(0), greaterThan(vegetableWaste(28)));
+    });
+
     test('seeding again replaces the demo history', () async {
       await seedDemoHistory(db, today: today);
       expect(await db.select(db.receipts).get(), hasLength(43));
@@ -198,6 +227,8 @@ void main() {
         DemoProduct.milk.rawName,
       ]);
       expect(await db.select(db.categories).get(), categories);
+      expect(await db.select(db.pantryLots).get(), isEmpty);
+      expect(await db.select(db.pantryEvents).get(), isEmpty);
     });
   });
 }

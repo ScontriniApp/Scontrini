@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart';
 import 'package:scontrini/core/database/app_database.dart';
 import 'package:scontrini/features/analytics/domain/models/date_range.dart';
+import 'package:scontrini/features/analytics/domain/models/pantry_history.dart';
 import 'package:scontrini/features/analytics/domain/models/product_unit.dart';
 import 'package:scontrini/features/analytics/domain/models/purchase_history.dart';
+import 'package:scontrini/features/pantry/domain/pantry_event.dart';
 
 /// Loads the [PurchaseHistory] that analytics and insights work on. The only
 /// analytics code that touches Drift; everything above it is pure Dart.
@@ -132,6 +134,57 @@ class AnalyticsDao {
           },
         );
       });
+
+  /// [loadPantry] again every time a lot or a pantry event changes.
+  Stream<PantryHistory> watchPantry() => _db
+      .customSelect('SELECT 1', readsFrom: {_db.pantryLots, _db.pantryEvents})
+      .watch()
+      .asyncMap((_) => loadPantry());
+
+  /// Every pantry lot with its events. Not limited to a range: a lot bought
+  /// months ago can be thrown away today, and the pantry stays small (a few
+  /// hundred lots a year). Read in one transaction, so it is consistent.
+  Future<PantryHistory> loadPantry() => _db.transaction(() async {
+    final lotRows = await (_db.select(
+      _db.pantryLots,
+    )..orderBy([(l) => OrderingTerm.asc(l.id)])).get();
+    final eventRows = await (_db.select(
+      _db.pantryEvents,
+    )..orderBy([(e) => OrderingTerm.asc(e.id)])).get();
+
+    final eventsByLot = <int, List<PantryEvent>>{};
+    for (final e in eventRows) {
+      (eventsByLot[e.lotId] ??= []).add(
+        PantryEvent(
+          id: e.id,
+          lotId: e.lotId,
+          kind: e.kind,
+          reason: e.reason,
+          delta: e.delta,
+          revertsEventId: e.revertsEventId,
+          at: e.at.toUtc(),
+        ),
+      );
+    }
+    return PantryHistory(
+      lots: [
+        for (final l in lotRows)
+          PantryHistoryLot(
+            id: l.id,
+            name: l.name,
+            source: l.source,
+            initialQuantity: l.initialQuantity,
+            addedAt: l.addedAt.toUtc(),
+            events: eventsByLot[l.id] ?? const [],
+            receiptId: l.receiptId,
+            productId: l.productId,
+            categoryId: l.categoryId,
+            priceCents: l.priceCents,
+            unit: l.unit,
+          ),
+      ],
+    );
+  });
 
   /// Confirmed, and bought on a local day in [range]. The range ends are
   /// local midnights; Drift compares them as instants.

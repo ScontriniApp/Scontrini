@@ -75,7 +75,10 @@ void main() {
 
     expect(find.text('Categorie del mese'), findsOneWidget);
     expect(find.text('Carne e pesce'), findsOneWidget);
-    expect(find.text('Altre categorie'), findsOneWidget);
+    // Every category with spending is its own slice, smaller ones included.
+    expect(find.text('Bevande'), findsOneWidget);
+    expect(find.text('Latticini e uova'), findsOneWidget);
+    expect(find.text('Altre categorie'), findsNothing);
 
     await tester.scrollUntilVisible(find.text('Consigli'), 200);
     expect(find.text('Consigli'), findsOneWidget);
@@ -91,5 +94,42 @@ void main() {
     expect(find.textContaining('21 nov 2026'), findsWidgets);
     expect(find.textContaining('Supermercato Aurora'), findsWidgets);
     expect(find.text(Money.format(3701)), findsWidgets);
+  });
+
+  testWidgets('the next-shopping list shows what ran out', (tester) async {
+    await pumpDashboard(tester, seed: true);
+
+    await tester.scrollUntilVisible(find.text('Prossima spesa'), 200);
+    expect(find.text('Prossima spesa'), findsOneWidget);
+    // In the demo, yogurt and water go within two days of the last trip.
+    expect(find.text('Yogurt bianco x2'), findsOneWidget);
+    expect(find.text('Acqua naturale 6×1,5 l'), findsOneWidget);
+    expect(
+      find.text('Finito in dispensa · di solito ogni 7 giorni'),
+      findsNWidgets(2),
+    );
+  });
+
+  testWidgets('the suggestions show the drinks spike and products often '
+      'thrown away, ranked', (tester) async {
+    await pumpDashboard(tester, seed: true);
+
+    await tester.scrollUntilVisible(find.text('Consigli'), 200);
+    await tester.scrollUntilVisible(find.textContaining('Bevande: +'), 200);
+    expect(find.textContaining('rispetto al solito'), findsOneWidget);
+    expect(find.text('Butti spesso: Macinato di manzo 500 g'), findsOneWidget);
+    // Three shown, the rest behind "Mostra tutti".
+    expect(find.textContaining('Butti spesso:'), findsNWidgets(2));
+    await tester.scrollUntilVisible(find.text('Mostra tutti (5)'), 200);
+    await tester.ensureVisible(find.text('Mostra tutti (5)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mostra tutti (5)'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Butti spesso: Latte intero 1 l'),
+      200,
+    );
+    expect(find.text('Butti spesso: Latte intero 1 l'), findsOneWidget);
+    expect(find.text('Mostra meno'), findsOneWidget);
   });
 }

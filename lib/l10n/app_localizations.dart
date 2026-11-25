@@ -176,12 +176,6 @@ abstract class AppLocalizations {
   /// **'Nessuno scontrino salvato. Fotografane uno o inseriscilo a mano.'**
   String get receiptsEmpty;
 
-  /// No description provided for @analyticsEmpty.
-  ///
-  /// In it, this message translates to:
-  /// **'Grafici e statistiche appariranno qui.'**
-  String get analyticsEmpty;
-
   /// No description provided for @captureFailed.
   ///
   /// In it, this message translates to:
@@ -614,11 +608,11 @@ abstract class AppLocalizations {
   /// **'Nessuna spesa questo mese'**
   String get dashboardCategoriesEmpty;
 
-  /// No description provided for @dashboardOtherCategories.
+  /// No description provided for @dashboardRestSlice.
   ///
   /// In it, this message translates to:
-  /// **'Altre categorie'**
-  String get dashboardOtherCategories;
+  /// **'Altro e senza categoria'**
+  String get dashboardRestSlice;
 
   /// No description provided for @dashboardInsightsTitle.
   ///
@@ -629,7 +623,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardInsightsEmpty.
   ///
   /// In it, this message translates to:
-  /// **'Qui appariranno 2–3 consigli sui tuoi acquisti: prezzi in aumento, occasioni di risparmio, categorie in crescita.'**
+  /// **'Nessun consiglio per ora. Qui appariranno le categorie in cui spendi più del solito e i prodotti che butti spesso.'**
   String get dashboardInsightsEmpty;
 
   /// No description provided for @dashboardCategoryHint.
@@ -1087,6 +1081,474 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Conferma tutti ({count})'**
   String reviewConfirmAll(int count);
+
+  /// No description provided for @analyticsTabSpending.
+  ///
+  /// In it, this message translates to:
+  /// **'Spesa'**
+  String get analyticsTabSpending;
+
+  /// No description provided for @analyticsTabProducts.
+  ///
+  /// In it, this message translates to:
+  /// **'Prodotti'**
+  String get analyticsTabProducts;
+
+  /// No description provided for @analyticsPeriodWeek.
+  ///
+  /// In it, this message translates to:
+  /// **'Settimana'**
+  String get analyticsPeriodWeek;
+
+  /// No description provided for @analyticsPeriodMonth.
+  ///
+  /// In it, this message translates to:
+  /// **'Mese'**
+  String get analyticsPeriodMonth;
+
+  /// No description provided for @analyticsPeriodQuarter.
+  ///
+  /// In it, this message translates to:
+  /// **'3 mesi'**
+  String get analyticsPeriodQuarter;
+
+  /// No description provided for @analyticsPeriodYear.
+  ///
+  /// In it, this message translates to:
+  /// **'Anno'**
+  String get analyticsPeriodYear;
+
+  /// No description provided for @analyticsPickDates.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli le date'**
+  String get analyticsPickDates;
+
+  /// No description provided for @analyticsPreviousPeriod.
+  ///
+  /// In it, this message translates to:
+  /// **'Periodo precedente'**
+  String get analyticsPreviousPeriod;
+
+  /// No description provided for @analyticsNextPeriod.
+  ///
+  /// In it, this message translates to:
+  /// **'Periodo successivo'**
+  String get analyticsNextPeriod;
+
+  /// No description provided for @analyticsNoReceipts.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuno scontrino in questo periodo'**
+  String get analyticsNoReceipts;
+
+  /// No description provided for @analyticsSpent.
+  ///
+  /// In it, this message translates to:
+  /// **'Speso'**
+  String get analyticsSpent;
+
+  /// No description provided for @analyticsComparedWith.
+  ///
+  /// In it, this message translates to:
+  /// **'{period}: {amount}'**
+  String analyticsComparedWith(String period, String amount);
+
+  /// No description provided for @analyticsNothingBefore.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna spesa nel periodo prima ({period})'**
+  String analyticsNothingBefore(String period);
+
+  /// No description provided for @analyticsChangeVs.
+  ///
+  /// In it, this message translates to:
+  /// **'{change} rispetto a {period}'**
+  String analyticsChangeVs(String change, String period);
+
+  /// No description provided for @analyticsOverTime.
+  ///
+  /// In it, this message translates to:
+  /// **'Andamento'**
+  String get analyticsOverTime;
+
+  /// No description provided for @analyticsOverTimeHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Tocca una barra per vederne il totale'**
+  String get analyticsOverTimeHint;
+
+  /// No description provided for @analyticsCategoriesTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Categorie'**
+  String get analyticsCategoriesTitle;
+
+  /// No description provided for @analyticsUncategorised.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza categoria e altro'**
+  String get analyticsUncategorised;
+
+  /// No description provided for @analyticsStoresTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Negozi'**
+  String get analyticsStoresTitle;
+
+  /// No description provided for @analyticsUnknownStore.
+  ///
+  /// In it, this message translates to:
+  /// **'Negozio sconosciuto'**
+  String get analyticsUnknownStore;
+
+  /// No description provided for @analyticsStoreVisits.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 visita} other{{count} visite}} · spesa media {amount}'**
+  String analyticsStoreVisits(int count, String amount);
+
+  /// No description provided for @analyticsSavingsTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Risparmiato con gli sconti'**
+  String get analyticsSavingsTitle;
+
+  /// No description provided for @analyticsSavingsRate.
+  ///
+  /// In it, this message translates to:
+  /// **'{percent} del prezzo pieno'**
+  String analyticsSavingsRate(String percent);
+
+  /// No description provided for @analyticsMostBoughtTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Più acquistati'**
+  String get analyticsMostBoughtTitle;
+
+  /// No description provided for @analyticsTimesBought.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 volta} other{{count} volte}} · ultimo acquisto {date}'**
+  String analyticsTimesBought(int count, String date);
+
+  /// No description provided for @analyticsShowAll.
+  ///
+  /// In it, this message translates to:
+  /// **'Mostra tutti ({count})'**
+  String analyticsShowAll(int count);
+
+  /// No description provided for @analyticsShowLess.
+  ///
+  /// In it, this message translates to:
+  /// **'Mostra meno'**
+  String get analyticsShowLess;
+
+  /// No description provided for @analyticsPriceChangesTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Variazioni di prezzo'**
+  String get analyticsPriceChangesTitle;
+
+  /// No description provided for @analyticsPriceRises.
+  ///
+  /// In it, this message translates to:
+  /// **'In aumento'**
+  String get analyticsPriceRises;
+
+  /// No description provided for @analyticsPriceDrops.
+  ///
+  /// In it, this message translates to:
+  /// **'In calo'**
+  String get analyticsPriceDrops;
+
+  /// No description provided for @analyticsPriceVsUsual.
+  ///
+  /// In it, this message translates to:
+  /// **'{latest} contro {usual} di solito'**
+  String analyticsPriceVsUsual(String latest, String usual);
+
+  /// No description provided for @analyticsPriceChangesHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Prezzo pieno dell\'ultimo acquisto rispetto alla mediana dei 90 giorni prima (almeno 3 acquisti). Le offerte non contano.'**
+  String get analyticsPriceChangesHint;
+
+  /// No description provided for @analyticsNoPriceChanges.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna variazione di prezzo di rilievo in questo periodo'**
+  String get analyticsNoPriceChanges;
+
+  /// No description provided for @analyticsTabPantry.
+  ///
+  /// In it, this message translates to:
+  /// **'Dispensa'**
+  String get analyticsTabPantry;
+
+  /// No description provided for @analyticsPantryEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'La dispensa è vuota.\nSalva uno scontrino per vedere cosa usi e cosa butti.'**
+  String get analyticsPantryEmpty;
+
+  /// No description provided for @analyticsFateTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Dove è finita la spesa'**
+  String get analyticsFateTitle;
+
+  /// No description provided for @analyticsFateSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'{amount} spesi in questo periodo'**
+  String analyticsFateSubtitle(String amount);
+
+  /// No description provided for @analyticsFateUsed.
+  ///
+  /// In it, this message translates to:
+  /// **'Usato'**
+  String get analyticsFateUsed;
+
+  /// No description provided for @analyticsFateWasted.
+  ///
+  /// In it, this message translates to:
+  /// **'Buttato'**
+  String get analyticsFateWasted;
+
+  /// No description provided for @analyticsFateInPantry.
+  ///
+  /// In it, this message translates to:
+  /// **'Ancora in dispensa'**
+  String get analyticsFateInPantry;
+
+  /// No description provided for @analyticsFateNotInPantry.
+  ///
+  /// In it, this message translates to:
+  /// **'Non in dispensa'**
+  String get analyticsFateNotInPantry;
+
+  /// No description provided for @analyticsFateNotInPantryHint.
+  ///
+  /// In it, this message translates to:
+  /// **'prodotti non seguiti, sconti sul totale e righe senza prodotto'**
+  String get analyticsFateNotInPantryHint;
+
+  /// No description provided for @analyticsFateCoverage.
+  ///
+  /// In it, this message translates to:
+  /// **'{untouched, plural, =0{Tutti i {count} prodotti sono stati aggiornati in dispensa.} =1{1 prodotto su {count} non è mai stato aggiornato: conta come ancora in dispensa.} other{{untouched} prodotti su {count} non sono mai stati aggiornati: contano come ancora in dispensa.}}'**
+  String analyticsFateCoverage(int untouched, int count);
+
+  /// No description provided for @analyticsFateNoReceipts.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuno scontrino in questo periodo'**
+  String get analyticsFateNoReceipts;
+
+  /// No description provided for @analyticsWasteTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Sprechi'**
+  String get analyticsWasteTitle;
+
+  /// No description provided for @analyticsWasteSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Buttato in questo periodo, qualunque sia la data d\'acquisto'**
+  String get analyticsWasteSubtitle;
+
+  /// No description provided for @analyticsWasteRate.
+  ///
+  /// In it, this message translates to:
+  /// **'{percent} di ciò che è uscito dalla dispensa'**
+  String analyticsWasteRate(String percent);
+
+  /// No description provided for @analyticsWasteNone.
+  ///
+  /// In it, this message translates to:
+  /// **'Niente buttato in questo periodo'**
+  String get analyticsWasteNone;
+
+  /// No description provided for @analyticsWasteUnpriced.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{Più 1 prodotto senza prezzo} other{Più {count} prodotti senza prezzo}}'**
+  String analyticsWasteUnpriced(int count);
+
+  /// No description provided for @analyticsWasteReasons.
+  ///
+  /// In it, this message translates to:
+  /// **'Perché'**
+  String get analyticsWasteReasons;
+
+  /// No description provided for @analyticsWasteReasonExpired.
+  ///
+  /// In it, this message translates to:
+  /// **'Scaduto'**
+  String get analyticsWasteReasonExpired;
+
+  /// No description provided for @analyticsWasteReasonSpoiled.
+  ///
+  /// In it, this message translates to:
+  /// **'Andato a male'**
+  String get analyticsWasteReasonSpoiled;
+
+  /// No description provided for @analyticsWasteReasonOther.
+  ///
+  /// In it, this message translates to:
+  /// **'Altro'**
+  String get analyticsWasteReasonOther;
+
+  /// No description provided for @analyticsWasteCategories.
+  ///
+  /// In it, this message translates to:
+  /// **'Per categoria'**
+  String get analyticsWasteCategories;
+
+  /// No description provided for @analyticsWasteProducts.
+  ///
+  /// In it, this message translates to:
+  /// **'Prodotti più buttati'**
+  String get analyticsWasteProducts;
+
+  /// No description provided for @analyticsWasteLots.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 volta} other{{count} volte}}'**
+  String analyticsWasteLots(int count);
+
+  /// No description provided for @analyticsNoCategory.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza categoria'**
+  String get analyticsNoCategory;
+
+  /// No description provided for @shoppingTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Prossima spesa'**
+  String get shoppingTitle;
+
+  /// No description provided for @shoppingEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Niente da ricomprare nei prossimi giorni'**
+  String get shoppingEmpty;
+
+  /// No description provided for @shoppingHint.
+  ///
+  /// In it, this message translates to:
+  /// **'In base a quanto usi in dispensa e a quanto spesso compri'**
+  String get shoppingHint;
+
+  /// No description provided for @shoppingFinished.
+  ///
+  /// In it, this message translates to:
+  /// **'Finito in dispensa'**
+  String get shoppingFinished;
+
+  /// No description provided for @shoppingRunningLow.
+  ///
+  /// In it, this message translates to:
+  /// **'Ne resta {quantity}: finisce {when}'**
+  String shoppingRunningLow(String quantity, String when);
+
+  /// No description provided for @shoppingUsual.
+  ///
+  /// In it, this message translates to:
+  /// **'Di solito ogni {days, plural, =1{giorno} other{{days} giorni}}, l\'ultima volta il {date}'**
+  String shoppingUsual(int days, String date);
+
+  /// No description provided for @shoppingEvery.
+  ///
+  /// In it, this message translates to:
+  /// **'di solito ogni {days, plural, =1{giorno} other{{days} giorni}}'**
+  String shoppingEvery(int days);
+
+  /// No description provided for @shoppingToday.
+  ///
+  /// In it, this message translates to:
+  /// **'oggi'**
+  String get shoppingToday;
+
+  /// No description provided for @shoppingTomorrow.
+  ///
+  /// In it, this message translates to:
+  /// **'domani'**
+  String get shoppingTomorrow;
+
+  /// No description provided for @shoppingInDays.
+  ///
+  /// In it, this message translates to:
+  /// **'tra {days} giorni'**
+  String shoppingInDays(int days);
+
+  /// No description provided for @insightSpikeTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'{category}: {change} rispetto al solito'**
+  String insightSpikeTitle(String category, String change);
+
+  /// No description provided for @insightSpikeBody.
+  ///
+  /// In it, this message translates to:
+  /// **'{amount} finora questo mese; di solito {usual} a questo punto ({months, plural, =1{nell\'ultimo mese} other{media degli ultimi {months} mesi}})'**
+  String insightSpikeBody(String amount, String usual, int months);
+
+  /// No description provided for @insightWasteTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Butti spesso: {product}'**
+  String insightWasteTitle(String product);
+
+  /// No description provided for @insightWasteBody.
+  ///
+  /// In it, this message translates to:
+  /// **'{wasted} volte su {total} negli ultimi {days} giorni, {amount} buttati. Prova a prenderne meno.'**
+  String insightWasteBody(int wasted, int total, int days, String amount);
+
+  /// No description provided for @exportTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Esporta i dati raccolti'**
+  String get exportTitle;
+
+  /// No description provided for @exportSummary.
+  ///
+  /// In it, this message translates to:
+  /// **'{receipts, plural, =1{1 scontrino} other{{receipts} scontrini}} · {items, plural, =1{1 articolo} other{{items} articoli}}, in un file CSV'**
+  String exportSummary(int receipts, int items);
+
+  /// No description provided for @exportNothing.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuno scontrino da esportare'**
+  String get exportNothing;
+
+  /// No description provided for @exportWarning.
+  ///
+  /// In it, this message translates to:
+  /// **'Tutti gli articoli degli scontrini confermati, uno per riga, in un file CSV che si apre con Excel, Fogli Google o un programma di analisi.\n\nIl file non è cifrato: chi lo apre vede i tuoi acquisti.'**
+  String get exportWarning;
+
+  /// No description provided for @exportConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Esporta'**
+  String get exportConfirm;
+
+  /// No description provided for @exportDone.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{Esportato 1 articolo} other{Esportati {count} articoli}} in {fileName}'**
+  String exportDone(int count, String fileName);
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Esportazione non riuscita.'**
+  String get exportFailed;
 }
 
 class _AppLocalizationsDelegate
