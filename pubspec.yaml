@@ -64,6 +64,9 @@ dev_dependencies:
     sdk: flutter
   json_serializable: ^6.15.2
   mocktail: ^1.0.5
+  # tool/release_check opens an encrypted SQLite file directly (drift
+  # depends on it already; the version is the one in pubspec.lock).
+  sqlite3: ^3.9.1
   # Only the PC benchmark (tool/bench) matches product names.
   string_similarity: ^2.2.0
   very_good_analysis: ^11.0.0

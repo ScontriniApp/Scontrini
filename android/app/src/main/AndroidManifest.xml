@@ -1,5 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <!-- No network: receipt data never leaves the phone. ML Kit pulls in
+         com.google.android.datatransport (Google's usage telemetry), whose
+         manifest adds INTERNET to every build; this strips it from the merged
+         release manifest. Debug builds get INTERNET back from
+         src/debug/AndroidManifest.xml (a higher-priority manifest) for hot
+         reload. Check with tool/release_check/run.sh, which fails if the
+         release APK asks for INTERNET. ACCESS_NETWORK_STATE stays: it only
+         reads connectivity, and the telemetry job scheduler needs it. -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
     <!-- No backup or device transfer: receipt data stays on this device.
          tools:replace overrides cunning_document_scanner's rules, which only
          exclude its scanned pictures; ours exclude everything. -->

@@ -20,6 +20,12 @@ class ReceiptCaptureService {
   /// Document scanner: crops, straightens and cleans up the photo, which
   /// helps OCR a lot. On Android it is Google's ML Kit scanner, so no camera
   /// permission is needed.
+  ///
+  /// If Google's scanner can't start, the plugin silently opens its own
+  /// basic one (no auto capture, manual crop) instead of failing. Release
+  /// builds hit this when R8 had stripped the scanner's classes: the keep
+  /// rules in android/app/proguard-rules.pro prevent it. Seeing the basic
+  /// scanner means those rules (or Play services on the phone) are the cause.
   Future<ReceiptSource?> scan() async {
     final result = await CunningDocumentScanner.scanDocuments(
       noOfPages: maxPages,

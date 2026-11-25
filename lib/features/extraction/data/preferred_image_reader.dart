@@ -1,4 +1,4 @@
-import 'dart:developer' as developer;
+import 'package:flutter/foundation.dart' show debugPrint;
 
 import 'package:scontrini/features/extraction/domain/image_text_reader.dart';
 import 'package:scontrini/features/extraction/domain/models/ocr_page.dart';
@@ -28,12 +28,11 @@ class PreferredImageReader implements ImageTextReader {
     try {
       return await reader.recognizeFile(imagePath, onProgress: onProgress);
     } on Object catch (error, stack) {
-      developer.log(
-        '$name failed, reading with the next reader',
-        name: 'extraction',
-        error: error,
-        stackTrace: stack,
-      );
+      // debugPrint, not developer.log: this fallback is silent for the user,
+      // and developer.log never reaches logcat in release builds, where a
+      // broken reader (e.g. native classes stripped by R8) would otherwise
+      // go unnoticed. `adb logcat | grep flutter` shows it.
+      debugPrint('$name failed, reading with the next reader: $error\n$stack');
       return await fallback.recognizeFile(imagePath, onProgress: onProgress);
     }
   }

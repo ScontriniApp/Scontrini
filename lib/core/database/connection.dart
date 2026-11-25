@@ -13,7 +13,11 @@ const _databaseFileName = 'scontrini.sqlite';
 /// `pubspec.yaml`); `PRAGMA key` must be the first statement on the
 /// connection. The database runs in a background isolate.
 QueryExecutor openEncryptedConnection(String key) {
-  assert(RegExp(r'^[0-9a-f]+$').hasMatch(key), 'key must be lowercase hex');
+  // A real check, not an assert: asserts are stripped from release builds,
+  // and the key is pasted into the PRAGMA below.
+  if (!RegExp(r'^[0-9a-f]+$').hasMatch(key)) {
+    throw ArgumentError.value('<hidden>', 'key', 'must be lowercase hex');
+  }
 
   return LazyDatabase(() async {
     final dir = await getApplicationDocumentsDirectory();
