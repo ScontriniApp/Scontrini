@@ -92,4 +92,18 @@ void main() {
     expect(find.textContaining('Supermercato Aurora'), findsWidgets);
     expect(find.text(Money.format(3701)), findsWidgets);
   });
+
+  testWidgets('the next-shopping list shows what ran out', (tester) async {
+    await pumpDashboard(tester, seed: true);
+
+    await tester.scrollUntilVisible(find.text('Prossima spesa'), 200);
+    expect(find.text('Prossima spesa'), findsOneWidget);
+    // In the demo, yogurt and water go within two days of the last trip.
+    expect(find.text('Yogurt bianco x2'), findsOneWidget);
+    expect(find.text('Acqua naturale 6×1,5 l'), findsOneWidget);
+    expect(
+      find.text('Finito in dispensa · di solito ogni 7 giorni'),
+      findsNWidgets(2),
+    );
+  });
 }

@@ -851,4 +851,55 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get analyticsNoCategory => 'Senza categoria';
+
+  @override
+  String get shoppingTitle => 'Prossima spesa';
+
+  @override
+  String get shoppingEmpty => 'Niente da ricomprare nei prossimi giorni';
+
+  @override
+  String get shoppingHint =>
+      'In base a quanto usi in dispensa e a quanto spesso compri';
+
+  @override
+  String get shoppingFinished => 'Finito in dispensa';
+
+  @override
+  String shoppingRunningLow(String quantity, String when) {
+    return 'Ne resta $quantity: finisce $when';
+  }
+
+  @override
+  String shoppingUsual(int days, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days giorni',
+      one: 'giorno',
+    );
+    return 'Di solito ogni $_temp0, l\'ultima volta il $date';
+  }
+
+  @override
+  String shoppingEvery(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days giorni',
+      one: 'giorno',
+    );
+    return 'di solito ogni $_temp0';
+  }
+
+  @override
+  String get shoppingToday => 'oggi';
+
+  @override
+  String get shoppingTomorrow => 'domani';
+
+  @override
+  String shoppingInDays(int days) {
+    return 'tra $days giorni';
+  }
 }

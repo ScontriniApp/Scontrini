@@ -180,6 +180,7 @@ class AnalyticsDao {
             productId: l.productId,
             categoryId: l.categoryId,
             priceCents: l.priceCents,
+            unit: l.unit,
           ),
       ],
     );

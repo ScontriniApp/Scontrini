@@ -27,7 +27,7 @@ abstract class PantryHistoryLot with _$PantryHistoryLot {
     required String name,
     required PantrySource source,
 
-    /// Purchased quantity (pieces, kg or l).
+    /// Purchased quantity, in [unit].
     required double initialQuantity,
 
     /// UTC.
@@ -44,5 +44,8 @@ abstract class PantryHistoryLot with _$PantryHistoryLot {
     /// What was paid for the lot after discounts; null for gifts, things
     /// already at home and manual purchases with no price.
     int? priceCents,
+
+    /// `pz`, `kg` or `l`.
+    @Default('pz') String unit,
   }) = _PantryHistoryLot;
 }

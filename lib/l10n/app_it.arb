@@ -540,5 +540,49 @@
       }
     }
   },
-  "analyticsNoCategory": "Senza categoria"
+  "analyticsNoCategory": "Senza categoria",
+  "shoppingTitle": "Prossima spesa",
+  "shoppingEmpty": "Niente da ricomprare nei prossimi giorni",
+  "shoppingHint": "In base a quanto usi in dispensa e a quanto spesso compri",
+  "shoppingFinished": "Finito in dispensa",
+  "shoppingRunningLow": "Ne resta {quantity}: finisce {when}",
+  "@shoppingRunningLow": {
+    "placeholders": {
+      "quantity": {
+        "type": "String"
+      },
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingUsual": "Di solito ogni {days, plural, =1{giorno} other{{days} giorni}}, l'ultima volta il {date}",
+  "@shoppingUsual": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingEvery": "di solito ogni {days, plural, =1{giorno} other{{days} giorni}}",
+  "@shoppingEvery": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingToday": "oggi",
+  "shoppingTomorrow": "domani",
+  "shoppingInDays": "tra {days} giorni",
+  "@shoppingInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  }
 }

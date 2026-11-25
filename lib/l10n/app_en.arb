@@ -220,5 +220,15 @@
   "analyticsWasteCategories": "By category",
   "analyticsWasteProducts": "Most thrown away",
   "analyticsWasteLots": "{count, plural, =1{once} other{{count} times}}",
-  "analyticsNoCategory": "No category"
+  "analyticsNoCategory": "No category",
+  "shoppingTitle": "Next shopping",
+  "shoppingEmpty": "Nothing to buy again in the next few days",
+  "shoppingHint": "Based on what you use from the pantry and how often you buy",
+  "shoppingFinished": "Finished in the pantry",
+  "shoppingRunningLow": "{quantity} left: runs out {when}",
+  "shoppingUsual": "Usually every {days, plural, =1{day} other{{days} days}}, last on {date}",
+  "shoppingEvery": "usually every {days, plural, =1{day} other{{days} days}}",
+  "shoppingToday": "today",
+  "shoppingTomorrow": "tomorrow",
+  "shoppingInDays": "in {days} days"
 }

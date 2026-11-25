@@ -26,7 +26,9 @@
 /// within about a week and every fourth lot of it is partly thrown away
 /// (vegetables every other one recently: a waste increase), long-life food
 /// is used within three weeks, every ninth lot is never updated, and the
-/// last two days are untouched. See [_writePantry].
+/// last two days are untouched. Recently yogurt and water go within two
+/// days, so they are finished before the next trip (the next-shopping
+/// list). See [_writePantry].
 ///
 /// Returned items are left out: none have been seen on real receipts.
 /// The demo stores are the marker that [removeDemoHistory] uses, so real
@@ -481,6 +483,9 @@ const Set<DemoProduct> _perishable = {
   DemoProduct.salmon,
 };
 
+/// Used up within two days in the recent phase.
+const Set<DemoProduct> _usedFast = {DemoProduct.yogurt, DemoProduct.water};
+
 const Set<DemoProduct> _vegetables = {
   DemoProduct.apples,
   DemoProduct.bananas,
@@ -576,6 +581,10 @@ Future<int> _writePantry(
         (next % 4 == 1 ||
             (age < 28 && _vegetables.contains(product) && next.isOdd));
 
+    if (age < 28 && _usedFast.contains(product)) {
+      await event(PantryEventKind.consume, -quantity, 2);
+      continue;
+    }
     await event(PantryEventKind.consume, -half, 2);
     if (age < shelfDays) continue;
     if (wasted) {

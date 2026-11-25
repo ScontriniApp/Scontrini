@@ -285,13 +285,14 @@ as List<PantryHistoryLot>,
 /// @nodoc
 mixin _$PantryHistoryLot {
 
- int get id; String get name; PantrySource get source;/// Purchased quantity (pieces, kg or l).
+ int get id; String get name; PantrySource get source;/// Purchased quantity, in [unit].
  double get initialQuantity;/// UTC.
  DateTime get addedAt;/// In insertion (id) order, reverts included.
  List<PantryEvent> get events;/// Set exactly for [PantrySource.receipt] lots.
  int? get receiptId; int? get productId; int? get categoryId;/// What was paid for the lot after discounts; null for gifts, things
 /// already at home and manual purchases with no price.
- int? get priceCents;
+ int? get priceCents;/// `pz`, `kg` or `l`.
+ String get unit;
 /// Create a copy of PantryHistoryLot
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -303,20 +304,20 @@ $PantryHistoryLotCopyWith<PantryHistoryLot> get copyWith => _$PantryHistoryLotCo
 @override
 bool operator ==(Object other) {
   final _this = this as PantryHistoryLot;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PantryHistoryLot&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.source, _this.source) || other.source == _this.source)&&(identical(other.initialQuantity, _this.initialQuantity) || other.initialQuantity == _this.initialQuantity)&&(identical(other.addedAt, _this.addedAt) || other.addedAt == _this.addedAt)&&const DeepCollectionEquality().equals(other.events, _this.events)&&(identical(other.receiptId, _this.receiptId) || other.receiptId == _this.receiptId)&&(identical(other.productId, _this.productId) || other.productId == _this.productId)&&(identical(other.categoryId, _this.categoryId) || other.categoryId == _this.categoryId)&&(identical(other.priceCents, _this.priceCents) || other.priceCents == _this.priceCents));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PantryHistoryLot&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.source, _this.source) || other.source == _this.source)&&(identical(other.initialQuantity, _this.initialQuantity) || other.initialQuantity == _this.initialQuantity)&&(identical(other.addedAt, _this.addedAt) || other.addedAt == _this.addedAt)&&const DeepCollectionEquality().equals(other.events, _this.events)&&(identical(other.receiptId, _this.receiptId) || other.receiptId == _this.receiptId)&&(identical(other.productId, _this.productId) || other.productId == _this.productId)&&(identical(other.categoryId, _this.categoryId) || other.categoryId == _this.categoryId)&&(identical(other.priceCents, _this.priceCents) || other.priceCents == _this.priceCents)&&(identical(other.unit, _this.unit) || other.unit == _this.unit));
 }
 
 
 @override
 int get hashCode {
   final _this = this as PantryHistoryLot;
-  return Object.hash(runtimeType,_this.id,_this.name,_this.source,_this.initialQuantity,_this.addedAt,const DeepCollectionEquality().hash(_this.events),_this.receiptId,_this.productId,_this.categoryId,_this.priceCents);
+  return Object.hash(runtimeType,_this.id,_this.name,_this.source,_this.initialQuantity,_this.addedAt,const DeepCollectionEquality().hash(_this.events),_this.receiptId,_this.productId,_this.categoryId,_this.priceCents,_this.unit);
 }
 
 @override
 String toString() {
   final _this = this as PantryHistoryLot;
-  return 'PantryHistoryLot(id: ${_this.id}, name: ${_this.name}, source: ${_this.source}, initialQuantity: ${_this.initialQuantity}, addedAt: ${_this.addedAt}, events: ${_this.events}, receiptId: ${_this.receiptId}, productId: ${_this.productId}, categoryId: ${_this.categoryId}, priceCents: ${_this.priceCents})';
+  return 'PantryHistoryLot(id: ${_this.id}, name: ${_this.name}, source: ${_this.source}, initialQuantity: ${_this.initialQuantity}, addedAt: ${_this.addedAt}, events: ${_this.events}, receiptId: ${_this.receiptId}, productId: ${_this.productId}, categoryId: ${_this.categoryId}, priceCents: ${_this.priceCents}, unit: ${_this.unit})';
 }
 
 
@@ -327,7 +328,7 @@ abstract mixin class $PantryHistoryLotCopyWith<$Res>  {
   factory $PantryHistoryLotCopyWith(PantryHistoryLot value, $Res Function(PantryHistoryLot) _then) = _$PantryHistoryLotCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, PantrySource source, double initialQuantity, DateTime addedAt, List<PantryEvent> events, int? receiptId, int? productId, int? categoryId, int? priceCents
+ int id, String name, PantrySource source, double initialQuantity, DateTime addedAt, List<PantryEvent> events, int? receiptId, int? productId, int? categoryId, int? priceCents, String unit
 });
 
 
@@ -344,7 +345,7 @@ class _$PantryHistoryLotCopyWithImpl<$Res>
 
 /// Create a copy of PantryHistoryLot
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? source = null,Object? initialQuantity = null,Object? addedAt = null,Object? events = null,Object? receiptId = freezed,Object? productId = freezed,Object? categoryId = freezed,Object? priceCents = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? source = null,Object? initialQuantity = null,Object? addedAt = null,Object? events = null,Object? receiptId = freezed,Object? productId = freezed,Object? categoryId = freezed,Object? priceCents = freezed,Object? unit = null,}) {
   return _then(PantryHistoryLot(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -356,7 +357,8 @@ as List<PantryEvent>,receiptId: freezed == receiptId ? _self.receiptId : receipt
 as int?,productId: freezed == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as int?,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as int?,priceCents: freezed == priceCents ? _self.priceCents : priceCents // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,unit: null == unit ? _self.unit : unit // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 
@@ -441,10 +443,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  PantrySource source,  double initialQuantity,  DateTime addedAt,  List<PantryEvent> events,  int? receiptId,  int? productId,  int? categoryId,  int? priceCents)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  PantrySource source,  double initialQuantity,  DateTime addedAt,  List<PantryEvent> events,  int? receiptId,  int? productId,  int? categoryId,  int? priceCents,  String unit)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PantryHistoryLot() when $default != null:
-return $default(_that.id,_that.name,_that.source,_that.initialQuantity,_that.addedAt,_that.events,_that.receiptId,_that.productId,_that.categoryId,_that.priceCents);case _:
+return $default(_that.id,_that.name,_that.source,_that.initialQuantity,_that.addedAt,_that.events,_that.receiptId,_that.productId,_that.categoryId,_that.priceCents,_that.unit);case _:
   return orElse();
 
 }
@@ -462,10 +464,10 @@ return $default(_that.id,_that.name,_that.source,_that.initialQuantity,_that.add
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  PantrySource source,  double initialQuantity,  DateTime addedAt,  List<PantryEvent> events,  int? receiptId,  int? productId,  int? categoryId,  int? priceCents)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  PantrySource source,  double initialQuantity,  DateTime addedAt,  List<PantryEvent> events,  int? receiptId,  int? productId,  int? categoryId,  int? priceCents,  String unit)  $default,) {final _that = this;
 switch (_that) {
 case _PantryHistoryLot():
-return $default(_that.id,_that.name,_that.source,_that.initialQuantity,_that.addedAt,_that.events,_that.receiptId,_that.productId,_that.categoryId,_that.priceCents);case _:
+return $default(_that.id,_that.name,_that.source,_that.initialQuantity,_that.addedAt,_that.events,_that.receiptId,_that.productId,_that.categoryId,_that.priceCents,_that.unit);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -482,10 +484,10 @@ return $default(_that.id,_that.name,_that.source,_that.initialQuantity,_that.add
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  PantrySource source,  double initialQuantity,  DateTime addedAt,  List<PantryEvent> events,  int? receiptId,  int? productId,  int? categoryId,  int? priceCents)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  PantrySource source,  double initialQuantity,  DateTime addedAt,  List<PantryEvent> events,  int? receiptId,  int? productId,  int? categoryId,  int? priceCents,  String unit)?  $default,) {final _that = this;
 switch (_that) {
 case _PantryHistoryLot() when $default != null:
-return $default(_that.id,_that.name,_that.source,_that.initialQuantity,_that.addedAt,_that.events,_that.receiptId,_that.productId,_that.categoryId,_that.priceCents);case _:
+return $default(_that.id,_that.name,_that.source,_that.initialQuantity,_that.addedAt,_that.events,_that.receiptId,_that.productId,_that.categoryId,_that.priceCents,_that.unit);case _:
   return null;
 
 }
@@ -497,13 +499,13 @@ return $default(_that.id,_that.name,_that.source,_that.initialQuantity,_that.add
 
 
 class _PantryHistoryLot implements PantryHistoryLot {
-  const _PantryHistoryLot({required this.id, required this.name, required this.source, required this.initialQuantity, required this.addedAt, required  List<PantryEvent> events, this.receiptId, this.productId, this.categoryId, this.priceCents}): _events = events;
+  const _PantryHistoryLot({required this.id, required this.name, required this.source, required this.initialQuantity, required this.addedAt, required  List<PantryEvent> events, this.receiptId, this.productId, this.categoryId, this.priceCents, this.unit = 'pz'}): _events = events;
   
 
 @override final  int id;
 @override final  String name;
 @override final  PantrySource source;
-/// Purchased quantity (pieces, kg or l).
+/// Purchased quantity, in [unit].
 @override final  double initialQuantity;
 /// UTC.
 @override final  DateTime addedAt;
@@ -523,6 +525,8 @@ class _PantryHistoryLot implements PantryHistoryLot {
 /// What was paid for the lot after discounts; null for gifts, things
 /// already at home and manual purchases with no price.
 @override final  int? priceCents;
+/// `pz`, `kg` or `l`.
+@override@JsonKey() final  String unit;
 
 /// Create a copy of PantryHistoryLot
 /// with the given fields replaced by the non-null parameter values.
@@ -534,18 +538,18 @@ _$PantryHistoryLotCopyWith<_PantryHistoryLot> get copyWith => __$PantryHistoryLo
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PantryHistoryLot&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.source, source) || other.source == source)&&(identical(other.initialQuantity, initialQuantity) || other.initialQuantity == initialQuantity)&&(identical(other.addedAt, addedAt) || other.addedAt == addedAt)&&const DeepCollectionEquality().equals(other.events, _events)&&(identical(other.receiptId, receiptId) || other.receiptId == receiptId)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.priceCents, priceCents) || other.priceCents == priceCents));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PantryHistoryLot&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.source, source) || other.source == source)&&(identical(other.initialQuantity, initialQuantity) || other.initialQuantity == initialQuantity)&&(identical(other.addedAt, addedAt) || other.addedAt == addedAt)&&const DeepCollectionEquality().equals(other.events, _events)&&(identical(other.receiptId, receiptId) || other.receiptId == receiptId)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.priceCents, priceCents) || other.priceCents == priceCents)&&(identical(other.unit, unit) || other.unit == unit));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,source,initialQuantity,addedAt,const DeepCollectionEquality().hash(_events),receiptId,productId,categoryId,priceCents);
+    return Object.hash(runtimeType,id,name,source,initialQuantity,addedAt,const DeepCollectionEquality().hash(_events),receiptId,productId,categoryId,priceCents,unit);
 }
 
 @override
 String toString() {
-    return 'PantryHistoryLot(id: $id, name: $name, source: $source, initialQuantity: $initialQuantity, addedAt: $addedAt, events: $events, receiptId: $receiptId, productId: $productId, categoryId: $categoryId, priceCents: $priceCents)';
+    return 'PantryHistoryLot(id: $id, name: $name, source: $source, initialQuantity: $initialQuantity, addedAt: $addedAt, events: $events, receiptId: $receiptId, productId: $productId, categoryId: $categoryId, priceCents: $priceCents, unit: $unit)';
 }
 
 
@@ -556,7 +560,7 @@ abstract mixin class _$PantryHistoryLotCopyWith<$Res> implements $PantryHistoryL
   factory _$PantryHistoryLotCopyWith(_PantryHistoryLot value, $Res Function(_PantryHistoryLot) _then) = __$PantryHistoryLotCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, PantrySource source, double initialQuantity, DateTime addedAt, List<PantryEvent> events, int? receiptId, int? productId, int? categoryId, int? priceCents
+ int id, String name, PantrySource source, double initialQuantity, DateTime addedAt, List<PantryEvent> events, int? receiptId, int? productId, int? categoryId, int? priceCents, String unit
 });
 
 
@@ -573,7 +577,7 @@ class __$PantryHistoryLotCopyWithImpl<$Res>
 
 /// Create a copy of PantryHistoryLot
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? source = null,Object? initialQuantity = null,Object? addedAt = null,Object? events = null,Object? receiptId = freezed,Object? productId = freezed,Object? categoryId = freezed,Object? priceCents = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? source = null,Object? initialQuantity = null,Object? addedAt = null,Object? events = null,Object? receiptId = freezed,Object? productId = freezed,Object? categoryId = freezed,Object? priceCents = freezed,Object? unit = null,}) {
   return _then(_PantryHistoryLot(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -585,7 +589,8 @@ as List<PantryEvent>,receiptId: freezed == receiptId ? _self.receiptId : receipt
 as int?,productId: freezed == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as int?,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as int?,priceCents: freezed == priceCents ? _self.priceCents : priceCents // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,unit: null == unit ? _self.unit : unit // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

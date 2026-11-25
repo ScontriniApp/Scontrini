@@ -1423,6 +1423,66 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Senza categoria'**
   String get analyticsNoCategory;
+
+  /// No description provided for @shoppingTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Prossima spesa'**
+  String get shoppingTitle;
+
+  /// No description provided for @shoppingEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Niente da ricomprare nei prossimi giorni'**
+  String get shoppingEmpty;
+
+  /// No description provided for @shoppingHint.
+  ///
+  /// In it, this message translates to:
+  /// **'In base a quanto usi in dispensa e a quanto spesso compri'**
+  String get shoppingHint;
+
+  /// No description provided for @shoppingFinished.
+  ///
+  /// In it, this message translates to:
+  /// **'Finito in dispensa'**
+  String get shoppingFinished;
+
+  /// No description provided for @shoppingRunningLow.
+  ///
+  /// In it, this message translates to:
+  /// **'Ne resta {quantity}: finisce {when}'**
+  String shoppingRunningLow(String quantity, String when);
+
+  /// No description provided for @shoppingUsual.
+  ///
+  /// In it, this message translates to:
+  /// **'Di solito ogni {days, plural, =1{giorno} other{{days} giorni}}, l\'ultima volta il {date}'**
+  String shoppingUsual(int days, String date);
+
+  /// No description provided for @shoppingEvery.
+  ///
+  /// In it, this message translates to:
+  /// **'di solito ogni {days, plural, =1{giorno} other{{days} giorni}}'**
+  String shoppingEvery(int days);
+
+  /// No description provided for @shoppingToday.
+  ///
+  /// In it, this message translates to:
+  /// **'oggi'**
+  String get shoppingToday;
+
+  /// No description provided for @shoppingTomorrow.
+  ///
+  /// In it, this message translates to:
+  /// **'domani'**
+  String get shoppingTomorrow;
+
+  /// No description provided for @shoppingInDays.
+  ///
+  /// In it, this message translates to:
+  /// **'tra {days} giorni'**
+  String shoppingInDays(int days);
 }
 
 class _AppLocalizationsDelegate

@@ -6,6 +6,7 @@ import 'package:scontrini/core/widgets/placeholder_view.dart';
 import 'package:scontrini/features/analytics/presentation/dashboard_providers.dart';
 import 'package:scontrini/features/analytics/presentation/widgets/category_pie_card.dart';
 import 'package:scontrini/features/analytics/presentation/widgets/month_total_card.dart';
+import 'package:scontrini/features/analytics/presentation/widgets/shopping_list_card.dart';
 import 'package:scontrini/features/insights/presentation/dashboard_insights_section.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
@@ -35,6 +36,8 @@ class DashboardScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
           children: [
             MonthTotalCard(summary: value),
+            const SizedBox(height: 12),
+            const ShoppingListCard(),
             const SizedBox(height: 12),
             CategoryPieCard(slices: value.slices),
             const SizedBox(height: 12),

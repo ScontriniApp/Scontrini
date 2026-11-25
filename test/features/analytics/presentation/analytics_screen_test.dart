@@ -187,7 +187,7 @@ void main() {
       findsOne,
     );
     expect(find.text('Usato'), findsOneWidget);
-    expect(find.text(Money.format(6022)), findsOneWidget);
+    expect(find.text(Money.format(6268)), findsOneWidget);
     expect(find.text('Ancora in dispensa'), findsOneWidget);
     expect(find.textContaining('non sono mai stati aggiornati'), findsOne);
 
