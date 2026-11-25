@@ -12,6 +12,10 @@ const categoryInfo = {
   4: CategoryInfo(id: 4, name: 'Pane', icon: 'bakery', color: 0),
   5: CategoryInfo(id: 5, name: 'Bevande', icon: 'drink', color: 0),
   6: CategoryInfo(id: 6, name: 'Casa', icon: 'home', color: 0),
+  7: CategoryInfo(id: 7, name: 'Dispensa', icon: 'kitchen', color: 0),
+  8: CategoryInfo(id: 8, name: 'Surgelati', icon: 'ac_unit', color: 0),
+  // Ninth by id: past the eight chart colours.
+  9: CategoryInfo(id: 9, name: 'Altro', icon: 'more', color: 0),
 };
 
 PurchaseHistory withCategories(List<PurchaseReceipt> receipts) =>
@@ -65,19 +69,21 @@ void main() {
     expect(s.changePercent, isNull);
   });
 
-  test('top four categories, the rest grouped last, colours by id', () {
+  test('every category with a colour is its own slice; the ninth joins '
+      'the rest', () {
     final h = withCategories([
       receipt(
         DateTime(2026, 11, 3),
-        2200,
+        2350,
         items: [
           item(300, categoryId: 1),
           item(700, categoryId: 2),
           item(500, categoryId: 3),
           item(400, categoryId: 4),
           item(100, categoryId: 5),
-          item(100, categoryId: 6),
-          item(50), // uncategorised
+          item(150, categoryId: 6),
+          item(80, categoryId: 9), // no colour of its own
+          item(70), // uncategorised
         ],
       ), // 50 more than the items: the "Other" gap
     ]);
@@ -89,10 +95,16 @@ void main() {
         ('Latte', 500, 2),
         ('Pane', 400, 3),
         ('Frutta', 300, 0),
-        (null, 300, null), // 100 + 100 + 50 + 50
+        ('Casa', 150, 5),
+        ('Bevande', 100, 4),
+        (null, 200, null), // 80 + 70 + 50
       ],
     );
     expect(slices.fold<double>(0, (sum, s) => sum + s.share), closeTo(1, 1e-9));
+    expect(
+      {for (final p in slices.last.purchases) p.categoryName},
+      {'Altro', null},
+    );
   });
 
   test('each slice lists its items, newest first; the rest mixes', () {
@@ -144,7 +156,7 @@ void main() {
     expect(rest.category, isNull);
     expect(
       [for (final p in rest.purchases) (p.name, p.categoryName)],
-      [('ART. 1', null), ('ACQUA', 'Bevande')],
+      [('ART. 1', null)],
     );
   });
 

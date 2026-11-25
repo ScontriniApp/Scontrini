@@ -175,7 +175,7 @@
   "dashboardNoUsual": "Il confronto con i mesi scorsi apparirà dal mese prossimo",
   "dashboardCategoriesTitle": "Categorie del mese",
   "dashboardCategoriesEmpty": "Nessuna spesa questo mese",
-  "dashboardOtherCategories": "Altre categorie",
+  "dashboardRestSlice": "Altro e senza categoria",
   "dashboardInsightsTitle": "Consigli",
   "dashboardInsightsEmpty": "Qui appariranno 2–3 consigli sui tuoi acquisti: prezzi in aumento, occasioni di risparmio, categorie in crescita.",
   "dashboardCategoryHint": "Tocca una categoria per vederne gli articoli",

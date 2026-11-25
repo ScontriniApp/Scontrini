@@ -303,7 +303,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get dashboardCategoriesEmpty => 'Nessuna spesa questo mese';
 
   @override
-  String get dashboardOtherCategories => 'Altre categorie';
+  String get dashboardRestSlice => 'Altro e senza categoria';
 
   @override
   String get dashboardInsightsTitle => 'Consigli';

@@ -85,7 +85,7 @@
   "dashboardNoUsual": "The comparison with past months will appear next month",
   "dashboardCategoriesTitle": "Categories this month",
   "dashboardCategoriesEmpty": "No spending this month",
-  "dashboardOtherCategories": "Other categories",
+  "dashboardRestSlice": "Other and uncategorised",
   "dashboardInsightsTitle": "Suggestions",
   "dashboardInsightsEmpty": "2–3 suggestions about your shopping will appear here: rising prices, ways to save, growing categories.",
   "dashboardCategoryHint": "Tap a category to see its items",

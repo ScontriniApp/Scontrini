@@ -7,7 +7,7 @@ import 'package:scontrini/l10n/app_localizations.dart';
 
 /// Shows the items behind a dashboard category slice: name, price paid and
 /// date of purchase, newest first. [restLabel] names the slice without a
-/// category (default "Altre categorie").
+/// category (default "Altro e senza categoria").
 Future<void> showCategoryPurchases(
   BuildContext context,
   DashboardSlice slice, {
@@ -63,9 +63,7 @@ class CategoryPurchasesList extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  slice.category?.name ??
-                      restLabel ??
-                      l10n.dashboardOtherCategories,
+                  slice.category?.name ?? restLabel ?? l10n.dashboardRestSlice,
                   style: theme.textTheme.titleLarge,
                 ),
               ),

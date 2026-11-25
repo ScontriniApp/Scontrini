@@ -75,7 +75,10 @@ void main() {
 
     expect(find.text('Categorie del mese'), findsOneWidget);
     expect(find.text('Carne e pesce'), findsOneWidget);
-    expect(find.text('Altre categorie'), findsOneWidget);
+    // Every category with spending is its own slice, smaller ones included.
+    expect(find.text('Bevande'), findsOneWidget);
+    expect(find.text('Latticini e uova'), findsOneWidget);
+    expect(find.text('Altre categorie'), findsNothing);
 
     await tester.scrollUntilVisible(find.text('Consigli'), 200);
     expect(find.text('Consigli'), findsOneWidget);

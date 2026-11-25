@@ -61,7 +61,7 @@ abstract final class AnalyticsMetrics {
         period.granularity,
       ),
       granularity: period.granularity,
-      categories: DashboardMetrics.slices(history, range, maxSlices: null),
+      categories: DashboardMetrics.slices(history, range),
       stores: [
         for (final s in SpendingMetrics.spendingByStore(history, range))
           NamedStore(summary: s, name: history.stores[s.storeId]?.name),

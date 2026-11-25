@@ -608,11 +608,11 @@ abstract class AppLocalizations {
   /// **'Nessuna spesa questo mese'**
   String get dashboardCategoriesEmpty;
 
-  /// No description provided for @dashboardOtherCategories.
+  /// No description provided for @dashboardRestSlice.
   ///
   /// In it, this message translates to:
-  /// **'Altre categorie'**
-  String get dashboardOtherCategories;
+  /// **'Altro e senza categoria'**
+  String get dashboardRestSlice;
 
   /// No description provided for @dashboardInsightsTitle.
   ///

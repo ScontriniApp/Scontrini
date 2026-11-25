@@ -102,7 +102,7 @@ class _CategoryPieCardState extends State<CategoryPieCard> {
               for (final (i, s) in slices.indexed)
                 _LegendRow(
                   color: ChartPalette.series(context, s.colorSlot),
-                  label: s.category?.name ?? l10n.dashboardOtherCategories,
+                  label: s.category?.name ?? l10n.dashboardRestSlice,
                   amount: Money.format(s.cents),
                   share: percent.format(s.share),
                   highlighted: i == _touched,

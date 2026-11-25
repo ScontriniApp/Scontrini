@@ -37,9 +37,9 @@ class DashboardScreen extends ConsumerWidget {
           children: [
             MonthTotalCard(summary: value),
             const SizedBox(height: 12),
-            const ShoppingListCard(),
-            const SizedBox(height: 12),
             CategoryPieCard(slices: value.slices),
+            const SizedBox(height: 12),
+            const ShoppingListCard(),
             const SizedBox(height: 12),
             const DashboardInsightsSection(),
           ],
