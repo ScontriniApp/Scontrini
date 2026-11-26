@@ -9,6 +9,7 @@ import 'package:scontrini/core/utils/money.dart';
 import 'package:scontrini/features/analytics/domain/models/pantry_overview.dart';
 import 'package:scontrini/features/analytics/domain/models/period_amount.dart';
 import 'package:scontrini/features/analytics/presentation/chart_palette.dart';
+import 'package:scontrini/features/pantry/presentation/category_label.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 /// The "Dispensa" sub-tab: where the period's spending went (used, thrown
@@ -304,7 +305,9 @@ class _WasteCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              c.category?.name ?? l10n.analyticsNoCategory,
+                              c.category == null
+                                  ? l10n.analyticsNoCategory
+                                  : categoryLabel(l10n, c.category!.name),
                               style: theme.textTheme.bodyLarge,
                             ),
                           ),

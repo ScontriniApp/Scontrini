@@ -992,4 +992,34 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get exportFailed => 'Esportazione non riuscita.';
+
+  @override
+  String get settingsLanguage => 'Lingua';
+
+  @override
+  String get categoryFruitVegetables => 'Frutta e verdura';
+
+  @override
+  String get categoryMeatFish => 'Carne e pesce';
+
+  @override
+  String get categoryDairyEggs => 'Latticini e uova';
+
+  @override
+  String get categoryBreadPasta => 'Pane e pasta';
+
+  @override
+  String get categoryDrinks => 'Bevande';
+
+  @override
+  String get categoryPantry => 'Dispensa';
+
+  @override
+  String get categoryFrozen => 'Surgelati';
+
+  @override
+  String get categoryHousehold => 'Casa e igiene';
+
+  @override
+  String get categoryOther => 'Altro';
 }

@@ -990,4 +990,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportFailed => 'The export failed.';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get categoryFruitVegetables => 'Fruit and vegetables';
+
+  @override
+  String get categoryMeatFish => 'Meat and fish';
+
+  @override
+  String get categoryDairyEggs => 'Dairy and eggs';
+
+  @override
+  String get categoryBreadPasta => 'Bread and pasta';
+
+  @override
+  String get categoryDrinks => 'Drinks';
+
+  @override
+  String get categoryPantry => 'Pantry staples';
+
+  @override
+  String get categoryFrozen => 'Frozen food';
+
+  @override
+  String get categoryHousehold => 'Home and hygiene';
+
+  @override
+  String get categoryOther => 'Other';
 }

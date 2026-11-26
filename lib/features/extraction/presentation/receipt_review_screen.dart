@@ -15,6 +15,7 @@ import 'package:scontrini/features/extraction/domain/receipt_draft.dart';
 import 'package:scontrini/features/extraction/presentation/review_item_sheet.dart';
 import 'package:scontrini/features/pantry/data/pantry_providers.dart';
 import 'package:scontrini/features/pantry/domain/pantry_category.dart';
+import 'package:scontrini/features/pantry/presentation/category_label.dart';
 import 'package:scontrini/features/pantry/presentation/pantry_providers.dart';
 import 'package:scontrini/features/receipts/data/receipt_providers.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
@@ -78,7 +79,9 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final categories = ref.watch(pantryCategoriesProvider).value ?? const [];
-    final names = {for (final c in categories) c.id: c.name};
+    final names = {
+      for (final c in categories) c.id: categoryLabel(l10n, c.name),
+    };
 
     return PopScope(
       canPop: !_edited || _saved,
@@ -622,9 +625,7 @@ Future<_Amount?> _editAmount(
     context: context,
     builder: (context) => _TextDialog(
       title: title,
-      initial: initial == null || initial == 0
-          ? ''
-          : NumberFormat('0.00', 'it').format(initial / 100),
+      initial: initial == null || initial == 0 ? '' : Money.inputText(initial),
       suffix: '€',
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       validator: (v) {

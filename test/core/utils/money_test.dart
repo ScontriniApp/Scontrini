@@ -36,4 +36,21 @@ void main() {
     expect(Money.format(123456), contains('1.234,56'));
     expect(Money.format(123456), contains('€'));
   });
+
+  group('Money in English', () {
+    setUp(() => Money.locale = 'en');
+    tearDown(() => Money.locale = 'it');
+
+    test('formats with the euro sign first and a decimal point', () {
+      expect(Money.format(123456), '€1,234.56');
+    });
+
+    test('edit text reads back in either language', () {
+      expect(Money.inputText(129), '1.29');
+      expect(Money.parseCents(Money.inputText(123456)), 123456);
+      Money.locale = 'it';
+      expect(Money.inputText(129), '1,29');
+      expect(Money.parseCents(Money.inputText(123456)), 123456);
+    });
+  });
 }

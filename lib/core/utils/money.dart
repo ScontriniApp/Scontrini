@@ -2,13 +2,29 @@ import 'package:intl/intl.dart';
 
 /// Money is always stored as integer cents to avoid floating-point errors.
 abstract final class Money {
-  static final NumberFormat _euro = NumberFormat.currency(
-    locale: 'it_IT',
-    symbol: '€',
-  );
+  /// The language amounts are shown in (`it`: `12,34 €`, `en`: `€12.34`).
+  /// The app sets it to its own locale (see `ScontriniApp`); parsing
+  /// accepts either separator whatever it is.
+  static String get locale => _locale;
+  static set locale(String value) {
+    if (value == _locale) return;
+    _locale = value;
+    _euro = _currency(value);
+  }
 
-  /// Formats cents as an Italian euro string, e.g. `1234` → `12,34 €`.
+  static String _locale = 'it';
+  static NumberFormat _euro = _currency(_locale);
+
+  static NumberFormat _currency(String locale) =>
+      NumberFormat.currency(locale: locale, symbol: '€');
+
+  /// Formats cents as a euro string in [locale], e.g. `1234` → `12,34 €`.
   static String format(int cents) => _euro.format(cents / 100);
+
+  /// Cents as an editable amount, no symbol or grouping: `1234` → `12,34`
+  /// (`12.34` in English), which [parseCents] reads back.
+  static String inputText(int cents) =>
+      NumberFormat('0.00', _locale).format(cents / 100);
 
   /// Parses an amount as printed on an Italian receipt into cents.
   ///

@@ -689,5 +689,45 @@
       }
     }
   },
-  "exportFailed": "Esportazione non riuscita."
+  "exportFailed": "Esportazione non riuscita.",
+  "settingsLanguage": "Lingua",
+  "@settingsLanguage": {
+    "description": "Settings: title of the language switch"
+  },
+  "categoryFruitVegetables": "Frutta e verdura",
+  "@categoryFruitVegetables": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryMeatFish": "Carne e pesce",
+  "@categoryMeatFish": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryDairyEggs": "Latticini e uova",
+  "@categoryDairyEggs": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryBreadPasta": "Pane e pasta",
+  "@categoryBreadPasta": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryDrinks": "Bevande",
+  "@categoryDrinks": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryPantry": "Dispensa",
+  "@categoryPantry": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryFrozen": "Surgelati",
+  "@categoryFrozen": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryHousehold": "Casa e igiene",
+  "@categoryHousehold": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryOther": "Altro",
+  "@categoryOther": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  }
 }

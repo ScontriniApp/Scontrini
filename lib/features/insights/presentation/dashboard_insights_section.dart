@@ -10,6 +10,7 @@ import 'package:scontrini/features/analytics/presentation/dashboard_providers.da
 import 'package:scontrini/features/analytics/presentation/widgets/category_purchases_sheet.dart';
 import 'package:scontrini/features/insights/domain/insight.dart';
 import 'package:scontrini/features/insights/presentation/insights_providers.dart';
+import 'package:scontrini/features/pantry/presentation/category_label.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 /// The dashboard's suggestions: the [shown] worth the most euros a month,
@@ -60,7 +61,10 @@ class _DashboardInsightsSectionState
             .format((cents - usualCents) / usualCents);
         return (
           icon: Icons.trending_up,
-          title: l10n.insightSpikeTitle(categoryName, '+$percent'),
+          title: l10n.insightSpikeTitle(
+            categoryLabel(l10n, categoryName),
+            '+$percent',
+          ),
           body: l10n.insightSpikeBody(
             Money.format(cents),
             Money.format(usualCents),

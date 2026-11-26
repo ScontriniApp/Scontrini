@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/core/utils/money.dart';
 import 'package:scontrini/features/pantry/domain/pantry_category.dart';
+import 'package:scontrini/features/pantry/presentation/category_label.dart';
 import 'package:scontrini/features/pantry/presentation/category_sprites.dart';
 import 'package:scontrini/features/pantry/presentation/pantry_providers.dart';
 import 'package:scontrini/features/pantry/presentation/quantity_format.dart';
@@ -76,7 +77,10 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
       ..sort((a, b) {
         if (a == null) return 1;
         if (b == null) return -1;
-        return byId[a]!.name.compareTo(byId[b]!.name);
+        return categoryLabel(
+          l10n,
+          byId[a]!.name,
+        ).compareTo(categoryLabel(l10n, byId[b]!.name));
       });
     final summary = detail.summary;
     final date = DateFormat.yMMMMd(l10n.localeName)
@@ -119,7 +123,9 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
         ),
         for (final key in keys) ...[
           CategorySectionHeader(
-            title: key == null ? l10n.pantryUncategorised : byId[key]!.name,
+            title: key == null
+                ? l10n.pantryUncategorised
+                : categoryLabel(l10n, byId[key]!.name),
             sprite: categorySprite(byId[key]?.name),
             trailing: Money.format(
               groups[key]!.fold(0, (sum, line) => sum + line.netCents),

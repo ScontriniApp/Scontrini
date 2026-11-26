@@ -10,6 +10,7 @@ import 'package:scontrini/features/analytics/presentation/chart_palette.dart';
 import 'package:scontrini/features/analytics/presentation/period_format.dart';
 import 'package:scontrini/features/analytics/presentation/widgets/category_purchases_sheet.dart';
 import 'package:scontrini/features/analytics/presentation/widgets/spending_chart_card.dart';
+import 'package:scontrini/features/pantry/presentation/category_label.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 /// The "Spesa" sub-tab: total against the period before, spending over
@@ -192,7 +193,9 @@ class _CategoriesCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              s.category?.name ?? l10n.analyticsUncategorised,
+                              s.category == null
+                                  ? l10n.analyticsUncategorised
+                                  : categoryLabel(l10n, s.category!.name),
                               style: theme.textTheme.bodyLarge,
                             ),
                           ),

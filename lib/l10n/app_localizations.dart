@@ -1567,6 +1567,66 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Esportazione non riuscita.'**
   String get exportFailed;
+
+  /// Settings: title of the language switch
+  ///
+  /// In it, this message translates to:
+  /// **'Lingua'**
+  String get settingsLanguage;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Frutta e verdura'**
+  String get categoryFruitVegetables;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Carne e pesce'**
+  String get categoryMeatFish;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Latticini e uova'**
+  String get categoryDairyEggs;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Pane e pasta'**
+  String get categoryBreadPasta;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Bevande'**
+  String get categoryDrinks;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Dispensa'**
+  String get categoryPantry;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Surgelati'**
+  String get categoryFrozen;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Casa e igiene'**
+  String get categoryHousehold;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Altro'**
+  String get categoryOther;
 }
 
 class _AppLocalizationsDelegate
