@@ -1020,4 +1020,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryOther => 'Other';
+
+  @override
+  String get importTitle => 'Import data from CSV';
+
+  @override
+  String get importHint =>
+      'A file exported from this app: receipts and pantry. Receipts already here are skipped.';
+
+  @override
+  String importDone(int receipts, int lots, int duplicates) {
+    String _temp0 = intl.Intl.pluralLogic(
+      receipts,
+      locale: localeName,
+      other: 'Imported $receipts receipts',
+      one: 'Imported 1 receipt',
+    );
+    return '$_temp0, $lots in the pantry, $duplicates already here';
+  }
+
+  @override
+  String get importFailed => 'Invalid file: pick a CSV exported from this app';
 }

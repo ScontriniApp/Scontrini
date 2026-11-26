@@ -253,5 +253,9 @@
   "categoryPantry": "Pantry staples",
   "categoryFrozen": "Frozen food",
   "categoryHousehold": "Home and hygiene",
-  "categoryOther": "Other"
+  "categoryOther": "Other",
+  "importTitle": "Import data from CSV",
+  "importHint": "A file exported from this app: receipts and pantry. Receipts already here are skipped.",
+  "importDone": "{receipts, plural, =1{Imported 1 receipt} other{Imported {receipts} receipts}}, {lots} in the pantry, {duplicates} already here",
+  "importFailed": "Invalid file: pick a CSV exported from this app"
 }
