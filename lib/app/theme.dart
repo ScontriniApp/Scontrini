@@ -20,9 +20,8 @@ abstract final class AppTheme {
 
   static final ThemeData light = _withFont(
     ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: _seed,
-      ).copyWith(surface: background),
+      colorScheme: ColorScheme.fromSeed(seedColor: _seed)
+          .copyWith(surface: background),
       scaffoldBackgroundColor: background,
       fontFamily: fontFamily,
     ),

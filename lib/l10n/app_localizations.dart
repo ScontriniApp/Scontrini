@@ -536,6 +536,96 @@ abstract class AppLocalizations {
   /// **'Categorie, backup e sicurezza.'**
   String get settingsEmpty;
 
+  /// No description provided for @shaderLabTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Laboratorio carta'**
+  String get shaderLabTitle;
+
+  /// No description provided for @shaderLabHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Regola l\'effetto scontrino stropicciato.'**
+  String get shaderLabHint;
+
+  /// No description provided for @shaderLabInkUnsupported.
+  ///
+  /// In it, this message translates to:
+  /// **'Inchiostro col shader non disponibile qui (serve Impeller): il testo è disegnato sopra la carta.'**
+  String get shaderLabInkUnsupported;
+
+  /// No description provided for @shaderLabReceipt.
+  ///
+  /// In it, this message translates to:
+  /// **'Scontrino'**
+  String get shaderLabReceipt;
+
+  /// No description provided for @shaderLabComponents.
+  ///
+  /// In it, this message translates to:
+  /// **'Componenti'**
+  String get shaderLabComponents;
+
+  /// No description provided for @shaderLabInkOff.
+  ///
+  /// In it, this message translates to:
+  /// **'Sopra'**
+  String get shaderLabInkOff;
+
+  /// No description provided for @shaderLabInkThermal.
+  ///
+  /// In it, this message translates to:
+  /// **'Termica'**
+  String get shaderLabInkThermal;
+
+  /// No description provided for @shaderLabInkColour.
+  ///
+  /// In it, this message translates to:
+  /// **'Colori'**
+  String get shaderLabInkColour;
+
+  /// No description provided for @shaderLabNewSeed.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuove pieghe'**
+  String get shaderLabNewSeed;
+
+  /// No description provided for @shaderLabReset.
+  ///
+  /// In it, this message translates to:
+  /// **'Ripristina'**
+  String get shaderLabReset;
+
+  /// No description provided for @shaderLabCopy.
+  ///
+  /// In it, this message translates to:
+  /// **'Copia valori'**
+  String get shaderLabCopy;
+
+  /// No description provided for @shaderLabCopied.
+  ///
+  /// In it, this message translates to:
+  /// **'Valori copiati negli appunti'**
+  String get shaderLabCopied;
+
+  /// No description provided for @shaderLabTiltLight.
+  ///
+  /// In it, this message translates to:
+  /// **'Luce dal giroscopio'**
+  String get shaderLabTiltLight;
+
+  /// No description provided for @shaderLabTiltLightHint.
+  ///
+  /// In it, this message translates to:
+  /// **'La luce viene dall\'alto: inclina il telefono.'**
+  String get shaderLabTiltLightHint;
+
+  /// No description provided for @shaderLabHideControls.
+  ///
+  /// In it, this message translates to:
+  /// **'Mostra/nascondi i controlli'**
+  String get shaderLabHideControls;
+
   /// No description provided for @demoDataTitle.
   ///
   /// In it, this message translates to:

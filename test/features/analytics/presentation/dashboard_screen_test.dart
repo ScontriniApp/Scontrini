@@ -68,8 +68,16 @@ void main() {
       'the suggestions space', (tester) async {
     await pumpDashboard(tester, seed: true);
 
-    expect(find.text('Speso a novembre'), findsOneWidget);
-    expect(find.text(Money.format(10518)), findsOneWidget);
+    expect(find.text('SPESO A NOVEMBRE'), findsOneWidget);
+    // The shelf label splits the price into euros and cents; screen
+    // readers get it whole.
+    expect(find.text('105'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (w) => w is Semantics && w.properties.label == Money.format(10518),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('5 scontrini'), findsOneWidget);
     expect(find.textContaining('a questo punto del mese'), findsOneWidget);
 
