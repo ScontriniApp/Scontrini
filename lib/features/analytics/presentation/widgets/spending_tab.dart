@@ -9,6 +9,7 @@ import 'package:scontrini/features/analytics/domain/models/period_amount.dart';
 import 'package:scontrini/features/analytics/presentation/chart_palette.dart';
 import 'package:scontrini/features/analytics/presentation/period_format.dart';
 import 'package:scontrini/features/analytics/presentation/widgets/category_purchases_sheet.dart';
+import 'package:scontrini/features/analytics/presentation/widgets/shelf_label.dart';
 import 'package:scontrini/features/analytics/presentation/widgets/spending_chart_card.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
@@ -40,55 +41,29 @@ class SpendingTab extends StatelessWidget {
   );
 }
 
-/// "+12% vs ottobre 2026", or a note when the period before had nothing.
-class _ChangeLine extends StatelessWidget {
-  const new({required this.amount, required this.comparedLabel});
-
-  final PeriodAmount amount;
-  final String comparedLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final muted = theme.textTheme.bodyMedium?.copyWith(
-      color: theme.colorScheme.onSurfaceVariant,
-    );
-    final change = amount.changePercent;
-    if (change == null) {
-      return Text(l10n.analyticsNothingBefore(comparedLabel), style: muted);
-    }
-    final number = NumberFormat.decimalPattern(l10n.localeName);
-    final rounded = change.round();
-    final sign = rounded > 0
-        ? '+'
-        : rounded < 0
-        ? '−'
-        : '';
-    return Row(
-      children: [
-        if (rounded != 0) ...[
-          Icon(
-            rounded > 0 ? Icons.arrow_upward : Icons.arrow_downward,
-            size: 16,
-          ),
-          const SizedBox(width: 2),
-        ],
-        Expanded(
-          child: Text(
-            l10n.analyticsChangeVs(
-              '$sign${number.format(rounded.abs())}%',
-              l10n.analyticsComparedWith(
-                comparedLabel,
-                Money.format(amount.previousCents),
-              ),
-            ),
-            style: muted,
-          ),
-        ),
-      ],
-    );
-  }
+/// "+12% rispetto a ottobre 2026: 93,00 €", or a note when the period
+/// before had nothing.
+String _changeText(
+  AppLocalizations l10n,
+  PeriodAmount amount,
+  String comparedLabel,
+) {
+  final change = amount.changePercent;
+  if (change == null) return l10n.analyticsNothingBefore(comparedLabel);
+  final number = NumberFormat.decimalPattern(l10n.localeName);
+  final rounded = change.round();
+  final sign = rounded > 0
+      ? '+'
+      : rounded < 0
+      ? '−'
+      : '';
+  return l10n.analyticsChangeVs(
+    '$sign${number.format(rounded.abs())}%',
+    l10n.analyticsComparedWith(
+      comparedLabel,
+      Money.format(amount.previousCents),
+    ),
+  );
 }
 
 String _comparedLabel(BuildContext context, AnalyticsOverview overview) =>
@@ -98,6 +73,7 @@ String _comparedLabel(BuildContext context, AnalyticsOverview overview) =>
       kind: overview.period.kind,
     );
 
+/// The period's total as a [ShelfLabel].
 class _TotalCard extends StatelessWidget {
   const new({required this.overview});
 
@@ -106,34 +82,14 @@ class _TotalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.analyticsSpent, style: theme.textTheme.titleMedium),
-            const SizedBox(height: 4),
-            Text(
-              Money.format(overview.total.cents),
-              style: theme.textTheme.displaySmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            Text(
-              l10n.dashboardReceiptCount(overview.receiptCount),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 12),
-            _ChangeLine(
-              amount: overview.total,
-              comparedLabel: _comparedLabel(context, overview),
-            ),
-          ],
-        ),
+    return ShelfLabel(
+      title: l10n.analyticsSpent,
+      cents: overview.total.cents,
+      leading: l10n.dashboardReceiptCount(overview.receiptCount),
+      footer: _changeText(
+        l10n,
+        overview.total,
+        _comparedLabel(context, overview),
       ),
     );
   }
@@ -277,6 +233,7 @@ class _StoresCard extends StatelessWidget {
   }
 }
 
+/// What the discounts saved in the period, as a [ShelfLabel].
 class _SavingsCard extends StatelessWidget {
   const new({required this.overview});
 
@@ -285,44 +242,22 @@ class _SavingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
     final savings = overview.savings;
     final rate = savings.rate;
     final percent = NumberFormat.decimalPercentPattern(
       locale: l10n.localeName,
       decimalDigits: 1,
     );
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.analyticsSavingsTitle,
-              style: theme.textTheme.titleMedium,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              Money.format(savings.saved.cents),
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            if (rate != null)
-              Text(
-                l10n.analyticsSavingsRate(percent.format(rate)),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            const SizedBox(height: 12),
-            _ChangeLine(
-              amount: savings.saved,
-              comparedLabel: _comparedLabel(context, overview),
-            ),
-          ],
-        ),
+    return ShelfLabel(
+      title: l10n.analyticsSavingsTitle,
+      cents: savings.saved.cents,
+      leading: rate == null
+          ? ''
+          : l10n.analyticsSavingsRate(percent.format(rate)),
+      footer: _changeText(
+        l10n,
+        savings.saved,
+        _comparedLabel(context, overview),
       ),
     );
   }
