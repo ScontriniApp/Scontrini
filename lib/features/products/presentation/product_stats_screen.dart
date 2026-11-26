@@ -356,7 +356,7 @@ class _PurchaseTile extends StatelessWidget {
         Money.format(point.netCents),
         style: Theme.of(context).textTheme.titleMedium,
       ),
-      onTap: () => context.push(Routes.receipt(point.receiptId)),
+      onTap: () => context.push(Routes.receiptOver(point.receiptId)),
     );
   }
 }

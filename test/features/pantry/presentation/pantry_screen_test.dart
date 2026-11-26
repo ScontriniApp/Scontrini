@@ -10,7 +10,9 @@ import 'package:scontrini/features/extraction/domain/models/parsed_item.dart';
 import 'package:scontrini/features/extraction/domain/models/parsed_receipt.dart';
 import 'package:scontrini/features/pantry/data/pantry_repository.dart';
 import 'package:scontrini/features/pantry/domain/lot_ledger.dart';
+import 'package:scontrini/features/products/presentation/product_stats_screen.dart';
 import 'package:scontrini/features/receipts/data/receipt_repository.dart';
+import 'package:scontrini/features/receipts/presentation/receipt_detail_screen.dart';
 
 void main() {
   late AppDatabase db;
@@ -231,6 +233,21 @@ void main() {
     await tester.scrollUntilVisible(find.text('Acquisti'), 200);
     expect(find.textContaining('CONAD · 1 pz'), findsWidgets);
     await tester.scrollUntilVisible(find.text('Ne hai ancora 1 pz'), 200);
+
+    // A purchase opens its receipt over the statistics; back returns there.
+    await tester.scrollUntilVisible(
+      find.textContaining('CONAD · 1 pz').first,
+      -200,
+    );
+    await tester.tap(find.textContaining('CONAD · 1 pz').first);
+    await settle(tester);
+    expect(tester.takeException(), isNull);
+    expect(find.byType(ReceiptDetailScreen), findsOneWidget);
+
+    await tester.tap(find.byType(BackButton));
+    await settle(tester);
+    expect(find.byType(ReceiptDetailScreen), findsNothing);
+    expect(find.byType(ProductStatsScreen), findsOneWidget);
 
     await closeApp(tester);
   });

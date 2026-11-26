@@ -743,5 +743,22 @@
   "categoryOther": "Altro",
   "@categoryOther": {
     "description": "Name of a built-in category (seeded in the database in Italian)"
-  }
+  },
+  "importTitle": "Importa dati da CSV",
+  "importHint": "Un file esportato da questa app: scontrini e dispensa. Gli scontrini già presenti vengono saltati.",
+  "importDone": "{receipts, plural, =1{Importato 1 scontrino} other{Importati {receipts} scontrini}}, {lots} in dispensa, {duplicates} già presenti",
+  "@importDone": {
+    "placeholders": {
+      "receipts": {
+        "type": "int"
+      },
+      "lots": {
+        "type": "int"
+      },
+      "duplicates": {
+        "type": "int"
+      }
+    }
+  },
+  "importFailed": "File non valido: scegli un CSV esportato da questa app"
 }

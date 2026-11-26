@@ -1717,6 +1717,30 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Altro'**
   String get categoryOther;
+
+  /// No description provided for @importTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Importa dati da CSV'**
+  String get importTitle;
+
+  /// No description provided for @importHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Un file esportato da questa app: scontrini e dispensa. Gli scontrini già presenti vengono saltati.'**
+  String get importHint;
+
+  /// No description provided for @importDone.
+  ///
+  /// In it, this message translates to:
+  /// **'{receipts, plural, =1{Importato 1 scontrino} other{Importati {receipts} scontrini}}, {lots} in dispensa, {duplicates} già presenti'**
+  String importDone(int receipts, int lots, int duplicates);
+
+  /// No description provided for @importFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'File non valido: scegli un CSV esportato da questa app'**
+  String get importFailed;
 }
 
 class _AppLocalizationsDelegate

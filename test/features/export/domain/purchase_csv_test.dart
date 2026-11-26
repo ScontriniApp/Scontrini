@@ -79,4 +79,73 @@ void main() {
     expect(bytes.take(3), [0xEF, 0xBB, 0xBF]);
     expect(utf8.decode(bytes.skip(3).toList()), contains('sì;attivo'));
   });
+
+  group('decode', () {
+    String fieldsOf(ExportRow r) => PurchaseCsv.encode([r]);
+
+    test('reads back what encode writes, with or without the BOM', () {
+      final rows = [
+        _row(rawName: 'A; "B"\nC', storeName: null),
+        _row(state: null, remaining: null, origin: ReceiptOrigin.manual),
+        _row(state: ExportPantryState.discarded, origin: ReceiptOrigin.pdf),
+      ];
+      final text = PurchaseCsv.encode(rows);
+      for (final input in [text, utf8.decode(PurchaseCsv.bytes(rows))]) {
+        final back = PurchaseCsv.decode(input);
+        expect(PurchaseCsv.encode(back), text);
+      }
+    });
+
+    test(r'columns found by name; blank lines and \n line ends are fine', () {
+      final lines = fieldsOf(_row()).trim().split('\r\n');
+      final header = lines[0].split(';');
+      final values = lines[1].split(';');
+      final order = [for (var i = header.length - 1; i >= 0; i--) i];
+      final shuffled = [
+        [for (final i in order) header[i], 'extra'].join(';'),
+        '',
+        [for (final i in order) values[i], 'x'].join(';'),
+      ].join('\n');
+      expect(
+        PurchaseCsv.encode(PurchaseCsv.decode(shuffled)),
+        fieldsOf(_row()),
+      );
+    });
+
+    test("a spreadsheet's amounts: no decimals, one decimal, a point", () {
+      expect(PurchaseCsv.parseEuros('3'), 300);
+      expect(PurchaseCsv.parseEuros('2,5'), 250);
+      expect(PurchaseCsv.parseEuros('1.29'), 129);
+      expect(PurchaseCsv.parseEuros('-0,40'), -40);
+      expect(PurchaseCsv.parseEuros('1,299'), isNull);
+      expect(PurchaseCsv.parseEuros('€ 1'), isNull);
+      expect(PurchaseCsv.parseNumber('0,5'), 0.5);
+      expect(PurchaseCsv.parseNumber('abc'), isNull);
+    });
+
+    test('rejects other files, naming what is wrong', () {
+      expect(() => PurchaseCsv.decode(''), throwsA(isA<FormatException>()));
+      expect(
+        () => PurchaseCsv.decode('nome;cognome\r\nA;B\r\n'),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            contains('scontrino_id'),
+          ),
+        ),
+      );
+      final bad = fieldsOf(_row()).replaceFirst(';sì;', ';forse;');
+      expect(
+        () => PurchaseCsv.decode(bad),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            'Line 2: bad in_dispensa "forse"',
+          ),
+        ),
+      );
+    });
+  });
 }
