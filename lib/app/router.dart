@@ -21,8 +21,15 @@ abstract final class Routes {
   static const dashboard = '/';
   static const receipts = '/receipts';
 
-  /// One receipt of the history (inside the history tab).
+  /// One receipt of the history (inside the history tab). Only for screens
+  /// inside the tabs: pushed from a full-screen route (outside the shell)
+  /// it would stack a second copy of the shell, and go_router's duplicate
+  /// page keys trip a Navigator assertion. Those use [receiptOver].
   static String receipt(int id) => '$receipts/$id';
+
+  /// The same receipt detail as a full-screen route, opened over whatever
+  /// is showing (e.g. from a product's statistics); back returns there.
+  static String receiptOver(int id) => '/receipt/$id';
 
   /// One product's statistics (prices paid, purchases, pantry).
   static String product(int id) => '/products/$id';
@@ -107,6 +114,12 @@ GoRouter _createRouter() => GoRouter(
         final ReceiptSource source => ExtractionScreen(source: source),
         _ => const CaptureScreen(),
       },
+    ),
+    GoRoute(
+      path: '/receipt/:id',
+      builder: (_, state) => ReceiptDetailScreen(
+        receiptId: int.tryParse(state.pathParameters['id'] ?? '') ?? -1,
+      ),
     ),
     GoRoute(
       path: '/products/:id',
