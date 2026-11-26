@@ -5,7 +5,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/tab_reselect.dart';
 import 'package:scontrini/core/utils/clock.dart';
 import 'package:scontrini/core/widgets/placeholder_view.dart';
-import 'package:scontrini/core/widgets/refreshable_fill.dart';
 import 'package:scontrini/features/analytics/domain/analytics_metrics.dart';
 import 'package:scontrini/features/analytics/domain/models/analytics_overview.dart';
 import 'package:scontrini/features/analytics/presentation/analytics_overview_providers.dart';
@@ -20,8 +19,8 @@ import 'package:scontrini/l10n/app_localizations.dart';
 /// The analytics tab: a period picker shared by three sub-tabs, "Spesa"
 /// (totals, chart, categories, stores, savings), "Prodotti" (most bought,
 /// price changes; a tap opens the product's statistics) and "Dispensa"
-/// (where the spending went, waste). Pull down, or tap the Analisi tab
-/// again, to refresh.
+/// (where the spending went, waste). Tap the Analisi tab again to refresh
+/// (pulling down does nothing on purpose).
 class AnalyticsScreen extends ConsumerStatefulWidget {
   const new({super.key});
 
@@ -61,33 +60,25 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
 
     Widget tab(Widget Function(AnalyticsOverview) builder) =>
         switch (overview) {
-          AsyncData(:final value) when value.isEmpty => RefreshableFill(
-            child: PlaceholderView(
-              icon: Icons.insert_chart_outlined,
-              message: l10n.analyticsNoReceipts,
-            ),
+          AsyncData(:final value) when value.isEmpty => PlaceholderView(
+            icon: Icons.insert_chart_outlined,
+            message: l10n.analyticsNoReceipts,
           ),
           AsyncData(:final value) => builder(value),
-          AsyncError(:final error) => RefreshableFill(
-            child: Center(child: Text('$error')),
-          ),
+          AsyncError(:final error) => Center(child: Text('$error')),
           _ => const Center(child: CircularProgressIndicator()),
         };
 
     final pantryTab = switch (pantry) {
-      AsyncData(:final value) when !value.hasPantry => RefreshableFill(
-        child: PlaceholderView(
-          icon: Icons.kitchen_outlined,
-          message: l10n.analyticsPantryEmpty,
-        ),
+      AsyncData(:final value) when !value.hasPantry => PlaceholderView(
+        icon: Icons.kitchen_outlined,
+        message: l10n.analyticsPantryEmpty,
       ),
       AsyncData(:final value) => PantryTab(
         overview: value,
         comparedLabel: comparedLabel,
       ),
-      AsyncError(:final error) => RefreshableFill(
-        child: Center(child: Text('$error')),
-      ),
+      AsyncError(:final error) => Center(child: Text('$error')),
       _ => const Center(child: CircularProgressIndicator()),
     };
 
@@ -112,9 +103,9 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
               child: RefreshIndicator(
                 key: _refresh,
                 onRefresh: _reload,
-                // The sub-tabs' lists sit inside the horizontal tab pager:
-                // pull on any vertical list, not on the pager's swipe.
-                notificationPredicate: (n) => n.metrics.axis == Axis.vertical,
+                // Only a tap on the open tab refreshes: scrolling past the
+                // top must not reload the page.
+                notificationPredicate: (_) => false,
                 child: TabBarView(
                   children: [
                     tab((o) => SpendingTab(overview: o)),

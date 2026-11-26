@@ -25,7 +25,6 @@ class PantryTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListView(
-    physics: const AlwaysScrollableScrollPhysics(),
     padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
     children: [
       _FateCard(fate: overview.fate),

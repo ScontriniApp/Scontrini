@@ -8,9 +8,10 @@ import 'package:scontrini/features/analytics/domain/models/date_range.dart';
 import 'package:scontrini/features/analytics/domain/shopping_suggestions.dart';
 import 'package:scontrini/features/insights/domain/insight_rule.dart';
 
-/// Pull to refresh: reloads the purchase history and the pantry from the
-/// database, and every figure built on them is worked out again for the
-/// current time, so a screen left open past midnight moves to the new day.
+/// Refresh (tap the open tab again): reloads the purchase history and the
+/// pantry from the database, and every figure built on them is worked out
+/// again for the current time, so a screen left open past midnight moves to
+/// the new day.
 /// Completes when the [windows] a screen shows have loaded (at most a few
 /// seconds, so the spinner never hangs).
 Future<void> refreshPurchasesAndPantry(

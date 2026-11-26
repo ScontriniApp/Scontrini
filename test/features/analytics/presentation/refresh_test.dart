@@ -51,9 +51,7 @@ void main() {
     matching: find.text(label),
   );
 
-  testWidgets('pulling the dashboard down moves it to the new day', (
-    tester,
-  ) async {
+  testWidgets('pulling the dashboard down does not refresh it', (tester) async {
     await pumpApp(tester);
     expect(find.text('SPESO A NOVEMBRE'), findsOneWidget);
 
@@ -61,7 +59,8 @@ void main() {
     await tester.fling(find.byType(ListView).first, const Offset(0, 400), 1000);
     await settle(tester);
 
-    expect(find.text('SPESO A DICEMBRE'), findsOneWidget);
+    expect(find.byType(RefreshProgressIndicator), findsNothing);
+    expect(find.text('SPESO A NOVEMBRE'), findsOneWidget);
   });
 
   testWidgets('tapping the open Home tab refreshes it', (tester) async {
@@ -94,8 +93,13 @@ void main() {
     expect(find.text('ottobre 2026'), findsOneWidget);
 
     now = DateTime(2026, 12, 2, 8);
-    await tester.fling(find.byType(ListView).first, const Offset(0, 400), 1000);
+    await tester.tap(tab('Analisi'));
     await settle(tester);
     expect(find.text('ottobre 2026'), findsOneWidget);
+
+    // Pulling down does nothing.
+    await tester.fling(find.byType(ListView).first, const Offset(0, 400), 1000);
+    await settle(tester);
+    expect(find.byType(RefreshProgressIndicator), findsNothing);
   });
 }
