@@ -9,13 +9,15 @@ import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/router.dart';
 import 'package:scontrini/core/paper/paper_bubble.dart';
 import 'package:scontrini/core/paper/paper_params.dart';
+import 'package:scontrini/core/paper/paper_settings.dart';
 import 'package:scontrini/core/paper/tilt_light.dart';
 import 'package:scontrini/features/analytics/presentation/chart_palette.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 /// Debug-only screen to tune the paper shader on the phone: a long receipt
 /// or a gallery of UI components printed on paper on top, one slider per
-/// knob below.
+/// knob below. Every change is saved ([paperSettingsProvider]) and used by
+/// all paper UI in the app.
 class ShaderLabScreen extends ConsumerStatefulWidget {
   const new({super.key});
 
@@ -26,11 +28,10 @@ class ShaderLabScreen extends ConsumerStatefulWidget {
 enum _Sample { receipt, components }
 
 class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
-  PaperParams _params = const PaperParams();
   _Sample _sample = _Sample.receipt;
-  // Each sample keeps its own print: thermal receipt, colour components.
-  PaperInk _receiptInk = PaperInk.thermal;
-  PaperInk _componentInk = PaperInk.colour;
+
+  /// Lab-only view of a shader input: never saved.
+  PaperDebugView _debugView = PaperDebugView.result;
   bool _controls = true;
   final _random = math.Random();
   final _receiptScroll = ScrollController();
@@ -40,41 +41,60 @@ class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
     onLight: (light) => ref.read(paperLightProvider.notifier).set(light),
   );
 
+  // Captured up front: `ref` can't be used in dispose.
+  late final PaperSettingsNotifier _settings;
+  late final ProviderContainer _container;
+
+  @override
+  void initState() {
+    super.initState();
+    _settings = ref.read(paperSettingsProvider.notifier);
+    _container = ProviderScope.containerOf(context, listen: false);
+  }
+
   @override
   void dispose() {
     unawaited(_tilt.stop());
+    // Back to the saved light, and the last change on disk.
+    _container.invalidate(paperLightProvider);
+    unawaited(_settings.flush());
     _receiptScroll.dispose();
     super.dispose();
   }
 
-  void _update(PaperParams params) => setState(() => _params = params);
+  /// The saved knobs, with the lab's debug view.
+  PaperParams get _params =>
+      ref.read(paperSettingsProvider).params.copyWith(debugView: _debugView);
 
-  PaperInk get _ink => _sample == _Sample.receipt ? _receiptInk : _componentInk;
+  void _update(PaperParams params) =>
+      _settings.setParams(params.copyWith(debugView: PaperDebugView.result));
 
-  set _ink(PaperInk ink) => setState(() {
-    if (_sample == _Sample.receipt) {
-      _receiptInk = ink;
-    } else {
-      _componentInk = ink;
-    }
-  });
+  // Each sample has its own print: thermal receipt, colour components.
+  PaperInk get _ink => _sample == _Sample.receipt
+      ? ref.read(paperSettingsProvider).params.ink
+      : ref.read(paperSettingsProvider).componentInk;
+
+  set _ink(PaperInk ink) => _sample == _Sample.receipt
+      ? _settings.setReceiptInk(ink)
+      : _settings.setComponentInk(ink);
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
+    final settings = ref.watch(paperSettingsProvider);
     final light = ref.watch(paperLightProvider);
-    void setLight(PaperLight value) =>
-        ref.read(paperLightProvider.notifier).set(value);
+    final setLight = _settings.setLight;
 
     final preview = switch (_sample) {
+      // The side padding is the room the paper bleeds into.
       _Sample.receipt => Padding(
         padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 380),
             child: PaperBubble(
-              params: _params.copyWith(ink: _receiptInk),
+              params: settings.receipt.copyWith(debugView: _debugView),
               controller: _receiptScroll,
               child: _SampleReceipt(controller: _receiptScroll),
             ),
@@ -82,7 +102,7 @@ class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
         ),
       ),
       _Sample.components => _ComponentGallery(
-        params: _params.copyWith(ink: _componentInk),
+        params: settings.component.copyWith(debugView: _debugView),
       ),
     };
 
@@ -146,10 +166,7 @@ class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
                             child: Text(l10n.shaderLabNewSeed),
                           ),
                           OutlinedButton(
-                            onPressed: () {
-                              _update(const PaperParams());
-                              setLight(const PaperLight());
-                            },
+                            onPressed: _settings.reset,
                             child: Text(l10n.shaderLabReset),
                           ),
                           OutlinedButton(
@@ -200,7 +217,7 @@ class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
                           ],
                           selected: {_params.debugView},
                           onSelectionChanged: (s) =>
-                              _update(_params.copyWith(debugView: s.single)),
+                              setState(() => _debugView = s.single),
                         ),
                       ),
                       SwitchListTile(
@@ -214,6 +231,8 @@ class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
                             _tilt.start();
                           } else {
                             await _tilt.stop();
+                            // Back to the saved light.
+                            ref.invalidate(paperLightProvider);
                           }
                           if (mounted) setState(() {});
                         },

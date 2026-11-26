@@ -84,6 +84,49 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the paper bleeds past the bubble, centred, same layout', (
+    tester,
+  ) async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          home: Center(
+            child: SizedBox(
+              width: 300,
+              child: PaperBubble(
+                params: PaperParams(depth: 2, cameraTilt: 0.8),
+                child: SizedBox(height: 200),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.runAsync(() => container.read(paperProgramProvider.future));
+    await tester.pump();
+    // Size reported, then the fold map decodes.
+    for (var i = 0; i < 3; i++) {
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pump();
+    }
+
+    final bubble = tester.getRect(find.byType(PaperBubble));
+    expect(bubble.size, const Size(300, 200));
+    final paper = tester.getRect(
+      find.descendant(
+        of: find.byType(PaperBubble),
+        matching: find.byType(CustomPaint),
+      ),
+    );
+    expect(paper.width, greaterThan(bubble.width));
+    expect(paper.center.dx, closeTo(bubble.center.dx, 0.01));
+    expect(paper.center.dy, closeTo(bubble.center.dy, 0.01));
+    expect(tester.takeException(), isNull);
+  });
+
   test('params copy and print as Dart', () {
     const params = PaperParams();
     expect(params.copyWith(depth: 2).depth, 2);

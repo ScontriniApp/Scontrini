@@ -54,6 +54,44 @@ class PaperParams {
     this.debugView = PaperDebugView.result,
   });
 
+  /// Reads [toJson]'s output. Missing or malformed knobs (an older save,
+  /// a knob added later) keep their defaults.
+  factory fromJson(Map<String, Object?> json) {
+    const d = PaperParams();
+    double n(String key, double fallback) {
+      final value = json[key];
+      return value is num && value.isFinite ? value.toDouble() : fallback;
+    }
+
+    return PaperParams(
+      seed: n('seed', d.seed),
+      creases: n('creases', d.creases),
+      crumple: n('crumple', d.crumple),
+      sharpness: n('sharpness', d.sharpness),
+      depth: n('depth', d.depth),
+      lightDistance: n('lightDistance', d.lightDistance),
+      cameraDistance: n('cameraDistance', d.cameraDistance),
+      cameraTilt: n('cameraTilt', d.cameraTilt),
+      cameraTurn: n('cameraTurn', d.cameraTurn),
+      ambient: n('ambient', d.ambient),
+      occlusion: n('occlusion', d.occlusion),
+      shadow: n('shadow', d.shadow),
+      softness: n('softness', d.softness),
+      sheen: n('sheen', d.sheen),
+      roughness: n('roughness', d.roughness),
+      fibres: n('fibres', d.fibres),
+      edge: n('edge', d.edge),
+      levels: n('levels', d.levels),
+      pixel: n('pixel', d.pixel),
+      ink: PaperInk.values.asNameMap()[json['ink']] ?? d.ink,
+      inkFade: n('inkFade', d.inkFade),
+      lines: n('lines', d.lines),
+      dropout: n('dropout', d.dropout),
+      torn: n('torn', d.torn),
+      corner: n('corner', d.corner),
+    );
+  }
+
   /// Which crumple: the same seed always gives the same creases.
   final double seed;
 
@@ -237,6 +275,36 @@ class PaperParams {
     debugView,
   ];
 
+  /// The knobs as JSON, for saving. [debugView] is a lab-only view and is
+  /// not saved.
+  Map<String, Object> toJson() => {
+    'seed': seed,
+    'creases': creases,
+    'crumple': crumple,
+    'sharpness': sharpness,
+    'depth': depth,
+    'lightDistance': lightDistance,
+    'cameraDistance': cameraDistance,
+    'cameraTilt': cameraTilt,
+    'cameraTurn': cameraTurn,
+    'ambient': ambient,
+    'occlusion': occlusion,
+    'shadow': shadow,
+    'softness': softness,
+    'sheen': sheen,
+    'roughness': roughness,
+    'fibres': fibres,
+    'edge': edge,
+    'levels': levels,
+    'pixel': pixel,
+    'ink': ink.name,
+    'inkFade': inkFade,
+    'lines': lines,
+    'dropout': dropout,
+    'torn': torn,
+    'corner': corner,
+  };
+
   /// Dart source for these values, to paste back as the new defaults.
   String toDart() {
     String n(double v) => v.toStringAsFixed(2);
@@ -270,6 +338,20 @@ class PaperParams {
 @immutable
 class PaperLight {
   const new({this.azimuth = 2.2, this.elevation = 0.7});
+
+  /// Reads [toJson]'s output; missing values keep their defaults.
+  factory fromJson(Map<String, Object?> json) {
+    const d = PaperLight();
+    double n(String key, double fallback) {
+      final value = json[key];
+      return value is num && value.isFinite ? value.toDouble() : fallback;
+    }
+
+    return PaperLight(
+      azimuth: n('azimuth', d.azimuth),
+      elevation: n('elevation', d.elevation),
+    );
+  }
 
   /// Light from "up" given in the phone's sensor axes (x right, y towards
   /// the top edge, z out of the screen), e.g. the accelerometer at rest.
@@ -307,6 +389,8 @@ class PaperLight {
       math.sin(elevation),
     );
   }
+
+  Map<String, Object> toJson() => {'azimuth': azimuth, 'elevation': elevation};
 
   PaperLight copyWith({double? azimuth, double? elevation}) => PaperLight(
     azimuth: azimuth ?? this.azimuth,

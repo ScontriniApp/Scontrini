@@ -23,12 +23,16 @@
 // - CustomPaint behind the widgets (uFilter = 0), where shader image filters
 //   are not supported (Skia) or the print is off: paper only.
 //
+// Bleed: the shader's area is the bubble grown by uMargin on each side, the
+// bubble centred in it, so ridges that the perspective pushes past the
+// bubble's edges are still drawn instead of cut off.
+//
 // Units: physical px in filter mode, logical in paint mode; uScale is the
 // device pixel ratio in filter mode and 1 in paint mode.
 
 #include <flutter/runtime_effect.glsl>
 
-uniform vec2 uSize;       // the bubble (set by the engine in filter mode)
+uniform vec2 uSize;       // bubble + 2 * uMargin (set by the engine in filter mode)
 uniform vec2 uPaper;      // whole sheet (the scrolled content), px
 uniform float uScroll;    // paper y at the top of the bubble, px
 uniform float uScale;     // px per logical px
@@ -56,6 +60,7 @@ uniform float uTorn;      // tooth width of the torn ends, px (0 = straight)
 uniform float uCorner;    // corner radius, px
 uniform float uDebug;     // 0 result, 1 normals, 2 height, 3 light
 uniform float uFilter;    // 1 = image filter (uTexture is the content)
+uniform vec2 uMargin;     // bleed around the bubble on each side, px
 
 uniform sampler2D uTexture;
 uniform sampler2D uMap;
@@ -140,8 +145,11 @@ void main() {
     pos.y = uSize.y - pos.y;
   }
 #endif
+  // From here on, positions are relative to the bubble, not the bleed area.
+  pos -= uMargin;
+  vec2 bubble = uSize - 2.0 * uMargin;
   vec2 scroll = vec2(0.0, uScroll);
-  vec3 centre = vec3(uSize * 0.5 + scroll, 0.0);
+  vec3 centre = vec3(bubble * 0.5 + scroll, 0.0);
   vec3 eye = centre + uCamera;
   float top = uHeight * uDepth;
 
@@ -282,7 +290,8 @@ void main() {
   // The content is printed on the flat sheet: read it at the paper point
   // the camera ray hit, so it bends, foreshortens and hides with the sheet.
   if (uFilter > 0.5 && uMode > 0.5) {
-    vec2 content = (paper - scroll) / uSize;
+    // The content texture covers the bleed area too (white there).
+    vec2 content = (paper - scroll + uMargin) / uSize;
     vec3 src = texture(uTexture, clamp(content, 0.0, 1.0)).rgb;
     if (uMode < 1.5) {
       // Thermal: darkness becomes ink; dots bleed, so edges go bold.
