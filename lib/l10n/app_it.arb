@@ -146,6 +146,8 @@
   "shaderLabReset": "Ripristina",
   "shaderLabCopy": "Copia valori",
   "shaderLabCopied": "Valori copiati negli appunti",
+  "shaderLabTiltLight": "Luce dal giroscopio",
+  "shaderLabTiltLightHint": "La luce viene dall'alto: inclina il telefono.",
   "shaderLabHideControls": "Mostra/nascondi i controlli",
   "demoDataTitle": "Dati demo (solo debug)",
   "demoDataLoad": "Carica dati demo",

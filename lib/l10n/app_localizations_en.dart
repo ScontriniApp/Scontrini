@@ -286,6 +286,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shaderLabCopied => 'Values copied to the clipboard';
 
   @override
+  String get shaderLabTiltLight => 'Light from the gyroscope';
+
+  @override
+  String get shaderLabTiltLightHint =>
+      'The light comes from above: tilt the phone.';
+
+  @override
   String get shaderLabHideControls => 'Show/hide the controls';
 
   @override

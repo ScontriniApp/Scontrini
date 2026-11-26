@@ -13,6 +13,7 @@ class Fold {
     required this.slope,
     required this.halfWidth,
     this.reach = double.infinity,
+    this.round = 0.02,
   });
 
   final double x;
@@ -24,8 +25,9 @@ class Fold {
   final double halfWidth;
   final double reach;
 
-  /// Rounding of the crease line, as a fraction of [halfWidth].
-  static const _round = 0.05;
+  /// Rounding of the crease line, as a fraction of [halfWidth]: 0 is a
+  /// knife-edge fold.
+  final double round;
 
   /// Height this fold adds at ([px], [py]).
   double heightAt(double px, double py) {
@@ -37,20 +39,19 @@ class Fold {
     final across = (-dx * s + dy * c) / halfWidth;
     final t = across.abs();
     if (t >= 1) return 0;
-    var fade = 1 - _smoothstep(0.55, 1, t);
+    // Flat faces: a tent, sharp at the crease (softened by [round]) and
+    // folding back to the sheet at its half width.
+    double bend(double v) => math.sqrt(v * v + round * round) - round;
+    final tent = 1 - bend(t) / bend(1);
+    var taper = 1.0;
     if (reach.isFinite) {
+      // Short creases die out in a point, as in a crumpled sheet.
       final along = (dx * c + dy * s).abs() / reach;
       if (along >= 1) return 0;
-      fade *= 1 - _smoothstep(0.5, 1, along);
+      taper = 1 - along;
     }
-    final rounded = math.sqrt(t * t + _round * _round) - _round;
-    return slope * halfWidth * (1 - rounded) * fade;
+    return slope * halfWidth * tent * taper;
   }
-}
-
-double _smoothstep(double a, double b, double v) {
-  final t = ((v - a) / (b - a)).clamp(0.0, 1.0);
-  return t * t * (3 - 2 * t);
 }
 
 /// A crumpled-then-flattened sheet as a height field: the sum of [folds].
@@ -70,7 +71,8 @@ class FoldSurface {
 
   /// Creases of a [width] × [length] sheet from [seed]: [creases] scales the
   /// long folds across the sheet (folded to fit a pocket), [crumple] the
-  /// short random ones (balled up). [texel] is the grid step in logical px;
+  /// short random ones (balled up), [sharpness] how knife-edged the creases are
+  /// (0 rounded, 1 sharp). [texel] is the grid step in logical px;
   /// it grows for huge sheets so the grid stays within [maxRows].
   factory generate({
     required double width,
@@ -78,7 +80,8 @@ class FoldSurface {
     required int seed,
     double creases = 1,
     double crumple = 1,
-    double texel = 3,
+    double sharpness = 0.85,
+    double texel = 2,
     int maxColumns = 512,
     int maxRows = 4096,
   }) {
@@ -86,6 +89,7 @@ class FoldSurface {
     final random = math.Random(seed);
     double between(double a, double b) => a + random.nextDouble() * (b - a);
     double sign() => random.nextBool() ? 1 : -1;
+    final round = 0.004 + 0.12 * (1 - sharpness.clamp(0.0, 1.0));
 
     final folds = <Fold>[];
     // Long folds, roughly across the sheet, spread along its length.
@@ -97,8 +101,9 @@ class FoldSurface {
           x: width * between(0.3, 0.7),
           y: length * (i + between(0.2, 0.8)) / long,
           angle: between(-0.12, 0.12),
-          slope: sign() * between(0.10, 0.22),
-          halfWidth: width * between(0.35, 0.7),
+          slope: sign() * between(0.18, 0.35),
+          halfWidth: width * between(0.3, 0.6),
+          round: round,
         ),
       );
     }
@@ -110,9 +115,10 @@ class FoldSurface {
           x: width * random.nextDouble(),
           y: length * random.nextDouble(),
           angle: between(0, math.pi),
-          slope: sign() * between(0.08, 0.25),
-          halfWidth: width * between(0.08, 0.25),
+          slope: sign() * between(0.15, 0.45),
+          halfWidth: width * between(0.06, 0.22),
           reach: width * between(0.15, 0.5),
+          round: round,
         ),
       );
     }
@@ -132,7 +138,7 @@ class FoldSurface {
     List<Fold> folds, {
     required double width,
     required double length,
-    double texel = 3,
+    double texel = 2,
     int maxColumns = 512,
     int maxRows = 4096,
   }) {

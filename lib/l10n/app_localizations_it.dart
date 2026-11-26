@@ -287,6 +287,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String get shaderLabCopied => 'Valori copiati negli appunti';
 
   @override
+  String get shaderLabTiltLight => 'Luce dal giroscopio';
+
+  @override
+  String get shaderLabTiltLightHint =>
+      'La luce viene dall\'alto: inclina il telefono.';
+
+  @override
   String get shaderLabHideControls => 'Mostra/nascondi i controlli';
 
   @override

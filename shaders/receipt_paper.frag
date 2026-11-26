@@ -30,6 +30,7 @@ uniform vec2 uView;     // parallax direction, height → screen shift
 uniform float uAmbient;
 uniform float uCavity;
 uniform float uSheen;
+uniform float uRoughness; // 0 smooth and glossy, 1 coarse and matte
 uniform float uFibres;
 uniform float uEdge;
 uniform float uLevels;  // 0 = smooth; else grey levels, Bayer dithered
@@ -77,6 +78,13 @@ float fbm(vec2 p) {
     amp *= 0.5;
   }
   return sum;
+}
+
+// Slope of value noise at p (central differences, one cell apart).
+vec2 slopeOf(vec2 p) {
+  const float e = 0.5;
+  return vec2(valueNoise(p + vec2(e, 0.0)) - valueNoise(p - vec2(e, 0.0)),
+              valueNoise(p + vec2(0.0, e)) - valueNoise(p - vec2(0.0, e)));
 }
 
 float bayer2(vec2 a) {
@@ -129,7 +137,20 @@ void main() {
     paper = screen - uWarp * surface(paper).z * uView;
   }
   vec3 s = surface(paper);
-  vec3 normal = normalize(vec3(-s.xy * uDepth, 1.0));
+
+  // Crease lines: where the slope of the fold map jumps (two faces meet).
+  float e = 1.5 * uScale;
+  float jump = length(surface(paper + vec2(e, 0.0)).xy - surface(paper - vec2(e, 0.0)).xy) +
+               length(surface(paper + vec2(0.0, e)).xy - surface(paper - vec2(0.0, e)).xy);
+  float crease = smoothstep(0.08, 0.45, jump * uDepth);
+
+  // Paper is never polished: fine grain (fibres pressed into the sheet)
+  // and small crinkles bump the normals, more the rougher it is.
+  vec2 grainAt = paper / uScale;
+  vec2 grain = slopeOf(grainAt * 0.9);
+  vec2 crinkle = slopeOf(grainAt * 0.07 + 13.0);
+  vec2 bump = (grain * 0.25 + crinkle * 0.5) * uRoughness;
+  vec3 normal = normalize(vec3(-s.xy * uDepth - bump, 1.0));
 
   // --- Light ---------------------------------------------------------------
   vec3 light = normalize(uLight);
@@ -143,10 +164,15 @@ void main() {
                   surface(paper + vec2(0.0, r)).z + surface(paper - vec2(0.0, r)).z) * 0.25;
   float cavity = clamp((around - s.z) * 3.0, 0.0, 1.0);
   shade *= 1.0 - uCavity * cavity;
+  // A thin pinched line along each crease (as in paper-vale).
+  shade *= 1.0 - 0.12 * crease * min(uDepth, 1.0);
 
   vec3 halfway = normalize(light + vec3(0.0, 0.0, 1.0));
-  float sheen = max(pow(max(dot(normal, halfway), 0.0), 40.0) -
-                    pow(halfway.z, 40.0), 0.0) * uSheen;
+  // Rough paper scatters: a wide, faint highlight instead of a glint.
+  float shininess = mix(60.0, 5.0, uRoughness);
+  float sheen = max(pow(max(dot(normal, halfway), 0.0), shininess) -
+                    pow(halfway.z, shininess), 0.0) *
+                uSheen * (1.0 - 0.75 * uRoughness);
 
   vec2 dotCell = floor(paper / max(uPixel, 1.0));
   if (uLevels > 0.5) {
@@ -179,6 +205,7 @@ void main() {
   // --- Print ---------------------------------------------------------------
   if (uFilter > 0.5 && uMode > 0.5) {
     vec2 content = (paper - vec2(0.0, uScroll)) / uSize;
+
     vec3 src = texture(uTexture, clamp(content, 0.0, 1.0)).rgb;
     if (uMode < 1.5) {
       // Thermal: darkness becomes ink; dots bleed, so edges go bold.

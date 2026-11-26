@@ -84,6 +84,8 @@
   "shaderLabReset": "Reset",
   "shaderLabCopy": "Copy values",
   "shaderLabCopied": "Values copied to the clipboard",
+  "shaderLabTiltLight": "Light from the gyroscope",
+  "shaderLabTiltLightHint": "The light comes from above: tilt the phone.",
   "shaderLabHideControls": "Show/hide the controls",
   "demoDataTitle": "Demo data (debug only)",
   "demoDataLoad": "Load demo data",

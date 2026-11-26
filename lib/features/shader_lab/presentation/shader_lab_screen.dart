@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
@@ -8,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/router.dart';
 import 'package:scontrini/core/paper/paper_bubble.dart';
 import 'package:scontrini/core/paper/paper_params.dart';
+import 'package:scontrini/core/paper/tilt_light.dart';
 import 'package:scontrini/features/analytics/presentation/chart_palette.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
@@ -33,8 +35,14 @@ class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
   final _random = math.Random();
   final _receiptScroll = ScrollController();
 
+  /// Test: light from the real "up", following the phone's tilt.
+  late final TiltLight _tilt = TiltLight(
+    onLight: (light) => ref.read(paperLightProvider.notifier).set(light),
+  );
+
   @override
   void dispose() {
+    unawaited(_tilt.stop());
     _receiptScroll.dispose();
     super.dispose();
   }
@@ -195,6 +203,21 @@ class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
                               _update(_params.copyWith(debugView: s.single)),
                         ),
                       ),
+                      SwitchListTile(
+                        dense: true,
+                        secondary: const Icon(Icons.screen_rotation),
+                        title: Text(l10n.shaderLabTiltLight),
+                        subtitle: Text(l10n.shaderLabTiltLightHint),
+                        value: _tilt.running,
+                        onChanged: (on) async {
+                          if (on) {
+                            _tilt.start();
+                          } else {
+                            await _tilt.stop();
+                          }
+                          if (mounted) setState(() {});
+                        },
+                      ),
                       // Knob names match the shader uniforms (developer
                       // tool), so they aren't translated.
                       _knob('lightDir', light.azimuth, 0, 2 * math.pi, (v) {
@@ -209,9 +232,13 @@ class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
                       _knob('crumple', _params.crumple, 0, 3, (v) {
                         _update(_params.copyWith(crumple: v));
                       }),
+                      _knob('sharpness', _params.sharpness, 0, 1, (v) {
+                        _update(_params.copyWith(sharpness: v));
+                      }),
                       _knob('depth', _params.depth, 0, 3, (v) {
                         _update(_params.copyWith(depth: v));
                       }),
+
                       _knob('warp', _params.warp, 0, 8, (v) {
                         _update(_params.copyWith(warp: v));
                       }),
@@ -223,6 +250,9 @@ class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
                       }),
                       _knob('sheen', _params.sheen, 0, 1, (v) {
                         _update(_params.copyWith(sheen: v));
+                      }),
+                      _knob('roughness', _params.roughness, 0, 1, (v) {
+                        _update(_params.copyWith(roughness: v));
                       }),
                       _knob('fibres', _params.fibres, 0, 3, (v) {
                         _update(_params.copyWith(fibres: v));
@@ -272,7 +302,7 @@ class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
     padding: const EdgeInsets.symmetric(horizontal: 16),
     child: Row(
       children: [
-        SizedBox(width: 72, child: Text(name)),
+        SizedBox(width: 84, child: Text(name)),
         Expanded(
           child: Slider(
             value: value.clamp(min, max),

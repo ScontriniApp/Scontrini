@@ -25,12 +25,12 @@ class PaperLightNotifier extends Notifier<PaperLight> {
   void set(PaperLight light) => state = light;
 }
 
-/// Ink colour of text printed on the paper, close to the shader's `kInk`.
-const receiptInk = Color(0xFF211F29);
-
 /// Direction a raised point shifts on screen (parallax of a viewer slightly
 /// below the phone's top edge).
 const _view = (0.28, -0.96);
+
+/// Ink colour of text printed on the paper, close to the shader's `kInk`.
+const receiptInk = Color(0xFF211F29);
 
 /// [child] printed on a sheet of folded paper.
 ///
@@ -124,6 +124,7 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
       p.surfaceSeed,
       p.creases,
       p.crumple,
+      p.sharpness,
       sheet.width.round(),
       sheet.height.round(),
     );
@@ -136,6 +137,7 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
       seed: p.surfaceSeed,
       creases: p.creases,
       crumple: p.crumple,
+      sharpness: p.sharpness,
     );
     ui.decodeImageFromPixels(
       surface.toRgba(),
@@ -211,7 +213,11 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
         builder: (context, child) {
           configure(scale: dpr);
           return ImageFiltered(
-            imageFilter: ui.ImageFilter.shader(shader),
+            // Bilinear: shifted print stays smooth instead of stair-stepped.
+            imageFilter: ui.ImageFilter.shader(
+              shader,
+              filterQuality: FilterQuality.low,
+            ),
             child: child,
           );
         },
@@ -231,7 +237,7 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
   }
 }
 
-/// White 1×1: paint mode never reads the content sampler, but it must be
+/// White 1Ã—1: paint mode never reads the content sampler, but it must be
 /// bound.
 final ui.Image _blank = _solid(const Color(0xFFFFFFFF));
 
@@ -297,6 +303,7 @@ void _setUniforms(
   set(p.ambient);
   set(p.cavity);
   set(p.sheen);
+  set(p.roughness);
   set(p.fibres);
   set(p.edge);
   set(p.levels);

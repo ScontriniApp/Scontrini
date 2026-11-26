@@ -27,10 +27,12 @@ class PaperParams {
     this.seed = 1,
     this.creases = 1,
     this.crumple = 1,
-    this.depth = 1,
+    this.sharpness = 0.85,
+    this.depth = 1.2,
     this.ambient = 0.45,
     this.cavity = 0.6,
-    this.sheen = 0.15,
+    this.sheen = 0.08,
+    this.roughness = 0.6,
     this.fibres = 1,
     this.edge = 0.45,
     this.levels = 0,
@@ -54,6 +56,9 @@ class PaperParams {
   /// Short creases in every direction (balled up, flattened again).
   final double crumple;
 
+  /// How knife-edged the creases are: 0 rounded, 1 sharp.
+  final double sharpness;
+
   /// How strongly the surface normals tilt (light and shadow contrast).
   final double depth;
 
@@ -65,6 +70,10 @@ class PaperParams {
 
   /// Glossy highlight of thermal paper.
   final double sheen;
+
+  /// Paper grain: 0 smooth and glossy, 1 coarse and matte (bumpier
+  /// normals, wider and fainter highlight).
+  final double roughness;
 
   /// Paper fibre noise.
   final double fibres;
@@ -111,10 +120,12 @@ class PaperParams {
     double? seed,
     double? creases,
     double? crumple,
+    double? sharpness,
     double? depth,
     double? ambient,
     double? cavity,
     double? sheen,
+    double? roughness,
     double? fibres,
     double? edge,
     double? levels,
@@ -131,10 +142,12 @@ class PaperParams {
     seed: seed ?? this.seed,
     creases: creases ?? this.creases,
     crumple: crumple ?? this.crumple,
+    sharpness: sharpness ?? this.sharpness,
     depth: depth ?? this.depth,
     ambient: ambient ?? this.ambient,
     cavity: cavity ?? this.cavity,
     sheen: sheen ?? this.sheen,
+    roughness: roughness ?? this.roughness,
     fibres: fibres ?? this.fibres,
     edge: edge ?? this.edge,
     levels: levels ?? this.levels,
@@ -154,10 +167,13 @@ class PaperParams {
     String n(double v) => v.toStringAsFixed(2);
     return 'PaperParams('
         'seed: ${n(seed)}, creases: ${n(creases)}, crumple: ${n(crumple)}, '
-        'depth: ${n(depth)}, ambient: ${n(ambient)}, cavity: ${n(cavity)}, '
-        'sheen: ${n(sheen)}, fibres: ${n(fibres)}, edge: ${n(edge)}, '
+        'sharpness: ${n(sharpness)}, depth: ${n(depth)}, '
+        'ambient: ${n(ambient)}, cavity: ${n(cavity)}, '
+        'sheen: ${n(sheen)}, roughness: ${n(roughness)}, '
+        'fibres: ${n(fibres)}, edge: ${n(edge)}, '
         'levels: ${n(levels)}, pixel: ${n(pixel)}, ink: PaperInk.${ink.name}, '
-        'warp: ${n(warp)}, inkFade: ${n(inkFade)}, lines: ${n(lines)}, '
+        'warp: ${n(warp)}, '
+        'inkFade: ${n(inkFade)}, lines: ${n(lines)}, '
         'dropout: ${n(dropout)}, torn: ${n(torn)}, corner: ${n(corner)})';
   }
 
@@ -167,10 +183,12 @@ class PaperParams {
       other.seed == seed &&
       other.creases == creases &&
       other.crumple == crumple &&
+      other.sharpness == sharpness &&
       other.depth == depth &&
       other.ambient == ambient &&
       other.cavity == cavity &&
       other.sheen == sheen &&
+      other.roughness == roughness &&
       other.fibres == fibres &&
       other.edge == edge &&
       other.levels == levels &&
@@ -189,10 +207,12 @@ class PaperParams {
     seed,
     creases,
     crumple,
+    sharpness,
     depth,
     ambient,
     cavity,
     sheen,
+    roughness,
     fibres,
     edge,
     levels,
@@ -215,6 +235,25 @@ class PaperParams {
 @immutable
 class PaperLight {
   const new({this.azimuth = 2.2, this.elevation = 0.7});
+
+  /// Light from "up" given in the phone's sensor axes (x right, y towards
+  /// the top edge, z out of the screen), e.g. the accelerometer at rest.
+  /// The light never drops below [minElevation], so a phone held upright
+  /// still lights the sheet. Null for a zero vector (free fall).
+  static PaperLight? fromUp(
+    double x,
+    double y,
+    double z, {
+    double minElevation = 0.15,
+  }) {
+    final length = math.sqrt(x * x + y * y + z * z);
+    if (length < 1e-6) return null;
+    final elevation = math.asin((z / length).clamp(-1.0, 1.0));
+    return PaperLight(
+      azimuth: math.atan2(y, x),
+      elevation: math.max(elevation, minElevation),
+    );
+  }
 
   /// Where the light comes from in the screen plane, radians
   /// counter-clockwise from the right edge: π/2 = from the top.

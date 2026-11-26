@@ -608,6 +608,18 @@ abstract class AppLocalizations {
   /// **'Valori copiati negli appunti'**
   String get shaderLabCopied;
 
+  /// No description provided for @shaderLabTiltLight.
+  ///
+  /// In it, this message translates to:
+  /// **'Luce dal giroscopio'**
+  String get shaderLabTiltLight;
+
+  /// No description provided for @shaderLabTiltLightHint.
+  ///
+  /// In it, this message translates to:
+  /// **'La luce viene dall\'alto: inclina il telefono.'**
+  String get shaderLabTiltLightHint;
+
   /// No description provided for @shaderLabHideControls.
   ///
   /// In it, this message translates to:

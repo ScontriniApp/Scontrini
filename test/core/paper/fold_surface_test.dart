@@ -16,6 +16,25 @@ void main() {
       expect(ridge.heightAt(9000, 110), closeTo(ridge.heightAt(50, 110), 1e-9));
     });
 
+    test('a sharp crease keeps its slope right up to the line', () {
+      double slopeNearLine(double round) {
+        final fold = Fold(
+          x: 0,
+          y: 100,
+          angle: 0,
+          slope: 0.3,
+          halfWidth: 40,
+          round: round,
+        );
+        return (fold.heightAt(0, 100) - fold.heightAt(0, 101)) / 1;
+      }
+
+      // Knife edge: about the face slope one pixel from the crease.
+      expect(slopeNearLine(0.004), greaterThan(0.25));
+      // Rounded: much flatter there.
+      expect(slopeNearLine(0.12), lessThan(0.1));
+    });
+
     test('a valley sinks, a short crease ends after its reach', () {
       const valley = Fold(
         x: 50,
