@@ -1024,4 +1024,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportFailed => 'The export failed.';
+
+  @override
+  String get bulkImportTitle => 'Bulk import PDFs (debug only)';
+
+  @override
+  String get bulkImportHint =>
+      'Pick several PDF receipts: they are saved without review and stay out of the pantry.';
+
+  @override
+  String bulkImportProgress(int done, int total) {
+    return 'Importing $done of $total…';
+  }
+
+  @override
+  String bulkImportDone(int saved, int duplicates, int failed) {
+    return 'Imported $saved, already there $duplicates, unreadable $failed';
+  }
 }

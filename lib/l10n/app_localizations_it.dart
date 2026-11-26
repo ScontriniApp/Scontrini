@@ -1027,4 +1027,21 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get exportFailed => 'Esportazione non riuscita.';
+
+  @override
+  String get bulkImportTitle => 'Importa PDF in blocco (solo debug)';
+
+  @override
+  String get bulkImportHint =>
+      'Scegli più scontrini PDF: vengono salvati senza revisione e non entrano in dispensa.';
+
+  @override
+  String bulkImportProgress(int done, int total) {
+    return 'Importazione $done di $total…';
+  }
+
+  @override
+  String bulkImportDone(int saved, int duplicates, int failed) {
+    return 'Importati $saved, già presenti $duplicates, non letti $failed';
+  }
 }

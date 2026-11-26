@@ -254,5 +254,9 @@
   "exportWarning": "Every item of the confirmed receipts, one per row, in a CSV file that opens in Excel, Google Sheets or an analysis tool.\n\nThe file is not encrypted: anyone who opens it sees your purchases.",
   "exportConfirm": "Export",
   "exportDone": "{count, plural, =1{Exported 1 item} other{Exported {count} items}} to {fileName}",
-  "exportFailed": "The export failed."
+  "exportFailed": "The export failed.",
+  "bulkImportTitle": "Bulk import PDFs (debug only)",
+  "bulkImportHint": "Pick several PDF receipts: they are saved without review and stay out of the pantry.",
+  "bulkImportProgress": "Importing {done} of {total}…",
+  "bulkImportDone": "Imported {saved}, already there {duplicates}, unreadable {failed}"
 }

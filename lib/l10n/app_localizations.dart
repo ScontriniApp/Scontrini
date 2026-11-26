@@ -1633,6 +1633,30 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Esportazione non riuscita.'**
   String get exportFailed;
+
+  /// No description provided for @bulkImportTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Importa PDF in blocco (solo debug)'**
+  String get bulkImportTitle;
+
+  /// No description provided for @bulkImportHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli più scontrini PDF: vengono salvati senza revisione e non entrano in dispensa.'**
+  String get bulkImportHint;
+
+  /// No description provided for @bulkImportProgress.
+  ///
+  /// In it, this message translates to:
+  /// **'Importazione {done} di {total}…'**
+  String bulkImportProgress(int done, int total);
+
+  /// No description provided for @bulkImportDone.
+  ///
+  /// In it, this message translates to:
+  /// **'Importati {saved}, già presenti {duplicates}, non letti {failed}'**
+  String bulkImportDone(int saved, int duplicates, int failed);
 }
 
 class _AppLocalizationsDelegate

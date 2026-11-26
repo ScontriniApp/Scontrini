@@ -700,5 +700,32 @@
       }
     }
   },
-  "exportFailed": "Esportazione non riuscita."
+  "exportFailed": "Esportazione non riuscita.",
+  "bulkImportTitle": "Importa PDF in blocco (solo debug)",
+  "bulkImportHint": "Scegli più scontrini PDF: vengono salvati senza revisione e non entrano in dispensa.",
+  "bulkImportProgress": "Importazione {done} di {total}…",
+  "@bulkImportProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportDone": "Importati {saved}, già presenti {duplicates}, non letti {failed}",
+  "@bulkImportDone": {
+    "placeholders": {
+      "saved": {
+        "type": "int"
+      },
+      "duplicates": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  }
 }

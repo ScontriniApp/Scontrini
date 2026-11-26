@@ -49,4 +49,18 @@ class ReceiptCaptureService {
     await FilePicker.clearTemporaryFiles();
     return ReceiptSource.pdf(kept.single);
   }
+
+  /// Several PDFs at once (the debug bulk import), one source each; empty
+  /// when the user cancels.
+  Future<List<ReceiptSource>> pickPdfs() async {
+    final files = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+    final paths = [for (final f in files) ?f.path];
+    if (paths.isEmpty) return const [];
+    final kept = await _store.keepAll(paths);
+    await FilePicker.clearTemporaryFiles();
+    return [for (final path in kept) ReceiptSource.pdf(path)];
+  }
 }

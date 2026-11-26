@@ -177,6 +177,14 @@ class ReceiptRepository {
     );
   }
 
+  /// How many receipts are stored (any status).
+  Future<int> count() {
+    final ids = _db.receipts.id.count();
+    return (_db.selectOnly(
+      _db.receipts,
+    )..addColumns([ids])).map((row) => row.read(ids) ?? 0).getSingle();
+  }
+
   /// Deletes a receipt; its rows, pantry lots and their events go with it.
   Future<void> delete(int id) =>
       (_db.delete(_db.receipts)..where((r) => r.id.equals(id))).go();
