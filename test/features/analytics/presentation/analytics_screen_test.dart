@@ -99,8 +99,13 @@ void main() {
   ) async {
     await pumpAnalytics(tester, seed: true);
 
-    expect(find.text('Speso'), findsOneWidget);
-    expect(find.text(Money.format(10518)), findsOneWidget);
+    expect(find.text('SPESO'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (w) => w is Semantics && w.properties.label == Money.format(10518),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('5 scontrini'), findsOneWidget);
     expect(find.textContaining('rispetto a 1 ott – 23 ott 2026'), findsOne);
     expect(find.text('Andamento'), findsOneWidget);
@@ -109,11 +114,11 @@ void main() {
     await tester.scrollUntilVisible(find.text('Negozi'), 300, scrollable: list);
     expect(find.text('Supermercato Aurora'), findsWidgets);
     await tester.scrollUntilVisible(
-      find.text('Risparmiato con gli sconti'),
+      find.text('RISPARMIATO CON GLI SCONTI'),
       300,
       scrollable: list,
     );
-    expect(find.text('Risparmiato con gli sconti'), findsOneWidget);
+    expect(find.text('RISPARMIATO CON GLI SCONTI'), findsOneWidget);
   });
 
   testWidgets('the period bar switches kind and steps back and forth', (
