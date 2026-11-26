@@ -22,6 +22,8 @@ class PaperParams {
     this.lines = 0.2,
     this.dropout = 0.1,
     this.round = 0.08,
+    this.tooth = 6,
+    this.contrast = 1,
   });
 
   /// Which crumple: the same seed always gives the same wrinkles.
@@ -71,6 +73,14 @@ class PaperParams {
   /// How rounded the creases are, in big-fold cells: 0 = sharp folds.
   final double round;
 
+  /// Width of a torn-edge tooth at the sheet's top and bottom, in logical
+  /// pixels: 0 = straight edges.
+  final double tooth;
+
+  /// Strength of the light and shadow on the folds: 0 = flat colour, 1 = the
+  /// default. Unlike [depth], the folds and the text bend stay the same.
+  final double contrast;
+
   PaperParams copyWith({
     double? seed,
     double? cells,
@@ -87,6 +97,8 @@ class PaperParams {
     double? lines,
     double? dropout,
     double? round,
+    double? tooth,
+    double? contrast,
   }) => PaperParams(
     seed: seed ?? this.seed,
     cells: cells ?? this.cells,
@@ -103,6 +115,8 @@ class PaperParams {
     lines: lines ?? this.lines,
     dropout: dropout ?? this.dropout,
     round: round ?? this.round,
+    tooth: tooth ?? this.tooth,
+    contrast: contrast ?? this.contrast,
   );
 
   /// Dart source for these values, to paste back as the new defaults.
@@ -114,7 +128,8 @@ class PaperParams {
         'fibres: ${n(fibres)}, edge: ${n(edge)}, levels: ${n(levels)}, '
         'pixel: ${n(pixel)}, ink: $ink, warp: ${n(warp)}, '
         'inkFade: ${n(inkFade)}, lines: ${n(lines)}, '
-        'dropout: ${n(dropout)}, round: ${n(round)})';
+        'dropout: ${n(dropout)}, round: ${n(round)}, tooth: ${n(tooth)}, '
+        'contrast: ${n(contrast)})';
   }
 
   @override
@@ -134,7 +149,9 @@ class PaperParams {
       other.inkFade == inkFade &&
       other.lines == lines &&
       other.dropout == dropout &&
-      other.round == round;
+      other.round == round &&
+      other.tooth == tooth &&
+      other.contrast == contrast;
 
   @override
   int get hashCode => Object.hash(
@@ -153,5 +170,7 @@ class PaperParams {
     lines,
     dropout,
     round,
+    tooth,
+    contrast,
   );
 }

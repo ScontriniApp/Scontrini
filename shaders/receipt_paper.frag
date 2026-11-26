@@ -29,6 +29,12 @@ uniform float uInkFade;    // 0 = fresh print, 1 = very faded
 uniform float uLines;      // thermal print-head row banding
 uniform float uDropout;    // missing dots and vertical head streaks
 uniform float uRound;      // crease rounding, in big-fold cells (0 = sharp)
+// The sheet can be taller than the drawn area (a scrolled receipt): the
+// area shows the sheet from uScroll down. Same units as uSize.
+uniform float uScroll;     // scroll offset of the area's top edge
+uniform float uSheet;      // height of the whole sheet; 0 = the area's height
+uniform float uTooth;      // torn-edge tooth width at top and bottom; 0 = straight
+uniform float uContrast;   // light and shadow strength (1 = default)
 
 uniform sampler2D uTexture;
 
@@ -72,16 +78,18 @@ float fbm(vec2 p) {
 // One layer of folds. Every grid cell holds one straight fold: a line with a
 // random direction through a random point, a ridge or a valley, fading out
 // along its length and away from it. Height of one fold:
-//   h = s * r(across) * w,  w = exp(-along^2 / A - across^2 / B)
+//   h = s * r(across) * w,  w = (1 - d^2)^3,  d^2 = along^2/LA^2 + across^2/LC^2
 // where r is a rounded |x|: sqrt(x^2 + R^2) - R (R = 0 gives a sharp crease).
+// w and its slope reach exactly 0 within 1 cell of the fold's centre, so the
+// 3x3 cells searched hold every fold that touches the point: no seams.
 // Returns the slope of the summed height (xy) and how close the point is to
 // a crease line (z, 0..1).
 vec3 folds(vec2 q, float R) {
   vec2 cell = floor(q);
   vec2 slope = vec2(0.0);
   float crease = 0.0;
-  const float A = 0.55; // length of a fold, cells^2
-  const float B = 0.35; // reach of a fold's slope, cells^2
+  const float LA = 0.98; // half length of a fold, cells (must stay < 1)
+  const float LC = 0.85; // reach of a fold's slope, cells (must stay < 1)
   for (int y = -1; y <= 1; y++) {
     for (int x = -1; x <= 1; x++) {
       vec2 id = cell + vec2(float(x), float(y));
@@ -91,9 +99,12 @@ vec3 folds(vec2 q, float R) {
       vec2 n = vec2(-t.y, t.x);
       float along = dot(local, t);
       float across = dot(local, n);
-      float w = exp(-along * along / A - across * across / B);
+      float d2 = along * along / (LA * LA) + across * across / (LC * LC);
+      float k = max(1.0 - d2, 0.0);
+      float w = k * k * k;
       float s = hash1(id + 7.7) * 2.0 - 1.0;
-      vec2 gradW = w * (-2.0 * along / A * t - 2.0 * across / B * n);
+      vec2 gradW = -3.0 * k * k *
+          (2.0 * along / (LA * LA) * t + 2.0 * across / (LC * LC) * n);
       float bend = sqrt(across * across + R * R);
       slope += s * (across / max(bend, 1e-4) * n * w + (bend - R) * gradW);
       // The pinch line widens and fades as the crease gets rounder.
@@ -121,8 +132,12 @@ void main() {
     uv.y = 1.0 - uv.y;
   }
 #endif
-  // Aspect-correct paper coordinates: 1.0 = the width.
-  vec2 p = vec2(uv.x, uv.y * uSize.y / uSize.x);
+  // Position on the whole sheet (scroll included), top-down, in pixels, and
+  // aspect-correct paper coordinates: 1.0 = the width.
+  vec2 sheet = vec2(uv.x * uSize.x, uv.y * uSize.y + uScroll);
+  float sheetHeight = uSheet > 0.0 ? uSheet : uSize.y;
+  vec2 p = sheet / uSize.x;
+  float dotSize = max(uPixel, 1.0);
 
   // --- Creases -----------------------------------------------------------
   vec3 big = folds(p * uCells, uRound);
@@ -136,22 +151,25 @@ void main() {
   float diffuse = dot(normal, light);
   // Flat paper faces the light at light.z: that is the base shade, a little
   // under 1 so lit slopes still have room before white.
-  float shade = 0.94 + (diffuse - light.z) * 1.1;
+  float shade = 0.94 + (diffuse - light.z) * 1.1 * uContrast;
 
   // A thin line along each crease, where the paper was pinched.
-  shade -= (big.z * 0.07 + small.z * 0.04 * uFine) * min(uDepth, 1.0);
+  shade -= (big.z * 0.07 + small.z * 0.04 * uFine) * min(uDepth, 1.0) * uContrast;
 
   // --- Paper -------------------------------------------------------------
   float fibres = fbm(vec2(p.x * 220.0, p.y * 40.0)) - 0.5;
   shade += fibres * 0.06 * uFibres;
 
-  vec2 centred = uv - 0.5;
-  float edge = smoothstep(0.25, 0.75, length(centred * vec2(1.6, 1.0)));
+  // Yellowed near the sheet's edges (in widths, so long receipts age the
+  // same way at the top and bottom as at the sides).
+  float fromEdge = min(min(sheet.x, uSize.x - sheet.x),
+                       min(sheet.y, sheetHeight - sheet.y)) / uSize.x;
+  float edge = 1.0 - smoothstep(0.0, 0.3, fromEdge);
   float blotch = fbm(p * 3.0 + 5.0);
   vec3 paper = mix(kPaper, kAged, clamp(edge * uEdge + blotch * 0.25 * uEdge, 0.0, 1.0));
 
   if (uLevels > 0.5) {
-    vec2 cell = floor(frag / max(uPixel, 1.0));
+    vec2 cell = floor(sheet / dotSize);
     float threshold = bayer4(cell) - 0.5;
     shade = floor(shade * uLevels + threshold + 0.5) / uLevels;
   }
@@ -172,12 +190,12 @@ void main() {
     ink = clamp(ink * 1.8, 0.0, 1.0);
 
     // Thermal head prints rows of dots: faint banding every other row.
-    float row = mod(floor(frag.y / max(uPixel, 1.0)), 2.0);
+    float row = mod(floor(sheet.y / dotSize), 2.0);
     ink *= 1.0 - row * 0.25 * uLines;
 
     // Dirty head: vertical streaks, plus random missing dots.
-    float streak = valueNoise(vec2(frag.x * 0.35, uSeed));
-    float dots = hash1(floor(frag / max(uPixel, 1.0)));
+    float streak = valueNoise(vec2(sheet.x * 0.35, uSeed));
+    float dots = hash1(floor(sheet / dotSize));
     ink *= 1.0 - uDropout * (smoothstep(0.75, 0.95, streak) * 0.7 +
                              step(1.0 - 0.25 * uDropout, dots));
 
@@ -190,5 +208,17 @@ void main() {
     color = mix(color, inkColor, ink);
   }
 
-  fragColor = vec4(color, 1.0);
+  // Torn off the roll: zigzag teeth at the sheet's top and bottom.
+  float alpha = 1.0;
+  if (uTooth > 0.0) {
+    float tri = abs(fract(sheet.x / uTooth) - 0.5) * 2.0;
+    float toothDepth = uTooth * 0.5;
+    float top = tri * toothDepth;
+    float bottom = sheetHeight - tri * toothDepth;
+    alpha = smoothstep(top - 0.75, top + 0.75, sheet.y) *
+            (1.0 - smoothstep(bottom - 0.75, bottom + 0.75, sheet.y));
+  }
+
+  // Flutter expects premultiplied alpha.
+  fragColor = vec4(color * alpha, alpha);
 }

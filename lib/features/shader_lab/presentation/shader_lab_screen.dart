@@ -6,7 +6,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/router.dart';
 import 'package:scontrini/core/paper/paper_params.dart';
 import 'package:scontrini/core/paper/receipt_paper.dart';
-import 'package:scontrini/core/paper/torn_edge_clipper.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 /// Debug-only screen to tune the crumpled receipt shader on the phone: a
@@ -20,7 +19,6 @@ class ShaderLabScreen extends StatefulWidget {
 
 class _ShaderLabScreenState extends State<ShaderLabScreen> {
   PaperParams _params = const PaperParams();
-  bool _torn = true;
   bool _controls = true;
   final _random = math.Random();
 
@@ -56,12 +54,7 @@ class _ShaderLabScreenState extends State<ShaderLabScreen> {
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 380),
-                    child: _torn
-                        ? ClipPath(
-                            clipper: const TornEdgeClipper(),
-                            child: receipt,
-                          )
-                        : receipt,
+                    child: receipt,
                   ),
                 ),
               ),
@@ -116,12 +109,6 @@ class _ShaderLabScreenState extends State<ShaderLabScreen> {
                         value: _params.ink,
                         onChanged: (v) => _update(_params.copyWith(ink: v)),
                       ),
-                      SwitchListTile(
-                        dense: true,
-                        title: Text(l10n.shaderLabTornEdge),
-                        value: _torn,
-                        onChanged: (v) => setState(() => _torn = v),
-                      ),
                       // Knob names match the shader uniforms (developer
                       // tool), so they aren't translated.
                       _knob('cells', _params.cells, 1, 14, (v) {
@@ -129,6 +116,12 @@ class _ShaderLabScreenState extends State<ShaderLabScreen> {
                       }),
                       _knob('depth', _params.depth, 0, 1.5, (v) {
                         _update(_params.copyWith(depth: v));
+                      }),
+                      _knob('contrast', _params.contrast, 0, 3, (v) {
+                        _update(_params.copyWith(contrast: v));
+                      }),
+                      _knob('tooth', _params.tooth, 0, 16, (v) {
+                        _update(_params.copyWith(tooth: v));
                       }),
                       _knob('round', _params.round, 0, 0.4, (v) {
                         _update(_params.copyWith(round: v));
@@ -215,6 +208,11 @@ class _SampleReceipt extends StatelessWidget {
     ('YOGURT BIANCO X2', '1,58'),
     ('SCONTO FEDELTA', '-0,30'),
     ('MOZZARELLA 125G', '0,99'),
+    ('BANANE KG 0,980', '1,76'),
+    ('UOVA FRESCHE X6', '2,39'),
+    ('ACQUA NATURALE 6X1,5L', '1,98'),
+    ('CAFFE MACINATO 250G', '3,49'),
+    ('BISCOTTI FROLLINI', '1,85'),
   ];
 
   @override
@@ -259,9 +257,9 @@ class _SampleReceipt extends StatelessWidget {
           for (final (name, price) in _items) row(name, price),
           const SizedBox(height: 8),
           Text('-' * 40, maxLines: 1, overflow: TextOverflow.clip, style: body),
-          row('TOTALE COMPLESSIVO', '9,03', style: text.titleLarge),
-          row('PAGAMENTO CONTANTE', '10,00'),
-          row('RESTO', '0,97'),
+          row('TOTALE COMPLESSIVO', '20,50', style: text.titleLarge),
+          row('PAGAMENTO CONTANTE', '25,00'),
+          row('RESTO', '4,50'),
           const SizedBox(height: 12),
           Text(
             '26-11-2026 18:42   DOC.N. 0042-0117',

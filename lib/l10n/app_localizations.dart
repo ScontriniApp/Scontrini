@@ -560,12 +560,6 @@ abstract class AppLocalizations {
   /// **'Inchiostro col shader'**
   String get shaderLabInk;
 
-  /// No description provided for @shaderLabTornEdge.
-  ///
-  /// In it, this message translates to:
-  /// **'Bordo strappato'**
-  String get shaderLabTornEdge;
-
   /// No description provided for @shaderLabNewSeed.
   ///
   /// In it, this message translates to:

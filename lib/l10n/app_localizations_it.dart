@@ -263,9 +263,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get shaderLabInk => 'Inchiostro col shader';
 
   @override
-  String get shaderLabTornEdge => 'Bordo strappato';
-
-  @override
   String get shaderLabNewSeed => 'Nuove pieghe';
 
   @override

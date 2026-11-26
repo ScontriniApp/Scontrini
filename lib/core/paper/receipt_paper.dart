@@ -19,7 +19,12 @@ const receiptInk = Color(0xFF211F29);
 /// as dark text on white and the shader turns it into ink that follows the
 /// creases. Otherwise the paper is painted behind [child]. Until the shader
 /// has loaded, or if it fails to, [child] sits on plain paper colour.
-class ReceiptPaper extends ConsumerWidget {
+///
+/// If [child] is (or holds) a vertical scroll view filling this widget, the
+/// sheet is as long as the scroll view's content and scrolls with it: the
+/// creases stay under the same words and the torn edges sit at the content's
+/// top and bottom.
+class ReceiptPaper extends ConsumerStatefulWidget {
   const new({required this.params, required this.child, super.key});
 
   final PaperParams params;
@@ -29,26 +34,78 @@ class ReceiptPaper extends ConsumerWidget {
   static bool get canPrintInk => ui.ImageFilter.isShaderFilterSupported;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ReceiptPaper> createState() => _ReceiptPaperState();
+}
+
+class _ReceiptPaperState extends ConsumerState<ReceiptPaper> {
+  /// Where the sheet is: scroll offset and full height, in logical pixels.
+  /// Zero height = no scroll view seen yet, the sheet is this widget's size.
+  _SheetPosition _sheet = const _SheetPosition(scroll: 0, height: 0);
+
+  bool _onScroll(Notification notification) {
+    final metrics = switch (notification) {
+      ScrollMetricsNotification(:final metrics, :final depth) when depth == 0 =>
+        metrics,
+      ScrollUpdateNotification(:final metrics, :final depth) when depth == 0 =>
+        metrics,
+      _ => null,
+    };
+    if (metrics != null && metrics.axis == Axis.vertical) {
+      final sheet = _SheetPosition(
+        scroll: metrics.pixels - metrics.minScrollExtent,
+        height:
+            metrics.viewportDimension +
+            metrics.maxScrollExtent -
+            metrics.minScrollExtent,
+      );
+      if (sheet != _sheet) setState(() => _sheet = sheet);
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final program = ref.watch(receiptPaperProgramProvider).value;
-    final text = _InkColour(colour: receiptInk, child: child);
+    final params = widget.params;
+    final text = NotificationListener<Notification>(
+      onNotification: _onScroll,
+      child: _InkColour(colour: receiptInk, child: widget.child),
+    );
     if (program == null) {
       return ColoredBox(color: const Color(0xFFFBF8EF), child: text);
     }
     final dpr = MediaQuery.devicePixelRatioOf(context);
-    if (params.ink && canPrintInk) {
+    if (params.ink && ReceiptPaper.canPrintInk) {
       return _PrintedInk(
         program: program,
         params: params,
+        sheet: _sheet,
         dpr: dpr,
         child: text,
       );
     }
     return CustomPaint(
-      painter: _PaperPainter(program: program, params: params),
+      painter: _PaperPainter(program: program, params: params, sheet: _sheet),
       child: text,
     );
   }
+}
+
+@immutable
+class _SheetPosition {
+  const new({required this.scroll, required this.height});
+
+  final double scroll;
+  final double height;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _SheetPosition &&
+      other.scroll == scroll &&
+      other.height == height;
+
+  @override
+  int get hashCode => Object.hash(scroll, height);
 }
 
 /// Text through the shader as an image filter: the engine binds the
@@ -57,12 +114,14 @@ class _PrintedInk extends StatefulWidget {
   const new({
     required this.program,
     required this.params,
+    required this.sheet,
     required this.dpr,
     required this.child,
   });
 
   final ui.FragmentProgram program;
   final PaperParams params;
+  final _SheetPosition sheet;
   final double dpr;
   final Widget child;
 
@@ -87,6 +146,7 @@ class _PrintedInkState extends State<_PrintedInk> {
       _shader,
       Size.zero,
       widget.params,
+      widget.sheet,
       printInk: true,
       pixelScale: widget.dpr,
     );
@@ -132,10 +192,11 @@ class _InkColour extends StatelessWidget {
 }
 
 class _PaperPainter extends CustomPainter {
-  new({required this.program, required this.params});
+  new({required this.program, required this.params, required this.sheet});
 
   final ui.FragmentProgram program;
   final PaperParams params;
+  final _SheetPosition sheet;
 
   /// The shader always declares a sampler; paper-only mode never reads it.
   static final ui.Image _dummy = () {
@@ -149,7 +210,7 @@ class _PaperPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final shader = program.fragmentShader();
-    _setUniforms(shader, size, params, printInk: false, pixelScale: 1);
+    _setUniforms(shader, size, params, sheet, printInk: false, pixelScale: 1);
     shader.setImageSampler(0, _dummy);
     canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
     shader.dispose();
@@ -157,14 +218,16 @@ class _PaperPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_PaperPainter old) =>
-      old.params != params || old.program != program;
+      old.params != params || old.program != program || old.sheet != sheet;
 }
 
-/// Uniform order of `receipt_paper.frag`.
+/// Uniform order of `receipt_paper.frag`. Lengths are in logical pixels,
+/// times [pixelScale] (the image filter works in physical pixels).
 void _setUniforms(
   ui.FragmentShader shader,
   Size size,
-  PaperParams p, {
+  PaperParams p,
+  _SheetPosition sheet, {
   required bool printInk,
   required double pixelScale,
 }) {
@@ -187,4 +250,8 @@ void _setUniforms(
   set(p.lines);
   set(p.dropout);
   set(p.round);
+  set(sheet.scroll * pixelScale);
+  set(sheet.height * pixelScale);
+  set(p.tooth * pixelScale);
+  set(p.contrast);
 }

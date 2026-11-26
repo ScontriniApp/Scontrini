@@ -262,9 +262,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shaderLabInk => 'Shader ink';
 
   @override
-  String get shaderLabTornEdge => 'Torn edge';
-
-  @override
   String get shaderLabNewSeed => 'New creases';
 
   @override
