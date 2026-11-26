@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:scontrini/core/utils/async_values.dart';
 import 'package:scontrini/core/utils/clock.dart';
 import 'package:scontrini/features/analytics/data/analytics_providers.dart';
 import 'package:scontrini/features/insights/domain/insight.dart';
@@ -14,15 +15,11 @@ final Provider<AsyncValue<List<Insight>>> insightsProvider =
         purchaseHistoryProvider(InsightInput.window(today)),
       );
       final pantry = ref.watch(pantryHistoryProvider);
-      return switch ((purchases, pantry)) {
-        (AsyncData(value: final p), AsyncData(value: final q)) => AsyncData(
-          evaluateInsights(InsightInput(purchases: p, pantry: q, today: today)),
+      return combineAsync(
+        purchases,
+        pantry,
+        (p, q) => evaluateInsights(
+          InsightInput(purchases: p, pantry: q, today: today),
         ),
-        (AsyncError(:final error, :final stackTrace), _) ||
-        (
-          _,
-          AsyncError(:final error, :final stackTrace),
-        ) => AsyncError(error, stackTrace),
-        _ => const AsyncLoading(),
-      };
+      );
     });

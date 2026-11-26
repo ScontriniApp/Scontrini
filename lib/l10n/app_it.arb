@@ -40,7 +40,6 @@
   },
   "extractionReceiptDiscount": "Sconti sul totale",
   "extractionUnparsed": "Righe non riconosciute",
-  "extractionRawText": "Testo riconosciuto",
   "warningMissingStore": "Negozio non trovato",
   "warningMissingDate": "Data non trovata",
   "warningMissingTotal": "Totale non trovato",
@@ -135,6 +134,25 @@
   "navInsights": "Consigli",
   "insightsEmpty": "I consigli personalizzati appariranno qui.",
   "settingsEmpty": "Categorie, backup e sicurezza.",
+  "shaderLabTitle": "Laboratorio carta",
+  "shaderLabHint": "Regola l'effetto scontrino stropicciato.",
+  "shaderLabInkUnsupported": "Inchiostro col shader non disponibile qui (serve Impeller): il testo è disegnato sopra la carta.",
+  "shaderLabReceipt": "Scontrino",
+  "shaderLabComponents": "Componenti",
+  "shaderLabInkOff": "Sopra",
+  "shaderLabInkThermal": "Termica",
+  "shaderLabInkColour": "Colori",
+  "shaderLabNewSeed": "Nuove pieghe",
+  "shaderLabReset": "Ripristina",
+  "shaderLabCopy": "Copia valori",
+  "shaderLabCopied": "Valori copiati negli appunti",
+  "shaderLabTiltLight": "Luce dal giroscopio",
+  "shaderLabTiltLightHint": "La luce viene dall'alto: inclina il telefono.",
+  "shaderLabHideControls": "Mostra/nascondi i controlli",
+  "plasticLabTitle": "Laboratorio plastica",
+  "plasticLabHint": "Regola la targhetta di plastica: bordo, lucido, inclinazione al tocco.",
+  "plasticLabUnsupported": "Luce della plastica non disponibile qui (serve Impeller): la targhetta si inclina senza riflessi.",
+  "plasticLabTouchHint": "Tocca e trascina la targhetta per inclinarla.",
   "demoDataTitle": "Dati demo (solo debug)",
   "demoDataLoad": "Carica dati demo",
   "demoDataLoadHint": "6 mesi di acquisti inventati. Si sommano agli scontrini veri finché non li rimuovi.",
@@ -177,7 +195,7 @@
   "dashboardCategoriesEmpty": "Nessuna spesa questo mese",
   "dashboardRestSlice": "Altro e senza categoria",
   "dashboardInsightsTitle": "Consigli",
-  "dashboardInsightsEmpty": "Nessun consiglio per ora. Qui appariranno le categorie in cui spendi più del solito e i prodotti che butti spesso.",
+  "dashboardInsightsEmpty": "Nessun consiglio per ora. Qui appariranno i prezzi in aumento, le categorie in cui spendi più del solito e i prodotti che butti spesso.",
   "dashboardCategoryHint": "Tocca una categoria per vederne gli articoli",
   "dashboardItemCount": "{count, plural, =0{Nessun articolo} =1{1 articolo} other{{count} articoli}}",
   "@dashboardItemCount": {
@@ -208,7 +226,6 @@
   "pantryNoResults": "Nessun prodotto trovato.",
   "captureManual": "Inserisci a mano",
   "manualReceiptTitle": "Scontrino a mano",
-  "manualReceiptNotice": "Aggiungi i prodotti che hai comprato. Salvando, lo scontrino entra nello storico e i prodotti in dispensa.",
   "receiptsUnknownStore": "Negozio sconosciuto",
   "receiptsManual": "A mano",
   "receiptsItemCount": "{count, plural, =1{1 articolo} other{{count} articoli}}",
@@ -294,7 +311,6 @@
     }
   },
   "reviewTitle": "Controlla lo scontrino",
-  "reviewNotice": "Controlla ogni prodotto: confermalo se è stato letto bene, altrimenti correggilo. Salvando, lo scontrino entra nella dashboard e i prodotti in dispensa.",
   "reviewAddItem": "Aggiungi articolo",
   "reviewEditItem": "Modifica articolo",
   "reviewFieldName": "Nome sullo scontrino",
@@ -322,29 +338,8 @@
   "reviewDiscardTitle": "Scartare le modifiche?",
   "reviewDiscardBody": "Lo scontrino non è ancora stato salvato.",
   "reviewDiscard": "Scarta",
-  "reviewMismatchDetail": "Somma articoli {items}, totale {total}",
-  "@reviewMismatchDetail": {
-    "placeholders": {
-      "items": {
-        "type": "String"
-      },
-      "total": {
-        "type": "String"
-      }
-    }
-  },
-  "reviewMissingDateHint": "Senza data, viene usata quella di oggi.",
-  "reviewMissingTotalHint": "Senza totale, viene usata la somma degli articoli.",
   "reviewUseItemsTotal": "Usa la somma",
   "reviewSave": "Salva scontrino",
-  "reviewSaveBlocked": "{count, plural, =1{Manca 1 prodotto da controllare} other{Mancano {count} prodotti da controllare}}",
-  "@reviewSaveBlocked": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "reviewItemsPending": "Articoli ({count}), {pending} da controllare",
   "@reviewItemsPending": {
     "placeholders": {
@@ -368,6 +363,7 @@
     }
   },
   "reviewConfirmAll": "Conferma tutti ({count})",
+  "reviewUnconfirmAll": "Annulla tutto",
   "@reviewConfirmAll": {
     "placeholders": {
       "count": {
@@ -635,6 +631,34 @@
       }
     }
   },
+  "insightPriceTitle": "Prezzo in aumento: {product}",
+  "@insightPriceTitle": {
+    "placeholders": {
+      "product": {
+        "type": "String"
+      }
+    }
+  },
+  "insightPriceBody": "{latest} contro {usual} di solito{store, select, none{} other{ da {store}}} ({change}). Circa {amount} in più al mese per quanto ne compri.",
+  "@insightPriceBody": {
+    "placeholders": {
+      "latest": {
+        "type": "String"
+      },
+      "usual": {
+        "type": "String"
+      },
+      "store": {
+        "type": "String"
+      },
+      "change": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "exportTitle": "Esporta i dati raccolti",
   "exportSummary": "{receipts, plural, =1{1 scontrino} other{{receipts} scontrini}} · {items, plural, =1{1 articolo} other{{items} articoli}}, in un file CSV",
   "@exportSummary": {
@@ -661,5 +685,62 @@
       }
     }
   },
-  "exportFailed": "Esportazione non riuscita."
+  "exportFailed": "Esportazione non riuscita.",
+  "settingsLanguage": "Lingua",
+  "@settingsLanguage": {
+    "description": "Settings: title of the language switch"
+  },
+  "categoryFruitVegetables": "Frutta e verdura",
+  "@categoryFruitVegetables": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryMeatFish": "Carne e pesce",
+  "@categoryMeatFish": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryDairyEggs": "Latticini e uova",
+  "@categoryDairyEggs": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryBreadPasta": "Pane e pasta",
+  "@categoryBreadPasta": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryDrinks": "Bevande",
+  "@categoryDrinks": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryPantry": "Dispensa",
+  "@categoryPantry": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryFrozen": "Surgelati",
+  "@categoryFrozen": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryHousehold": "Casa e igiene",
+  "@categoryHousehold": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "categoryOther": "Altro",
+  "@categoryOther": {
+    "description": "Name of a built-in category (seeded in the database in Italian)"
+  },
+  "importTitle": "Importa dati da CSV",
+  "importHint": "Un file esportato da questa app: scontrini e dispensa. Gli scontrini già presenti vengono saltati.",
+  "importDone": "{receipts, plural, =1{Importato 1 scontrino} other{Importati {receipts} scontrini}}, {lots} in dispensa, {duplicates} già presenti",
+  "@importDone": {
+    "placeholders": {
+      "receipts": {
+        "type": "int"
+      },
+      "lots": {
+        "type": "int"
+      },
+      "duplicates": {
+        "type": "int"
+      }
+    }
+  },
+  "importFailed": "File non valido: scegli un CSV esportato da questa app"
 }

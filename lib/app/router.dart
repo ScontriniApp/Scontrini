@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:scontrini/app/tab_reselect.dart';
 import 'package:scontrini/features/analytics/presentation/analytics_screen.dart';
 import 'package:scontrini/features/analytics/presentation/dashboard_screen.dart';
 import 'package:scontrini/features/capture/domain/receipt_source.dart';
@@ -8,18 +10,27 @@ import 'package:scontrini/features/capture/presentation/capture_screen.dart';
 import 'package:scontrini/features/extraction/presentation/extraction_screen.dart';
 import 'package:scontrini/features/extraction/presentation/receipt_review_screen.dart';
 import 'package:scontrini/features/pantry/presentation/pantry_screen.dart';
+import 'package:scontrini/features/plastic_lab/presentation/plastic_lab_screen.dart';
 import 'package:scontrini/features/products/presentation/product_stats_screen.dart';
 import 'package:scontrini/features/receipts/presentation/receipt_detail_screen.dart';
 import 'package:scontrini/features/receipts/presentation/receipts_screen.dart';
 import 'package:scontrini/features/settings/presentation/settings_screen.dart';
+import 'package:scontrini/features/shader_lab/presentation/shader_lab_screen.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 abstract final class Routes {
   static const dashboard = '/';
   static const receipts = '/receipts';
 
-  /// One receipt of the history (inside the history tab).
+  /// One receipt of the history (inside the history tab). Only for screens
+  /// inside the tabs: pushed from a full-screen route (outside the shell)
+  /// it would stack a second copy of the shell, and go_router's duplicate
+  /// page keys trip a Navigator assertion. Those use [receiptOver].
   static String receipt(int id) => '$receipts/$id';
+
+  /// The same receipt detail as a full-screen route, opened over whatever
+  /// is showing (e.g. from a product's statistics); back returns there.
+  static String receiptOver(int id) => '/receipt/$id';
 
   /// One product's statistics (prices paid, purchases, pantry).
   static String product(int id) => '/products/$id';
@@ -33,6 +44,12 @@ abstract final class Routes {
   /// Needs the captured `ReceiptSource` as `extra`.
   static const extraction = '/extraction';
   static const settings = '/settings';
+
+  /// Receipt paper shader tuning (debug builds only).
+  static const shaderLab = '/shader-lab';
+
+  /// Plastic shelf-label shader tuning (debug builds only).
+  static const plasticLab = '/plastic-lab';
 }
 
 /// One router per `ProviderScope`, so navigation state doesn't leak between
@@ -103,6 +120,12 @@ GoRouter _createRouter() => GoRouter(
       },
     ),
     GoRoute(
+      path: '/receipt/:id',
+      builder: (_, state) => ReceiptDetailScreen(
+        receiptId: int.tryParse(state.pathParameters['id'] ?? '') ?? -1,
+      ),
+    ),
+    GoRoute(
       path: '/products/:id',
       builder: (_, state) => ProductStatsScreen(
         productId: int.tryParse(state.pathParameters['id'] ?? '') ?? -1,
@@ -113,16 +136,26 @@ GoRouter _createRouter() => GoRouter(
       builder: (_, _) => const ReceiptReviewScreen.manual(),
     ),
     GoRoute(path: Routes.settings, builder: (_, _) => const SettingsScreen()),
+    if (kDebugMode)
+      GoRoute(
+        path: Routes.shaderLab,
+        builder: (_, _) => const ShaderLabScreen(),
+      ),
+    if (kDebugMode)
+      GoRoute(
+        path: Routes.plasticLab,
+        builder: (_, _) => const PlasticLabScreen(),
+      ),
   ],
 );
 
-class _AppShell extends StatelessWidget {
+class _AppShell extends ConsumerWidget {
   const new({required this.shell});
 
   final StatefulNavigationShell shell;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: shell,
@@ -133,8 +166,12 @@ class _AppShell extends StatelessWidget {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: shell.currentIndex,
-        onDestinationSelected: (index) =>
-            shell.goBranch(index, initialLocation: index == shell.currentIndex),
+        onDestinationSelected: (index) {
+          final again = index == shell.currentIndex;
+          shell.goBranch(index, initialLocation: again);
+          // A tap on the open tab also asks its screen to refresh.
+          if (again) ref.read(tabReselectProvider.notifier).reselect(index);
+        },
         destinations: [
           NavigationDestination(
             icon: const Icon(Icons.home_outlined),

@@ -7,6 +7,7 @@ import 'package:scontrini/core/utils/money.dart';
 import 'package:scontrini/features/analytics/domain/models/dashboard_summary.dart';
 import 'package:scontrini/features/analytics/presentation/chart_palette.dart';
 import 'package:scontrini/features/analytics/presentation/widgets/category_purchases_sheet.dart';
+import 'package:scontrini/features/pantry/presentation/category_label.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 /// This month's spending by category: a donut and, under it, a legend with
@@ -102,7 +103,9 @@ class _CategoryPieCardState extends State<CategoryPieCard> {
               for (final (i, s) in slices.indexed)
                 _LegendRow(
                   color: ChartPalette.series(context, s.colorSlot),
-                  label: s.category?.name ?? l10n.dashboardRestSlice,
+                  label: s.category == null
+                      ? l10n.dashboardRestSlice
+                      : categoryLabel(l10n, s.category!.name),
                   amount: Money.format(s.cents),
                   share: percent.format(s.share),
                   highlighted: i == _touched,

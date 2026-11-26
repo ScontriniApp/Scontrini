@@ -6,6 +6,7 @@ import 'package:scontrini/core/widgets/placeholder_view.dart';
 import 'package:scontrini/features/pantry/data/pantry_providers.dart';
 import 'package:scontrini/features/pantry/domain/pantry_category.dart';
 import 'package:scontrini/features/pantry/domain/pantry_lot.dart';
+import 'package:scontrini/features/pantry/presentation/category_label.dart';
 import 'package:scontrini/features/pantry/presentation/category_sprites.dart';
 import 'package:scontrini/features/pantry/presentation/pantry_providers.dart';
 import 'package:scontrini/features/pantry/presentation/quantity_format.dart';
@@ -98,7 +99,10 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
       ..sort((a, b) {
         if (a == null) return 1;
         if (b == null) return -1;
-        return byId[a]!.name.compareTo(byId[b]!.name);
+        return categoryLabel(
+          l10n,
+          byId[a]!.name,
+        ).compareTo(categoryLabel(l10n, byId[b]!.name));
       });
 
     return Column(
@@ -134,7 +138,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                       CategorySectionHeader(
                         title: key == null
                             ? l10n.pantryUncategorised
-                            : byId[key]!.name,
+                            : categoryLabel(l10n, byId[key]!.name),
                         sprite: categorySprite(byId[key]?.name),
                         trailing: '${groups[key]!.length}',
                         // While searching, every section with a match is

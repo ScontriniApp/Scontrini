@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/core/utils/money.dart';
 import 'package:scontrini/features/analytics/domain/models/dashboard_summary.dart';
 import 'package:scontrini/features/analytics/presentation/chart_palette.dart';
+import 'package:scontrini/features/pantry/presentation/category_label.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 /// Shows the items behind a dashboard category slice: name, price paid and
@@ -63,7 +64,11 @@ class CategoryPurchasesList extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  slice.category?.name ?? restLabel ?? l10n.dashboardRestSlice,
+                  (slice.category == null
+                          ? null
+                          : categoryLabel(l10n, slice.category!.name)) ??
+                      restLabel ??
+                      l10n.dashboardRestSlice,
                   style: theme.textTheme.titleLarge,
                 ),
               ),
@@ -117,7 +122,9 @@ class _PurchaseTile extends StatelessWidget {
       else if (p.quantity != 1)
         '× ${NumberFormat.decimalPattern(locale).format(p.quantity)}',
     ].join(' · ');
-    final category = p.categoryName;
+    final category = p.categoryName == null
+        ? null
+        : categoryLabel(l10n, p.categoryName!);
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 24),

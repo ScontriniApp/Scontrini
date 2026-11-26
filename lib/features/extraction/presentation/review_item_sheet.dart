@@ -5,6 +5,7 @@ import 'package:scontrini/features/extraction/domain/models/parsed_item.dart';
 import 'package:scontrini/features/extraction/domain/models/quantity_unit.dart';
 import 'package:scontrini/features/extraction/domain/receipt_draft.dart';
 import 'package:scontrini/features/pantry/domain/pantry_category.dart';
+import 'package:scontrini/features/pantry/presentation/category_label.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 /// What the item sheet returns: the edited row, or a request to delete it.
@@ -80,10 +81,10 @@ class _ItemFormState extends State<_ItemForm> {
   }
 
   static String _formatQuantity(double value) =>
-      NumberFormat('0.###', 'it').format(value);
+      NumberFormat('0.###', Money.locale).format(value);
 
   static String _amountText(int? cents) =>
-      cents == null ? '' : NumberFormat('0.00', 'it').format(cents / 100);
+      cents == null ? '' : Money.inputText(cents);
 
   static double? _parseQuantity(String text) =>
       double.tryParse(text.trim().replaceAll(',', '.'));
@@ -276,7 +277,10 @@ class _ItemFormState extends State<_ItemForm> {
                 items: [
                   DropdownMenuItem(child: Text(l10n.reviewUncategorised)),
                   for (final c in widget.categories)
-                    DropdownMenuItem(value: c.id, child: Text(c.name)),
+                    DropdownMenuItem(
+                      value: c.id,
+                      child: Text(categoryLabel(l10n, c.name)),
+                    ),
                 ],
                 onChanged: (id) => setState(() => _categoryId = id),
               ),

@@ -36,6 +36,9 @@ void main() {
         .runAsync(() async => (await db.select(db.receipts).get()).length)
         .then((n) => n!);
 
+    // Settings has grown: scroll the button into the 800 × 600 test view.
+    await tester.ensureVisible(find.text('Carica dati demo'));
+    await tester.pump();
     await tester.runAsync(() async {
       await tester.tap(find.text('Carica dati demo'));
       await Future<void>.delayed(const Duration(seconds: 1));
@@ -44,6 +47,9 @@ void main() {
     expect(await receipts(), greaterThan(0));
     expect(find.textContaining('scontrini demo'), findsOneWidget);
 
+    // Settings has grown: scroll the button into the 800 × 600 test view.
+    await tester.ensureVisible(find.text('Rimuovi dati demo'));
+    await tester.pump();
     await tester.runAsync(() async {
       await tester.tap(find.text('Rimuovi dati demo'));
       await Future<void>.delayed(const Duration(milliseconds: 500));

@@ -254,12 +254,6 @@ abstract class AppLocalizations {
   /// **'Righe non riconosciute'**
   String get extractionUnparsed;
 
-  /// No description provided for @extractionRawText.
-  ///
-  /// In it, this message translates to:
-  /// **'Testo riconosciuto'**
-  String get extractionRawText;
-
   /// No description provided for @warningMissingStore.
   ///
   /// In it, this message translates to:
@@ -536,6 +530,120 @@ abstract class AppLocalizations {
   /// **'Categorie, backup e sicurezza.'**
   String get settingsEmpty;
 
+  /// No description provided for @shaderLabTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Laboratorio carta'**
+  String get shaderLabTitle;
+
+  /// No description provided for @shaderLabHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Regola l\'effetto scontrino stropicciato.'**
+  String get shaderLabHint;
+
+  /// No description provided for @shaderLabInkUnsupported.
+  ///
+  /// In it, this message translates to:
+  /// **'Inchiostro col shader non disponibile qui (serve Impeller): il testo è disegnato sopra la carta.'**
+  String get shaderLabInkUnsupported;
+
+  /// No description provided for @shaderLabReceipt.
+  ///
+  /// In it, this message translates to:
+  /// **'Scontrino'**
+  String get shaderLabReceipt;
+
+  /// No description provided for @shaderLabComponents.
+  ///
+  /// In it, this message translates to:
+  /// **'Componenti'**
+  String get shaderLabComponents;
+
+  /// No description provided for @shaderLabInkOff.
+  ///
+  /// In it, this message translates to:
+  /// **'Sopra'**
+  String get shaderLabInkOff;
+
+  /// No description provided for @shaderLabInkThermal.
+  ///
+  /// In it, this message translates to:
+  /// **'Termica'**
+  String get shaderLabInkThermal;
+
+  /// No description provided for @shaderLabInkColour.
+  ///
+  /// In it, this message translates to:
+  /// **'Colori'**
+  String get shaderLabInkColour;
+
+  /// No description provided for @shaderLabNewSeed.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuove pieghe'**
+  String get shaderLabNewSeed;
+
+  /// No description provided for @shaderLabReset.
+  ///
+  /// In it, this message translates to:
+  /// **'Ripristina'**
+  String get shaderLabReset;
+
+  /// No description provided for @shaderLabCopy.
+  ///
+  /// In it, this message translates to:
+  /// **'Copia valori'**
+  String get shaderLabCopy;
+
+  /// No description provided for @shaderLabCopied.
+  ///
+  /// In it, this message translates to:
+  /// **'Valori copiati negli appunti'**
+  String get shaderLabCopied;
+
+  /// No description provided for @shaderLabTiltLight.
+  ///
+  /// In it, this message translates to:
+  /// **'Luce dal giroscopio'**
+  String get shaderLabTiltLight;
+
+  /// No description provided for @shaderLabTiltLightHint.
+  ///
+  /// In it, this message translates to:
+  /// **'La luce viene dall\'alto: inclina il telefono.'**
+  String get shaderLabTiltLightHint;
+
+  /// No description provided for @shaderLabHideControls.
+  ///
+  /// In it, this message translates to:
+  /// **'Mostra/nascondi i controlli'**
+  String get shaderLabHideControls;
+
+  /// No description provided for @plasticLabTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Laboratorio plastica'**
+  String get plasticLabTitle;
+
+  /// No description provided for @plasticLabHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Regola la targhetta di plastica: bordo, lucido, inclinazione al tocco.'**
+  String get plasticLabHint;
+
+  /// No description provided for @plasticLabUnsupported.
+  ///
+  /// In it, this message translates to:
+  /// **'Luce della plastica non disponibile qui (serve Impeller): la targhetta si inclina senza riflessi.'**
+  String get plasticLabUnsupported;
+
+  /// No description provided for @plasticLabTouchHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Tocca e trascina la targhetta per inclinarla.'**
+  String get plasticLabTouchHint;
+
   /// No description provided for @demoDataTitle.
   ///
   /// In it, this message translates to:
@@ -623,7 +731,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardInsightsEmpty.
   ///
   /// In it, this message translates to:
-  /// **'Nessun consiglio per ora. Qui appariranno le categorie in cui spendi più del solito e i prodotti che butti spesso.'**
+  /// **'Nessun consiglio per ora. Qui appariranno i prezzi in aumento, le categorie in cui spendi più del solito e i prodotti che butti spesso.'**
   String get dashboardInsightsEmpty;
 
   /// No description provided for @dashboardCategoryHint.
@@ -679,12 +787,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Scontrino a mano'**
   String get manualReceiptTitle;
-
-  /// No description provided for @manualReceiptNotice.
-  ///
-  /// In it, this message translates to:
-  /// **'Aggiungi i prodotti che hai comprato. Salvando, lo scontrino entra nello storico e i prodotti in dispensa.'**
-  String get manualReceiptNotice;
 
   /// No description provided for @receiptsUnknownStore.
   ///
@@ -884,12 +986,6 @@ abstract class AppLocalizations {
   /// **'Controlla lo scontrino'**
   String get reviewTitle;
 
-  /// No description provided for @reviewNotice.
-  ///
-  /// In it, this message translates to:
-  /// **'Controlla ogni prodotto: confermalo se è stato letto bene, altrimenti correggilo. Salvando, lo scontrino entra nella dashboard e i prodotti in dispensa.'**
-  String get reviewNotice;
-
   /// No description provided for @reviewAddItem.
   ///
   /// In it, this message translates to:
@@ -1010,24 +1106,6 @@ abstract class AppLocalizations {
   /// **'Scarta'**
   String get reviewDiscard;
 
-  /// No description provided for @reviewMismatchDetail.
-  ///
-  /// In it, this message translates to:
-  /// **'Somma articoli {items}, totale {total}'**
-  String reviewMismatchDetail(String items, String total);
-
-  /// No description provided for @reviewMissingDateHint.
-  ///
-  /// In it, this message translates to:
-  /// **'Senza data, viene usata quella di oggi.'**
-  String get reviewMissingDateHint;
-
-  /// No description provided for @reviewMissingTotalHint.
-  ///
-  /// In it, this message translates to:
-  /// **'Senza totale, viene usata la somma degli articoli.'**
-  String get reviewMissingTotalHint;
-
   /// No description provided for @reviewUseItemsTotal.
   ///
   /// In it, this message translates to:
@@ -1039,12 +1117,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Salva scontrino'**
   String get reviewSave;
-
-  /// No description provided for @reviewSaveBlocked.
-  ///
-  /// In it, this message translates to:
-  /// **'{count, plural, =1{Manca 1 prodotto da controllare} other{Mancano {count} prodotti da controllare}}'**
-  String reviewSaveBlocked(int count);
 
   /// No description provided for @reviewItemsPending.
   ///
@@ -1081,6 +1153,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Conferma tutti ({count})'**
   String reviewConfirmAll(int count);
+
+  /// No description provided for @reviewUnconfirmAll.
+  ///
+  /// In it, this message translates to:
+  /// **'Annulla tutto'**
+  String get reviewUnconfirmAll;
 
   /// No description provided for @analyticsTabSpending.
   ///
@@ -1508,6 +1586,24 @@ abstract class AppLocalizations {
   /// **'{wasted} volte su {total} negli ultimi {days} giorni, {amount} buttati. Prova a prenderne meno.'**
   String insightWasteBody(int wasted, int total, int days, String amount);
 
+  /// No description provided for @insightPriceTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Prezzo in aumento: {product}'**
+  String insightPriceTitle(String product);
+
+  /// No description provided for @insightPriceBody.
+  ///
+  /// In it, this message translates to:
+  /// **'{latest} contro {usual} di solito{store, select, none{} other{ da {store}}} ({change}). Circa {amount} in più al mese per quanto ne compri.'**
+  String insightPriceBody(
+    String latest,
+    String usual,
+    String store,
+    String change,
+    String amount,
+  );
+
   /// No description provided for @exportTitle.
   ///
   /// In it, this message translates to:
@@ -1549,6 +1645,90 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Esportazione non riuscita.'**
   String get exportFailed;
+
+  /// Settings: title of the language switch
+  ///
+  /// In it, this message translates to:
+  /// **'Lingua'**
+  String get settingsLanguage;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Frutta e verdura'**
+  String get categoryFruitVegetables;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Carne e pesce'**
+  String get categoryMeatFish;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Latticini e uova'**
+  String get categoryDairyEggs;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Pane e pasta'**
+  String get categoryBreadPasta;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Bevande'**
+  String get categoryDrinks;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Dispensa'**
+  String get categoryPantry;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Surgelati'**
+  String get categoryFrozen;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Casa e igiene'**
+  String get categoryHousehold;
+
+  /// Name of a built-in category (seeded in the database in Italian)
+  ///
+  /// In it, this message translates to:
+  /// **'Altro'**
+  String get categoryOther;
+
+  /// No description provided for @importTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Importa dati da CSV'**
+  String get importTitle;
+
+  /// No description provided for @importHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Un file esportato da questa app: scontrini e dispensa. Gli scontrini già presenti vengono saltati.'**
+  String get importHint;
+
+  /// No description provided for @importDone.
+  ///
+  /// In it, this message translates to:
+  /// **'{receipts, plural, =1{Importato 1 scontrino} other{Importati {receipts} scontrini}}, {lots} in dispensa, {duplicates} già presenti'**
+  String importDone(int receipts, int lots, int duplicates);
+
+  /// No description provided for @importFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'File non valido: scegli un CSV esportato da questa app'**
+  String get importFailed;
 }
 
 class _AppLocalizationsDelegate

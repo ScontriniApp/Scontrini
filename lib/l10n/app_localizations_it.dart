@@ -94,9 +94,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get extractionUnparsed => 'Righe non riconosciute';
 
   @override
-  String get extractionRawText => 'Testo riconosciuto';
-
-  @override
   String get warningMissingStore => 'Negozio non trovato';
 
   @override
@@ -250,6 +247,68 @@ class AppLocalizationsIt extends AppLocalizations {
   String get settingsEmpty => 'Categorie, backup e sicurezza.';
 
   @override
+  String get shaderLabTitle => 'Laboratorio carta';
+
+  @override
+  String get shaderLabHint => 'Regola l\'effetto scontrino stropicciato.';
+
+  @override
+  String get shaderLabInkUnsupported =>
+      'Inchiostro col shader non disponibile qui (serve Impeller): il testo è disegnato sopra la carta.';
+
+  @override
+  String get shaderLabReceipt => 'Scontrino';
+
+  @override
+  String get shaderLabComponents => 'Componenti';
+
+  @override
+  String get shaderLabInkOff => 'Sopra';
+
+  @override
+  String get shaderLabInkThermal => 'Termica';
+
+  @override
+  String get shaderLabInkColour => 'Colori';
+
+  @override
+  String get shaderLabNewSeed => 'Nuove pieghe';
+
+  @override
+  String get shaderLabReset => 'Ripristina';
+
+  @override
+  String get shaderLabCopy => 'Copia valori';
+
+  @override
+  String get shaderLabCopied => 'Valori copiati negli appunti';
+
+  @override
+  String get shaderLabTiltLight => 'Luce dal giroscopio';
+
+  @override
+  String get shaderLabTiltLightHint =>
+      'La luce viene dall\'alto: inclina il telefono.';
+
+  @override
+  String get shaderLabHideControls => 'Mostra/nascondi i controlli';
+
+  @override
+  String get plasticLabTitle => 'Laboratorio plastica';
+
+  @override
+  String get plasticLabHint =>
+      'Regola la targhetta di plastica: bordo, lucido, inclinazione al tocco.';
+
+  @override
+  String get plasticLabUnsupported =>
+      'Luce della plastica non disponibile qui (serve Impeller): la targhetta si inclina senza riflessi.';
+
+  @override
+  String get plasticLabTouchHint =>
+      'Tocca e trascina la targhetta per inclinarla.';
+
+  @override
   String get demoDataTitle => 'Dati demo (solo debug)';
 
   @override
@@ -310,7 +369,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get dashboardInsightsEmpty =>
-      'Nessun consiglio per ora. Qui appariranno le categorie in cui spendi più del solito e i prodotti che butti spesso.';
+      'Nessun consiglio per ora. Qui appariranno i prezzi in aumento, le categorie in cui spendi più del solito e i prodotti che butti spesso.';
 
   @override
   String get dashboardCategoryHint =>
@@ -352,10 +411,6 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get manualReceiptTitle => 'Scontrino a mano';
-
-  @override
-  String get manualReceiptNotice =>
-      'Aggiungi i prodotti che hai comprato. Salvando, lo scontrino entra nello storico e i prodotti in dispensa.';
 
   @override
   String get receiptsUnknownStore => 'Negozio sconosciuto';
@@ -491,10 +546,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get reviewTitle => 'Controlla lo scontrino';
 
   @override
-  String get reviewNotice =>
-      'Controlla ogni prodotto: confermalo se è stato letto bene, altrimenti correggilo. Salvando, lo scontrino entra nella dashboard e i prodotti in dispensa.';
-
-  @override
   String get reviewAddItem => 'Aggiungi articolo';
 
   @override
@@ -558,33 +609,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get reviewDiscard => 'Scarta';
 
   @override
-  String reviewMismatchDetail(String items, String total) {
-    return 'Somma articoli $items, totale $total';
-  }
-
-  @override
-  String get reviewMissingDateHint => 'Senza data, viene usata quella di oggi.';
-
-  @override
-  String get reviewMissingTotalHint =>
-      'Senza totale, viene usata la somma degli articoli.';
-
-  @override
   String get reviewUseItemsTotal => 'Usa la somma';
 
   @override
   String get reviewSave => 'Salva scontrino';
-
-  @override
-  String reviewSaveBlocked(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Mancano $count prodotti da controllare',
-      one: 'Manca 1 prodotto da controllare',
-    );
-    return '$_temp0';
-  }
 
   @override
   String reviewItemsPending(int count, int pending) {
@@ -616,6 +644,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String reviewConfirmAll(int count) {
     return 'Conferma tutti ($count)';
   }
+
+  @override
+  String get reviewUnconfirmAll => 'Annulla tutto';
 
   @override
   String get analyticsTabSpending => 'Spesa';
@@ -930,6 +961,26 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
+  String insightPriceTitle(String product) {
+    return 'Prezzo in aumento: $product';
+  }
+
+  @override
+  String insightPriceBody(
+    String latest,
+    String usual,
+    String store,
+    String change,
+    String amount,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(store, {
+      'none': '',
+      'other': ' da $store',
+    });
+    return '$latest contro $usual di solito$_temp0 ($change). Circa $amount in più al mese per quanto ne compri.';
+  }
+
+  @override
   String get exportTitle => 'Esporta i dati raccolti';
 
   @override
@@ -972,4 +1023,56 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get exportFailed => 'Esportazione non riuscita.';
+
+  @override
+  String get settingsLanguage => 'Lingua';
+
+  @override
+  String get categoryFruitVegetables => 'Frutta e verdura';
+
+  @override
+  String get categoryMeatFish => 'Carne e pesce';
+
+  @override
+  String get categoryDairyEggs => 'Latticini e uova';
+
+  @override
+  String get categoryBreadPasta => 'Pane e pasta';
+
+  @override
+  String get categoryDrinks => 'Bevande';
+
+  @override
+  String get categoryPantry => 'Dispensa';
+
+  @override
+  String get categoryFrozen => 'Surgelati';
+
+  @override
+  String get categoryHousehold => 'Casa e igiene';
+
+  @override
+  String get categoryOther => 'Altro';
+
+  @override
+  String get importTitle => 'Importa dati da CSV';
+
+  @override
+  String get importHint =>
+      'Un file esportato da questa app: scontrini e dispensa. Gli scontrini già presenti vengono saltati.';
+
+  @override
+  String importDone(int receipts, int lots, int duplicates) {
+    String _temp0 = intl.Intl.pluralLogic(
+      receipts,
+      locale: localeName,
+      other: 'Importati $receipts scontrini',
+      one: 'Importato 1 scontrino',
+    );
+    return '$_temp0, $lots in dispensa, $duplicates già presenti';
+  }
+
+  @override
+  String get importFailed =>
+      'File non valido: scegli un CSV esportato da questa app';
 }

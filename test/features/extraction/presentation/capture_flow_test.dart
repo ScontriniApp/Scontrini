@@ -115,11 +115,9 @@ void main() {
     expect(find.text('SUPERMERCATO ESEMPIO'), findsOneWidget);
     expect(find.text('LATTE INTERO'), findsOneWidget);
     expect(find.text('Articoli (2), 2 da controllare'), findsOneWidget);
-    expect(find.text('Data non trovata'), findsOneWidget);
-    expect(
-      find.text('La somma degli articoli non corrisponde al totale'),
-      findsOneWidget,
-    );
+    // Problems show on their line, not as banners.
+    expect(find.text('Data non trovata'), findsNothing);
+    expect(find.text('Somma articoli'), findsOneWidget);
   });
 
   testWidgets('cancelling the picker stays on the capture screen', (

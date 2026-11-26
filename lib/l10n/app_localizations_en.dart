@@ -94,9 +94,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get extractionUnparsed => 'Unrecognised rows';
 
   @override
-  String get extractionRawText => 'Recognised text';
-
-  @override
   String get warningMissingStore => 'Store not found';
 
   @override
@@ -249,6 +246,67 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsEmpty => 'Categories, backup and security.';
 
   @override
+  String get shaderLabTitle => 'Paper lab';
+
+  @override
+  String get shaderLabHint => 'Tune the crumpled receipt look.';
+
+  @override
+  String get shaderLabInkUnsupported =>
+      'Shader ink isn\'t available here (needs Impeller): the text is drawn on top of the paper.';
+
+  @override
+  String get shaderLabReceipt => 'Receipt';
+
+  @override
+  String get shaderLabComponents => 'Components';
+
+  @override
+  String get shaderLabInkOff => 'On top';
+
+  @override
+  String get shaderLabInkThermal => 'Thermal';
+
+  @override
+  String get shaderLabInkColour => 'Colour';
+
+  @override
+  String get shaderLabNewSeed => 'New creases';
+
+  @override
+  String get shaderLabReset => 'Reset';
+
+  @override
+  String get shaderLabCopy => 'Copy values';
+
+  @override
+  String get shaderLabCopied => 'Values copied to the clipboard';
+
+  @override
+  String get shaderLabTiltLight => 'Light from the gyroscope';
+
+  @override
+  String get shaderLabTiltLightHint =>
+      'The light comes from above: tilt the phone.';
+
+  @override
+  String get shaderLabHideControls => 'Show/hide the controls';
+
+  @override
+  String get plasticLabTitle => 'Plastic lab';
+
+  @override
+  String get plasticLabHint =>
+      'Tune the plastic shelf label: rim, gloss, tilt on touch.';
+
+  @override
+  String get plasticLabUnsupported =>
+      'Plastic lighting isn\'t available here (needs Impeller): the label tilts without reflections.';
+
+  @override
+  String get plasticLabTouchHint => 'Touch and drag the label to tilt it.';
+
+  @override
   String get demoDataTitle => 'Demo data (debug only)';
 
   @override
@@ -309,7 +367,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardInsightsEmpty =>
-      'No suggestions for now. Categories where you spend more than usual and products you often throw away will appear here.';
+      'No suggestions for now. Rising prices, categories where you spend more than usual and products you often throw away will appear here.';
 
   @override
   String get dashboardCategoryHint => 'Tap a category to see its items';
@@ -350,10 +408,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get manualReceiptTitle => 'Receipt by hand';
-
-  @override
-  String get manualReceiptNotice =>
-      'Add the products you bought. Saving adds the receipt to the history and its products to the pantry.';
 
   @override
   String get receiptsUnknownStore => 'Unknown store';
@@ -490,10 +544,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewTitle => 'Check the receipt';
 
   @override
-  String get reviewNotice =>
-      'Check each product: confirm it if it was read correctly, otherwise correct it. Saving adds the receipt to the dashboard and its products to the pantry.';
-
-  @override
   String get reviewAddItem => 'Add item';
 
   @override
@@ -556,33 +606,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewDiscard => 'Discard';
 
   @override
-  String reviewMismatchDetail(String items, String total) {
-    return 'Items sum $items, total $total';
-  }
-
-  @override
-  String get reviewMissingDateHint => 'Without a date, today\'s is used.';
-
-  @override
-  String get reviewMissingTotalHint =>
-      'Without a total, the items\' sum is used.';
-
-  @override
   String get reviewUseItemsTotal => 'Use the sum';
 
   @override
   String get reviewSave => 'Save receipt';
-
-  @override
-  String reviewSaveBlocked(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count products left to check',
-      one: '1 product left to check',
-    );
-    return '$_temp0';
-  }
 
   @override
   String reviewItemsPending(int count, int pending) {
@@ -614,6 +641,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String reviewConfirmAll(int count) {
     return 'Confirm all ($count)';
   }
+
+  @override
+  String get reviewUnconfirmAll => 'Undo all';
 
   @override
   String get analyticsTabSpending => 'Spending';
@@ -928,6 +958,26 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String insightPriceTitle(String product) {
+    return 'Price going up: $product';
+  }
+
+  @override
+  String insightPriceBody(
+    String latest,
+    String usual,
+    String store,
+    String change,
+    String amount,
+  ) {
+    String _temp0 = intl.Intl.selectLogic(store, {
+      'none': '',
+      'other': ' at $store',
+    });
+    return '$latest vs $usual usually$_temp0 ($change). About $amount more a month for what you buy.';
+  }
+
+  @override
   String get exportTitle => 'Export the collected data';
 
   @override
@@ -970,4 +1020,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportFailed => 'The export failed.';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get categoryFruitVegetables => 'Fruit and vegetables';
+
+  @override
+  String get categoryMeatFish => 'Meat and fish';
+
+  @override
+  String get categoryDairyEggs => 'Dairy and eggs';
+
+  @override
+  String get categoryBreadPasta => 'Bread and pasta';
+
+  @override
+  String get categoryDrinks => 'Drinks';
+
+  @override
+  String get categoryPantry => 'Pantry staples';
+
+  @override
+  String get categoryFrozen => 'Frozen food';
+
+  @override
+  String get categoryHousehold => 'Home and hygiene';
+
+  @override
+  String get categoryOther => 'Other';
+
+  @override
+  String get importTitle => 'Import data from CSV';
+
+  @override
+  String get importHint =>
+      'A file exported from this app: receipts and pantry. Receipts already here are skipped.';
+
+  @override
+  String importDone(int receipts, int lots, int duplicates) {
+    String _temp0 = intl.Intl.pluralLogic(
+      receipts,
+      locale: localeName,
+      other: 'Imported $receipts receipts',
+      one: 'Imported 1 receipt',
+    );
+    return '$_temp0, $lots in the pantry, $duplicates already here';
+  }
+
+  @override
+  String get importFailed => 'Invalid file: pick a CSV exported from this app';
 }
