@@ -74,17 +74,14 @@ class _PlasticLabScreenState extends ConsumerState<PlasticLabScreen> {
         Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 380),
-            child: PlasticPlate(
-              params: params.copyWith(debugView: _debugView),
-              screenInsets: ShelfLabel.screenInsets,
-              child: ShelfLabel(
-                title: 'Speso a novembre',
-                cents: 41230,
-                leading: '12 scontrini',
-                footer: 'Di solito 368,40 € a questo punto del mese',
-                corner: Text('+12%', style: ShelfLabel.smallStyle(context)),
-                shadow: false,
-              ),
+            // The real component: the same label the dashboard shows.
+            child: ShelfLabel(
+              title: 'Speso a novembre',
+              cents: 41230,
+              leading: '12 scontrini',
+              footer: 'Di solito 368,40 € a questo punto del mese',
+              corner: Text('+12%', style: ShelfLabel.smallStyle(context)),
+              plasticParams: params.copyWith(debugView: _debugView),
             ),
           ),
         ),

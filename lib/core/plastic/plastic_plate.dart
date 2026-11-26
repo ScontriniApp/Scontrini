@@ -97,6 +97,11 @@ class _PlasticPlateState extends ConsumerState<PlasticPlate>
   void _touch(Offset local, {required bool pressed}) {
     final size = context.size;
     if (size == null || size.isEmpty) return;
+    // A finger that slid off (scrolling the list) lets the plate go.
+    if (!(Offset.zero & size).inflate(8).contains(local)) {
+      _release();
+      return;
+    }
     _motion.touch(
       local.dx / size.width * 2 - 1,
       local.dy / size.height * 2 - 1,
