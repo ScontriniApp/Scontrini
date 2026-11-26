@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:scontrini/core/paper/paper_bubble.dart';
 import 'package:scontrini/core/paper/paper_params.dart';
 import 'package:scontrini/core/paper/paper_settings.dart';
+import 'package:scontrini/core/utils/settings_store.dart';
 
 void main() {
   const tuned = PaperSettings(
@@ -56,7 +57,7 @@ void main() {
 
     test('saves and reads back, last change wins', () async {
       final file = File('${dir.path}/paper_settings.json');
-      final store = await FilePaperSettingsStore.open(file: file);
+      final store = await openPaperSettingsFile(file: file);
       expect(store.initial, const PaperSettings());
 
       store
@@ -64,20 +65,20 @@ void main() {
         ..save(tuned);
       await store.flush();
 
-      final reopened = await FilePaperSettingsStore.open(file: file);
+      final reopened = await openPaperSettingsFile(file: file);
       expect(reopened.initial, tuned);
     });
 
     test('a broken file gives the defaults', () async {
       final file = File('${dir.path}/paper_settings.json')
         ..writeAsStringSync('{not json');
-      final store = await FilePaperSettingsStore.open(file: file);
+      final store = await openPaperSettingsFile(file: file);
       expect(store.initial, const PaperSettings());
     });
   });
 
   test('the provider starts from the store and saves every change', () {
-    final store = MemoryPaperSettingsStore(tuned);
+    final store = MemorySettingsStore(tuned);
     final container = ProviderContainer(
       overrides: [paperSettingsStoreProvider.overrideWithValue(store)],
     );

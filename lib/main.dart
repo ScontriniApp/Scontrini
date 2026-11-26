@@ -6,6 +6,7 @@ import 'package:scontrini/core/database/connection.dart';
 import 'package:scontrini/core/database/database_key_store.dart';
 import 'package:scontrini/core/database/database_provider.dart';
 import 'package:scontrini/core/paper/paper_settings.dart';
+import 'package:scontrini/core/plastic/plastic_settings.dart';
 import 'package:scontrini/features/settings/data/language_store.dart';
 import 'package:scontrini/features/settings/presentation/language_provider.dart';
 
@@ -15,7 +16,9 @@ Future<void> main() async {
   final key = await DatabaseKeyStore().readOrCreate();
   final database = AppDatabase(openEncryptedConnection(key));
   final languages = await PreferencesLanguageStore.open();
-  final paper = await FilePaperSettingsStore.open()
+  final paper = await openPaperSettingsFile()
+    ..flushOnPause();
+  final plastic = await openPlasticSettingsFile()
     ..flushOnPause();
 
   runApp(
@@ -24,6 +27,7 @@ Future<void> main() async {
         appDatabaseProvider.overrideWithValue(database),
         languageStoreProvider.overrideWithValue(languages),
         paperSettingsStoreProvider.overrideWithValue(paper),
+        plasticSettingsStoreProvider.overrideWithValue(plastic),
       ],
       child: const ScontriniApp(),
     ),

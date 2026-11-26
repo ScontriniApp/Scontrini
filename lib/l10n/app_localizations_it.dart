@@ -297,6 +297,21 @@ class AppLocalizationsIt extends AppLocalizations {
   String get shaderLabHideControls => 'Mostra/nascondi i controlli';
 
   @override
+  String get plasticLabTitle => 'Laboratorio plastica';
+
+  @override
+  String get plasticLabHint =>
+      'Regola la targhetta di plastica: bordo, lucido, inclinazione al tocco.';
+
+  @override
+  String get plasticLabUnsupported =>
+      'Luce della plastica non disponibile qui (serve Impeller): la targhetta si inclina senza riflessi.';
+
+  @override
+  String get plasticLabTouchHint =>
+      'Tocca e trascina la targhetta per inclinarla.';
+
+  @override
   String get demoDataTitle => 'Dati demo (solo debug)';
 
   @override

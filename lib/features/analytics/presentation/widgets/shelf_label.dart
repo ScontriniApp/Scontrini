@@ -19,6 +19,7 @@ class ShelfLabel extends StatelessWidget {
     required this.leading,
     required this.footer,
     this.corner,
+    this.shadow = true,
     super.key,
   });
 
@@ -27,6 +28,19 @@ class ShelfLabel extends StatelessWidget {
   final String leading;
   final String footer;
   final Widget? corner;
+
+  /// Whether the label draws its own soft shadow (off when something else,
+  /// like a plastic plate, casts it).
+  final bool shadow;
+
+  /// Corner radius of the plastic frame.
+  static const frameRadius = 10.0;
+
+  /// Where the screen sits inside the frame.
+  static const screenInsets = EdgeInsets.fromLTRB(12, 10, 12, 16);
+
+  /// Corner radius of the screen.
+  static const screenRadius = 2.0;
 
   static const _frame = Color(0xFFF5F5F3);
   static const _frameEdge = Color(0xFFD9D9D6);
@@ -60,17 +74,18 @@ class ShelfLabel extends StatelessWidget {
     final corner = this.corner;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 16),
+      padding: screenInsets,
       decoration: BoxDecoration(
         color: _frame,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(frameRadius),
         border: Border.all(color: _frameEdge),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1F000000),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
+        boxShadow: [
+          if (shadow)
+            const BoxShadow(
+              color: Color(0x1F000000),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
         ],
       ),
       child: CustomPaint(
@@ -79,7 +94,7 @@ class ShelfLabel extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
           decoration: BoxDecoration(
             color: _screen,
-            borderRadius: BorderRadius.circular(2),
+            borderRadius: BorderRadius.circular(screenRadius),
             border: Border.all(color: _frameEdge, width: 2),
           ),
           child: Column(

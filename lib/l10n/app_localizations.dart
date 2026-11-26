@@ -626,6 +626,30 @@ abstract class AppLocalizations {
   /// **'Mostra/nascondi i controlli'**
   String get shaderLabHideControls;
 
+  /// No description provided for @plasticLabTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Laboratorio plastica'**
+  String get plasticLabTitle;
+
+  /// No description provided for @plasticLabHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Regola la targhetta di plastica: bordo, lucido, inclinazione al tocco.'**
+  String get plasticLabHint;
+
+  /// No description provided for @plasticLabUnsupported.
+  ///
+  /// In it, this message translates to:
+  /// **'Luce della plastica non disponibile qui (serve Impeller): la targhetta si inclina senza riflessi.'**
+  String get plasticLabUnsupported;
+
+  /// No description provided for @plasticLabTouchHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Tocca e trascina la targhetta per inclinarla.'**
+  String get plasticLabTouchHint;
+
   /// No description provided for @demoDataTitle.
   ///
   /// In it, this message translates to:

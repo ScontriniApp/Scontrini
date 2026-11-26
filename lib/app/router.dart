@@ -10,6 +10,7 @@ import 'package:scontrini/features/capture/presentation/capture_screen.dart';
 import 'package:scontrini/features/extraction/presentation/extraction_screen.dart';
 import 'package:scontrini/features/extraction/presentation/receipt_review_screen.dart';
 import 'package:scontrini/features/pantry/presentation/pantry_screen.dart';
+import 'package:scontrini/features/plastic_lab/presentation/plastic_lab_screen.dart';
 import 'package:scontrini/features/products/presentation/product_stats_screen.dart';
 import 'package:scontrini/features/receipts/presentation/receipt_detail_screen.dart';
 import 'package:scontrini/features/receipts/presentation/receipts_screen.dart';
@@ -39,6 +40,9 @@ abstract final class Routes {
 
   /// Receipt paper shader tuning (debug builds only).
   static const shaderLab = '/shader-lab';
+
+  /// Plastic shelf-label shader tuning (debug builds only).
+  static const plasticLab = '/plastic-lab';
 }
 
 /// One router per `ProviderScope`, so navigation state doesn't leak between
@@ -123,6 +127,11 @@ GoRouter _createRouter() => GoRouter(
       GoRoute(
         path: Routes.shaderLab,
         builder: (_, _) => const ShaderLabScreen(),
+      ),
+    if (kDebugMode)
+      GoRoute(
+        path: Routes.plasticLab,
+        builder: (_, _) => const PlasticLabScreen(),
       ),
   ],
 );
