@@ -77,6 +77,8 @@
   "shaderLabHint": "Tune the crumpled receipt look.",
   "shaderLabInkUnsupported": "Shader ink isn't available here (needs Impeller): the text is drawn on top of the paper.",
   "shaderLabInk": "Shader ink",
+  "shaderLabTilt": "Light follows the phone's tilt",
+  "shaderLabTiltUnavailable": "No motion sensor on this device",
   "shaderLabNewSeed": "New creases",
   "shaderLabReset": "Reset",
   "shaderLabCopy": "Copy values",

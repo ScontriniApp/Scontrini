@@ -139,6 +139,8 @@
   "shaderLabHint": "Regola l'effetto scontrino stropicciato.",
   "shaderLabInkUnsupported": "Inchiostro col shader non disponibile qui (serve Impeller): il testo è disegnato sopra la carta.",
   "shaderLabInk": "Inchiostro col shader",
+  "shaderLabTilt": "Luce che segue l'inclinazione del telefono",
+  "shaderLabTiltUnavailable": "Nessun sensore di movimento su questo dispositivo",
   "shaderLabNewSeed": "Nuove pieghe",
   "shaderLabReset": "Ripristina",
   "shaderLabCopy": "Copia valori",

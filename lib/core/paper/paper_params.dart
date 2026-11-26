@@ -24,6 +24,8 @@ class PaperParams {
     this.round = 0.08,
     this.tooth = 6,
     this.contrast = 1,
+    this.tiltGain = 1,
+    this.sheen = 0.3,
   });
 
   /// Which crumple: the same seed always gives the same wrinkles.
@@ -81,6 +83,13 @@ class PaperParams {
   /// default. Unlike [depth], the folds and the text bend stay the same.
   final double contrast;
 
+  /// How much the phone's tilt swings the light: 0 = fixed light, 1 = as
+  /// much as the phone turned. Negative turns it the other way.
+  final double tiltGain;
+
+  /// Glossy glint on the folds (thermal coating), seen as the light moves.
+  final double sheen;
+
   PaperParams copyWith({
     double? seed,
     double? cells,
@@ -99,6 +108,8 @@ class PaperParams {
     double? round,
     double? tooth,
     double? contrast,
+    double? tiltGain,
+    double? sheen,
   }) => PaperParams(
     seed: seed ?? this.seed,
     cells: cells ?? this.cells,
@@ -117,6 +128,8 @@ class PaperParams {
     round: round ?? this.round,
     tooth: tooth ?? this.tooth,
     contrast: contrast ?? this.contrast,
+    tiltGain: tiltGain ?? this.tiltGain,
+    sheen: sheen ?? this.sheen,
   );
 
   /// Dart source for these values, to paste back as the new defaults.
@@ -129,7 +142,8 @@ class PaperParams {
         'pixel: ${n(pixel)}, ink: $ink, warp: ${n(warp)}, '
         'inkFade: ${n(inkFade)}, lines: ${n(lines)}, '
         'dropout: ${n(dropout)}, round: ${n(round)}, tooth: ${n(tooth)}, '
-        'contrast: ${n(contrast)})';
+        'contrast: ${n(contrast)}, tiltGain: ${n(tiltGain)}, '
+        'sheen: ${n(sheen)})';
   }
 
   @override
@@ -151,7 +165,9 @@ class PaperParams {
       other.dropout == dropout &&
       other.round == round &&
       other.tooth == tooth &&
-      other.contrast == contrast;
+      other.contrast == contrast &&
+      other.tiltGain == tiltGain &&
+      other.sheen == sheen;
 
   @override
   int get hashCode => Object.hash(
@@ -172,5 +188,7 @@ class PaperParams {
     round,
     tooth,
     contrast,
+    tiltGain,
+    sheen,
   );
 }

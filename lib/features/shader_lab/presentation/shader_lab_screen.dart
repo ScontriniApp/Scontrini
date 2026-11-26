@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/router.dart';
 import 'package:scontrini/core/paper/paper_params.dart';
+import 'package:scontrini/core/paper/paper_tilt.dart';
 import 'package:scontrini/core/paper/receipt_paper.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
@@ -20,6 +21,8 @@ class ShaderLabScreen extends StatefulWidget {
 class _ShaderLabScreenState extends State<ShaderLabScreen> {
   PaperParams _params = const PaperParams();
   bool _controls = true;
+  bool _followTilt = true;
+  bool _noSensor = false;
   final _random = math.Random();
 
   void _update(PaperParams params) => setState(() => _params = params);
@@ -28,9 +31,35 @@ class _ShaderLabScreenState extends State<ShaderLabScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
-    final receipt = ReceiptPaper(
-      params: _params,
-      child: const _SampleReceipt(),
+    final receipt = PaperTilt(
+      enabled: _followTilt,
+      onUnavailable: () => setState(() => _noSensor = true),
+      builder: (context, tilt) => Stack(
+        children: [
+          ReceiptPaper(
+            params: _params,
+            tilt: tilt,
+            child: const _SampleReceipt(),
+          ),
+          // Live tilt (roll, pitch) in radians, to tune the gain.
+          if (_followTilt && !_noSensor)
+            Positioned(
+              right: 4,
+              top: 4,
+              child: ColoredBox(
+                color: const Color(0x99000000),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    '${tilt.dx.toStringAsFixed(2)} '
+                    '${tilt.dy.toStringAsFixed(2)}',
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
     return Scaffold(
       appBar: AppBar(
@@ -109,6 +138,17 @@ class _ShaderLabScreenState extends State<ShaderLabScreen> {
                         value: _params.ink,
                         onChanged: (v) => _update(_params.copyWith(ink: v)),
                       ),
+                      SwitchListTile(
+                        dense: true,
+                        title: Text(l10n.shaderLabTilt),
+                        subtitle: _noSensor
+                            ? Text(l10n.shaderLabTiltUnavailable)
+                            : null,
+                        value: _followTilt && !_noSensor,
+                        onChanged: _noSensor
+                            ? null
+                            : (v) => setState(() => _followTilt = v),
+                      ),
                       // Knob names match the shader uniforms (developer
                       // tool), so they aren't translated.
                       _knob('cells', _params.cells, 1, 14, (v) {
@@ -131,6 +171,12 @@ class _ShaderLabScreenState extends State<ShaderLabScreen> {
                       }),
                       _knob('light', _params.lightAngle, 0, 2 * math.pi, (v) {
                         _update(_params.copyWith(lightAngle: v));
+                      }),
+                      _knob('tilt', _params.tiltGain, -2, 2, (v) {
+                        _update(_params.copyWith(tiltGain: v));
+                      }),
+                      _knob('sheen', _params.sheen, 0, 1, (v) {
+                        _update(_params.copyWith(sheen: v));
                       }),
                       _knob('fibres', _params.fibres, 0, 3, (v) {
                         _update(_params.copyWith(fibres: v));

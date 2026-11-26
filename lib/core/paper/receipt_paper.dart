@@ -24,11 +24,20 @@ const receiptInk = Color(0xFF211F29);
 /// sheet is as long as the scroll view's content and scrolls with it: the
 /// creases stay under the same words and the torn edges sit at the content's
 /// top and bottom.
+///
+/// [tilt] is how far the phone was just tilted (see `PaperTilt`): the light
+/// swings with it, by [PaperParams.tiltGain].
 class ReceiptPaper extends ConsumerStatefulWidget {
-  const new({required this.params, required this.child, super.key});
+  const new({
+    required this.params,
+    required this.child,
+    this.tilt = Offset.zero,
+    super.key,
+  });
 
   final PaperParams params;
   final Widget child;
+  final Offset tilt;
 
   /// Whether this backend can print the text with the shader.
   static bool get canPrintInk => ui.ImageFilter.isShaderFilterSupported;
@@ -80,12 +89,18 @@ class _ReceiptPaperState extends ConsumerState<ReceiptPaper> {
         program: program,
         params: params,
         sheet: _sheet,
+        tilt: widget.tilt,
         dpr: dpr,
         child: text,
       );
     }
     return CustomPaint(
-      painter: _PaperPainter(program: program, params: params, sheet: _sheet),
+      painter: _PaperPainter(
+        program: program,
+        params: params,
+        sheet: _sheet,
+        tilt: widget.tilt,
+      ),
       child: text,
     );
   }
@@ -115,6 +130,7 @@ class _PrintedInk extends StatefulWidget {
     required this.program,
     required this.params,
     required this.sheet,
+    required this.tilt,
     required this.dpr,
     required this.child,
   });
@@ -122,6 +138,7 @@ class _PrintedInk extends StatefulWidget {
   final ui.FragmentProgram program;
   final PaperParams params;
   final _SheetPosition sheet;
+  final Offset tilt;
   final double dpr;
   final Widget child;
 
@@ -147,6 +164,7 @@ class _PrintedInkState extends State<_PrintedInk> {
       Size.zero,
       widget.params,
       widget.sheet,
+      widget.tilt,
       printInk: true,
       pixelScale: widget.dpr,
     );
@@ -192,11 +210,17 @@ class _InkColour extends StatelessWidget {
 }
 
 class _PaperPainter extends CustomPainter {
-  new({required this.program, required this.params, required this.sheet});
+  new({
+    required this.program,
+    required this.params,
+    required this.sheet,
+    required this.tilt,
+  });
 
   final ui.FragmentProgram program;
   final PaperParams params;
   final _SheetPosition sheet;
+  final Offset tilt;
 
   /// The shader always declares a sampler; paper-only mode never reads it.
   static final ui.Image _dummy = () {
@@ -210,7 +234,15 @@ class _PaperPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final shader = program.fragmentShader();
-    _setUniforms(shader, size, params, sheet, printInk: false, pixelScale: 1);
+    _setUniforms(
+      shader,
+      size,
+      params,
+      sheet,
+      tilt,
+      printInk: false,
+      pixelScale: 1,
+    );
     shader.setImageSampler(0, _dummy);
     canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
     shader.dispose();
@@ -218,7 +250,10 @@ class _PaperPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_PaperPainter old) =>
-      old.params != params || old.program != program || old.sheet != sheet;
+      old.params != params ||
+      old.program != program ||
+      old.sheet != sheet ||
+      old.tilt != tilt;
 }
 
 /// Uniform order of `receipt_paper.frag`. Lengths are in logical pixels,
@@ -227,7 +262,8 @@ void _setUniforms(
   ui.FragmentShader shader,
   Size size,
   PaperParams p,
-  _SheetPosition sheet, {
+  _SheetPosition sheet,
+  Offset tilt, {
   required bool printInk,
   required double pixelScale,
 }) {
@@ -254,4 +290,7 @@ void _setUniforms(
   set(sheet.height * pixelScale);
   set(p.tooth * pixelScale);
   set(p.contrast);
+  set(tilt.dx * p.tiltGain);
+  set(tilt.dy * p.tiltGain);
+  set(p.sheen);
 }

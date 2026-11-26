@@ -262,6 +262,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shaderLabInk => 'Shader ink';
 
   @override
+  String get shaderLabTilt => 'Light follows the phone\'s tilt';
+
+  @override
+  String get shaderLabTiltUnavailable => 'No motion sensor on this device';
+
+  @override
   String get shaderLabNewSeed => 'New creases';
 
   @override

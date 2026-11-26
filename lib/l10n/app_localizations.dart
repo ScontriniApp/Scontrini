@@ -560,6 +560,18 @@ abstract class AppLocalizations {
   /// **'Inchiostro col shader'**
   String get shaderLabInk;
 
+  /// No description provided for @shaderLabTilt.
+  ///
+  /// In it, this message translates to:
+  /// **'Luce che segue l\'inclinazione del telefono'**
+  String get shaderLabTilt;
+
+  /// No description provided for @shaderLabTiltUnavailable.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun sensore di movimento su questo dispositivo'**
+  String get shaderLabTiltUnavailable;
+
   /// No description provided for @shaderLabNewSeed.
   ///
   /// In it, this message translates to:

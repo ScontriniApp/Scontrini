@@ -263,6 +263,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String get shaderLabInk => 'Inchiostro col shader';
 
   @override
+  String get shaderLabTilt => 'Luce che segue l\'inclinazione del telefono';
+
+  @override
+  String get shaderLabTiltUnavailable =>
+      'Nessun sensore di movimento su questo dispositivo';
+
+  @override
   String get shaderLabNewSeed => 'Nuove pieghe';
 
   @override

@@ -35,6 +35,11 @@ uniform float uScroll;     // scroll offset of the area's top edge
 uniform float uSheet;      // height of the whole sheet; 0 = the area's height
 uniform float uTooth;      // torn-edge tooth width at top and bottom; 0 = straight
 uniform float uContrast;   // light and shadow strength (1 = default)
+// Phone tilt in radians (roll: right edge down, pitch: top edge back), gain
+// included; the light stays put in the room, so it turns the other way
+// over the paper.
+uniform vec2 uTilt;
+uniform float uSheen;      // glossy highlight on the folds (thermal coating)
 
 uniform sampler2D uTexture;
 
@@ -148,10 +153,26 @@ void main() {
 
   // Low, raking light so small slopes show.
   vec3 light = normalize(vec3(cos(uLightAngle), sin(uLightAngle), 0.9));
+  // Turn it against the phone's tilt (y points down the screen, z out of it).
+  float cp = cos(uTilt.y);
+  float sp = sin(uTilt.y);
+  light = vec3(light.x, cp * light.y + sp * light.z, -sp * light.y + cp * light.z);
+  float cr = cos(uTilt.x);
+  float sr = sin(uTilt.x);
+  light = vec3(cr * light.x + sr * light.z, light.y, -sr * light.x + cr * light.z);
+  light = normalize(vec3(light.xy, max(light.z, 0.2)));
   float diffuse = dot(normal, light);
   // Flat paper faces the light at light.z: that is the base shade, a little
   // under 1 so lit slopes still have room before white.
   float shade = 0.94 + (diffuse - light.z) * 1.1 * uContrast;
+
+  // Sheen: the coating catches the light where a slope faces halfway
+  // between the light and the eye. Flat paper's own glint is taken off, so
+  // only the folds flash as the phone tilts.
+  vec3 halfway = normalize(light + vec3(0.0, 0.0, 1.0));
+  float glint = pow(max(dot(normal, halfway), 0.0), 60.0) -
+                pow(halfway.z, 60.0);
+  shade += max(glint, 0.0) * 0.35 * uSheen;
 
   // A thin line along each crease, where the paper was pinched.
   shade -= (big.z * 0.07 + small.z * 0.04 * uFine) * min(uDepth, 1.0) * uContrast;
