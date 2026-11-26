@@ -259,10 +259,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Shader ink isn\'t available here (needs Impeller): the text is drawn on top of the paper.';
 
   @override
-  String get shaderLabInk => 'Shader ink';
+  String get shaderLabReceipt => 'Receipt';
 
   @override
-  String get shaderLabTornEdge => 'Torn edge';
+  String get shaderLabComponents => 'Components';
+
+  @override
+  String get shaderLabInkOff => 'On top';
+
+  @override
+  String get shaderLabInkThermal => 'Thermal';
+
+  @override
+  String get shaderLabInkColour => 'Colour';
 
   @override
   String get shaderLabNewSeed => 'New creases';

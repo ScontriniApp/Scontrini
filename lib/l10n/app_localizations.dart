@@ -554,17 +554,35 @@ abstract class AppLocalizations {
   /// **'Inchiostro col shader non disponibile qui (serve Impeller): il testo è disegnato sopra la carta.'**
   String get shaderLabInkUnsupported;
 
-  /// No description provided for @shaderLabInk.
+  /// No description provided for @shaderLabReceipt.
   ///
   /// In it, this message translates to:
-  /// **'Inchiostro col shader'**
-  String get shaderLabInk;
+  /// **'Scontrino'**
+  String get shaderLabReceipt;
 
-  /// No description provided for @shaderLabTornEdge.
+  /// No description provided for @shaderLabComponents.
   ///
   /// In it, this message translates to:
-  /// **'Bordo strappato'**
-  String get shaderLabTornEdge;
+  /// **'Componenti'**
+  String get shaderLabComponents;
+
+  /// No description provided for @shaderLabInkOff.
+  ///
+  /// In it, this message translates to:
+  /// **'Sopra'**
+  String get shaderLabInkOff;
+
+  /// No description provided for @shaderLabInkThermal.
+  ///
+  /// In it, this message translates to:
+  /// **'Termica'**
+  String get shaderLabInkThermal;
+
+  /// No description provided for @shaderLabInkColour.
+  ///
+  /// In it, this message translates to:
+  /// **'Colori'**
+  String get shaderLabInkColour;
 
   /// No description provided for @shaderLabNewSeed.
   ///

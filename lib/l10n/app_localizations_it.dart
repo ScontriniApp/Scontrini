@@ -260,10 +260,19 @@ class AppLocalizationsIt extends AppLocalizations {
       'Inchiostro col shader non disponibile qui (serve Impeller): il testo è disegnato sopra la carta.';
 
   @override
-  String get shaderLabInk => 'Inchiostro col shader';
+  String get shaderLabReceipt => 'Scontrino';
 
   @override
-  String get shaderLabTornEdge => 'Bordo strappato';
+  String get shaderLabComponents => 'Componenti';
+
+  @override
+  String get shaderLabInkOff => 'Sopra';
+
+  @override
+  String get shaderLabInkThermal => 'Termica';
+
+  @override
+  String get shaderLabInkColour => 'Colori';
 
   @override
   String get shaderLabNewSeed => 'Nuove pieghe';
