@@ -94,9 +94,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get extractionUnparsed => 'Unrecognised rows';
 
   @override
-  String get extractionRawText => 'Recognised text';
-
-  @override
   String get warningMissingStore => 'Store not found';
 
   @override
@@ -413,10 +410,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get manualReceiptTitle => 'Receipt by hand';
 
   @override
-  String get manualReceiptNotice =>
-      'Add the products you bought. Saving adds the receipt to the history and its products to the pantry.';
-
-  @override
   String get receiptsUnknownStore => 'Unknown store';
 
   @override
@@ -551,10 +544,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewTitle => 'Check the receipt';
 
   @override
-  String get reviewNotice =>
-      'Check each product: confirm it if it was read correctly, otherwise correct it. Saving adds the receipt to the dashboard and its products to the pantry.';
-
-  @override
   String get reviewAddItem => 'Add item';
 
   @override
@@ -617,33 +606,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewDiscard => 'Discard';
 
   @override
-  String reviewMismatchDetail(String items, String total) {
-    return 'Items sum $items, total $total';
-  }
-
-  @override
-  String get reviewMissingDateHint => 'Without a date, today\'s is used.';
-
-  @override
-  String get reviewMissingTotalHint =>
-      'Without a total, the items\' sum is used.';
-
-  @override
   String get reviewUseItemsTotal => 'Use the sum';
 
   @override
   String get reviewSave => 'Save receipt';
-
-  @override
-  String reviewSaveBlocked(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count products left to check',
-      one: '1 product left to check',
-    );
-    return '$_temp0';
-  }
 
   @override
   String reviewItemsPending(int count, int pending) {
@@ -675,6 +641,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String reviewConfirmAll(int count) {
     return 'Confirm all ($count)';
   }
+
+  @override
+  String get reviewUnconfirmAll => 'Undo all';
 
   @override
   String get analyticsTabSpending => 'Spending';

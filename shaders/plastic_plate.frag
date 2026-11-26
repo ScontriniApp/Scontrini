@@ -63,7 +63,7 @@ float roundRect(vec2 p, vec2 halfSize, float radius) {
   return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - radius;
 }
 
-// Quarter-round profile: 0 → 1 with a vertical start and a flat end.
+// Quarter-round profile: 0 -> 1 with a vertical start and a flat end.
 float roundUp(float t) {
   t = clamp(t, 0.0, 1.0);
   return sqrt(1.0 - (1.0 - t) * (1.0 - t));

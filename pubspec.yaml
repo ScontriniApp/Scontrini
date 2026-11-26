@@ -92,6 +92,8 @@ flutter:
   # Fragment shaders (compiled by impellerc at build time).
   shaders:
     - shaders/receipt_paper.frag
+    - shaders/paper_bake.frag
+    - shaders/paper_print.frag
     - shaders/plastic_plate.frag
 
   # VT323 (SIL Open Font License 1.1, assets/fonts/VT323-OFL.txt): the app's

@@ -94,9 +94,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get extractionUnparsed => 'Righe non riconosciute';
 
   @override
-  String get extractionRawText => 'Testo riconosciuto';
-
-  @override
   String get warningMissingStore => 'Negozio non trovato';
 
   @override
@@ -416,10 +413,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get manualReceiptTitle => 'Scontrino a mano';
 
   @override
-  String get manualReceiptNotice =>
-      'Aggiungi i prodotti che hai comprato. Salvando, lo scontrino entra nello storico e i prodotti in dispensa.';
-
-  @override
   String get receiptsUnknownStore => 'Negozio sconosciuto';
 
   @override
@@ -553,10 +546,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get reviewTitle => 'Controlla lo scontrino';
 
   @override
-  String get reviewNotice =>
-      'Controlla ogni prodotto: confermalo se è stato letto bene, altrimenti correggilo. Salvando, lo scontrino entra nella dashboard e i prodotti in dispensa.';
-
-  @override
   String get reviewAddItem => 'Aggiungi articolo';
 
   @override
@@ -620,33 +609,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get reviewDiscard => 'Scarta';
 
   @override
-  String reviewMismatchDetail(String items, String total) {
-    return 'Somma articoli $items, totale $total';
-  }
-
-  @override
-  String get reviewMissingDateHint => 'Senza data, viene usata quella di oggi.';
-
-  @override
-  String get reviewMissingTotalHint =>
-      'Senza totale, viene usata la somma degli articoli.';
-
-  @override
   String get reviewUseItemsTotal => 'Usa la somma';
 
   @override
   String get reviewSave => 'Salva scontrino';
-
-  @override
-  String reviewSaveBlocked(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Mancano $count prodotti da controllare',
-      one: 'Manca 1 prodotto da controllare',
-    );
-    return '$_temp0';
-  }
 
   @override
   String reviewItemsPending(int count, int pending) {
@@ -678,6 +644,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String reviewConfirmAll(int count) {
     return 'Conferma tutti ($count)';
   }
+
+  @override
+  String get reviewUnconfirmAll => 'Annulla tutto';
 
   @override
   String get analyticsTabSpending => 'Spesa';

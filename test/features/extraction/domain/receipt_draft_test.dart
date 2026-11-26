@@ -150,4 +150,11 @@ void main() {
     expect(draft.items.map((i) => i.confirmed), [true, true]);
     expect(draft.canSave, isTrue);
   });
+
+  test('unconfirm all puts every row back to check', () {
+    final draft = _draft().confirmAll().unconfirmAll();
+    expect(draft.items.map((i) => i.confirmed), [false, false]);
+    expect(draft.pendingCount, 2);
+    expect(draft.canSave, isFalse);
+  });
 }
