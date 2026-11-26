@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -13,6 +14,7 @@ import 'package:scontrini/features/products/presentation/product_stats_screen.da
 import 'package:scontrini/features/receipts/presentation/receipt_detail_screen.dart';
 import 'package:scontrini/features/receipts/presentation/receipts_screen.dart';
 import 'package:scontrini/features/settings/presentation/settings_screen.dart';
+import 'package:scontrini/features/shader_lab/presentation/shader_lab_screen.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 abstract final class Routes {
@@ -34,6 +36,9 @@ abstract final class Routes {
   /// Needs the captured `ReceiptSource` as `extra`.
   static const extraction = '/extraction';
   static const settings = '/settings';
+
+  /// Receipt paper shader tuning (debug builds only).
+  static const shaderLab = '/shader-lab';
 }
 
 /// One router per `ProviderScope`, so navigation state doesn't leak between
@@ -114,6 +119,11 @@ GoRouter _createRouter() => GoRouter(
       builder: (_, _) => const ReceiptReviewScreen.manual(),
     ),
     GoRoute(path: Routes.settings, builder: (_, _) => const SettingsScreen()),
+    if (kDebugMode)
+      GoRoute(
+        path: Routes.shaderLab,
+        builder: (_, _) => const ShaderLabScreen(),
+      ),
   ],
 );
 

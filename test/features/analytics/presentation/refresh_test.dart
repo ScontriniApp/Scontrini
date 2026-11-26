@@ -55,13 +55,13 @@ void main() {
     tester,
   ) async {
     await pumpApp(tester);
-    expect(find.text('Speso a novembre'), findsOneWidget);
+    expect(find.text('SPESO A NOVEMBRE'), findsOneWidget);
 
     now = DateTime(2026, 12, 1, 8);
     await tester.fling(find.byType(ListView).first, const Offset(0, 400), 1000);
     await settle(tester);
 
-    expect(find.text('Speso a dicembre'), findsOneWidget);
+    expect(find.text('SPESO A DICEMBRE'), findsOneWidget);
   });
 
   testWidgets('tapping the open Home tab refreshes it', (tester) async {
@@ -71,7 +71,7 @@ void main() {
     await tester.tap(tab('Home'));
     await settle(tester);
 
-    expect(find.text('Speso a dicembre'), findsOneWidget);
+    expect(find.text('SPESO A DICEMBRE'), findsOneWidget);
   });
 
   testWidgets('refreshing Analisi follows the current month to the new '

@@ -250,6 +250,53 @@ class AppLocalizationsIt extends AppLocalizations {
   String get settingsEmpty => 'Categorie, backup e sicurezza.';
 
   @override
+  String get shaderLabTitle => 'Laboratorio carta';
+
+  @override
+  String get shaderLabHint => 'Regola l\'effetto scontrino stropicciato.';
+
+  @override
+  String get shaderLabInkUnsupported =>
+      'Inchiostro col shader non disponibile qui (serve Impeller): il testo è disegnato sopra la carta.';
+
+  @override
+  String get shaderLabReceipt => 'Scontrino';
+
+  @override
+  String get shaderLabComponents => 'Componenti';
+
+  @override
+  String get shaderLabInkOff => 'Sopra';
+
+  @override
+  String get shaderLabInkThermal => 'Termica';
+
+  @override
+  String get shaderLabInkColour => 'Colori';
+
+  @override
+  String get shaderLabNewSeed => 'Nuove pieghe';
+
+  @override
+  String get shaderLabReset => 'Ripristina';
+
+  @override
+  String get shaderLabCopy => 'Copia valori';
+
+  @override
+  String get shaderLabCopied => 'Valori copiati negli appunti';
+
+  @override
+  String get shaderLabTiltLight => 'Luce dal giroscopio';
+
+  @override
+  String get shaderLabTiltLightHint =>
+      'La luce viene dall\'alto: inclina il telefono.';
+
+  @override
+  String get shaderLabHideControls => 'Mostra/nascondi i controlli';
+
+  @override
   String get demoDataTitle => 'Dati demo (solo debug)';
 
   @override
