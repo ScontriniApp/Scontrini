@@ -226,6 +226,18 @@ class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
                       _knob('lightUp', light.elevation, 0.1, math.pi / 2, (v) {
                         setLight(light.copyWith(elevation: v));
                       }),
+                      _knob('lightDist', _params.lightDistance, 150, 5000, (v) {
+                        _update(_params.copyWith(lightDistance: v));
+                      }),
+                      _knob('camDist', _params.cameraDistance, 300, 5000, (v) {
+                        _update(_params.copyWith(cameraDistance: v));
+                      }),
+                      _knob('camTilt', _params.cameraTilt, 0, 1.2, (v) {
+                        _update(_params.copyWith(cameraTilt: v));
+                      }),
+                      _knob('camTurn', _params.cameraTurn, 0, 2 * math.pi, (v) {
+                        _update(_params.copyWith(cameraTurn: v));
+                      }),
                       _knob('creases', _params.creases, 0, 3, (v) {
                         _update(_params.copyWith(creases: v));
                       }),
@@ -235,18 +247,21 @@ class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
                       _knob('sharpness', _params.sharpness, 0, 1, (v) {
                         _update(_params.copyWith(sharpness: v));
                       }),
-                      _knob('depth', _params.depth, 0, 3, (v) {
+                      _knob('depth', _params.depth, 0, 2, (v) {
                         _update(_params.copyWith(depth: v));
                       }),
 
-                      _knob('warp', _params.warp, 0, 8, (v) {
-                        _update(_params.copyWith(warp: v));
-                      }),
                       _knob('ambient', _params.ambient, 0, 1, (v) {
                         _update(_params.copyWith(ambient: v));
                       }),
-                      _knob('cavity', _params.cavity, 0, 2, (v) {
-                        _update(_params.copyWith(cavity: v));
+                      _knob('occlusion', _params.occlusion, 0, 1.5, (v) {
+                        _update(_params.copyWith(occlusion: v));
+                      }),
+                      _knob('shadow', _params.shadow, 0, 1, (v) {
+                        _update(_params.copyWith(shadow: v));
+                      }),
+                      _knob('softness', _params.softness, 0, 5, (v) {
+                        _update(_params.copyWith(softness: v));
                       }),
                       _knob('sheen', _params.sheen, 0, 1, (v) {
                         _update(_params.copyWith(sheen: v));

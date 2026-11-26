@@ -25,10 +25,6 @@ class PaperLightNotifier extends Notifier<PaperLight> {
   void set(PaperLight light) => state = light;
 }
 
-/// Direction a raised point shifts on screen (parallax of a viewer slightly
-/// below the phone's top edge).
-const _view = (0.28, -0.96);
-
 /// Ink colour of text printed on the paper, close to the shader's `kInk`.
 const receiptInk = Color(0xFF211F29);
 
@@ -71,6 +67,9 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
   ui.FragmentProgram? _program;
   Size? _size;
   ui.Image? _map;
+
+  /// Height of the map's 1.0, logical px.
+  double _mapHeight = 0;
   Object? _mapKey;
   int _mapRequest = 0;
 
@@ -139,6 +138,7 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
       crumple: p.crumple,
       sharpness: p.sharpness,
     );
+    final height = surface.maxHeight;
     ui.decodeImageFromPixels(
       surface.toRgba(),
       surface.columns,
@@ -152,6 +152,7 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
         setState(() {
           _map?.dispose();
           _map = image;
+          _mapHeight = height;
         });
       },
     );
@@ -190,8 +191,10 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
       if (sheet != null) _ensureMap(sheet);
       _setUniforms(
         shader,
-        sheet: (sheet ?? const Size(1, 1)) * scale,
-        scroll: _scroll() * scale,
+        bubble: _size ?? const Size(1, 1),
+        sheet: sheet ?? const Size(1, 1),
+        scroll: _scroll(),
+        height: _map == null ? 0 : _mapHeight,
         scale: scale,
         params: widget.params,
         light: light,
@@ -213,7 +216,7 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
         builder: (context, child) {
           configure(scale: dpr);
           return ImageFiltered(
-            // Bilinear: shifted print stays smooth instead of stair-stepped.
+            // Bilinear: bent print stays smooth instead of stair-stepped.
             imageFilter: ui.ImageFilter.shader(
               shader,
               filterQuality: FilterQuality.low,
@@ -237,7 +240,7 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
   }
 }
 
-/// White 1Ã—1: paint mode never reads the content sampler, but it must be
+/// White 1×1: paint mode never reads the content sampler, but it must be
 /// bound.
 final ui.Image _blank = _solid(const Color(0xFFFFFFFF));
 
@@ -275,8 +278,10 @@ class _PaperPainter extends CustomPainter {
 /// Uniform order of `receipt_paper.frag`.
 void _setUniforms(
   ui.FragmentShader shader, {
+  required Size bubble,
   required Size sheet,
   required double scroll,
+  required double height,
   required double scale,
   required PaperParams params,
   required PaperLight light,
@@ -284,24 +289,30 @@ void _setUniforms(
 }) {
   final p = params;
   final (lx, ly, lz) = light.direction;
+  final (cx, cy, cz) = p.camera;
   var i = 0;
   void set(double v) => shader.setFloat(i++, v);
-  // uSize: overwritten by the engine in filter mode, unused otherwise.
-  set(0);
-  set(0);
-  set(sheet.width);
-  set(sheet.height);
-  set(scroll);
+  // uSize: the engine sets the same in filter mode.
+  set(bubble.width * scale);
+  set(bubble.height * scale);
+  set(sheet.width * scale);
+  set(sheet.height * scale);
+  set(scroll * scale);
   set(scale);
   set(p.seed);
   set(p.depth);
+  set(height * scale);
   set(lx);
   set(ly);
   set(lz);
-  set(_view.$1);
-  set(_view.$2);
+  set(p.lightDistance * scale);
+  set(cx * scale);
+  set(cy * scale);
+  set(cz * scale);
   set(p.ambient);
-  set(p.cavity);
+  set(p.occlusion);
+  set(p.shadow);
+  set(p.softness);
   set(p.sheen);
   set(p.roughness);
   set(p.fibres);
@@ -309,7 +320,6 @@ void _setUniforms(
   set(p.levels);
   set(p.pixel * scale);
   set(filter ? p.ink.index.toDouble() : 0);
-  set(p.warp * scale);
   set(p.inkFade);
   set(p.lines);
   set(p.dropout);
