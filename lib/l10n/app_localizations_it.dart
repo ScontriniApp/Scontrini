@@ -235,6 +235,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get extractionStepParsing => 'Ricostruisco lo scontrino…';
 
   @override
+  String get extractionStepPaper => 'Preparo lo scontrino';
+
+  @override
   String get confirmFailed => 'Impossibile salvare lo scontrino.';
 
   @override

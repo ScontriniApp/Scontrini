@@ -46,6 +46,7 @@ class ReceiptReviewScreen extends ConsumerStatefulWidget {
     required ReceiptSource this.source,
     required ExtractionResult this.result,
     required ReceiptDraft this.initialDraft,
+    this.onPaperReady,
     super.key,
   });
 
@@ -53,7 +54,12 @@ class ReceiptReviewScreen extends ConsumerStatefulWidget {
   const new manual({super.key})
     : source = null,
       result = null,
-      initialDraft = null;
+      initialDraft = null,
+      onPaperReady = null;
+
+  /// Called once the receipt's paper is ready to be seen
+  /// ([PaperBubble.onReady]).
+  final VoidCallback? onPaperReady;
 
   final ReceiptSource? source;
 
@@ -109,6 +115,10 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
     final names = {
       for (final c in categories) c.id: categoryLabel(l10n, c.name),
     };
+    // A correction (sheet, dialog, picker) is open on top: this screen dims
+    // itself around the paper, the receipt stays lit. The modals bring no
+    // scrim of their own ([_noScrim]).
+    final dim = ModalRoute.isCurrentOf(context) == false;
 
     return PopScope(
       canPop: !_edited || _saved,
@@ -118,146 +128,163 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
         if (await _confirmDiscard(context)) navigator.pop();
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.isManual ? l10n.manualReceiptTitle : l10n.reviewTitle,
+        appBar: _DimmedBar(
+          dim: dim,
+          child: AppBar(
+            title: Text(
+              widget.isManual ? l10n.manualReceiptTitle : l10n.reviewTitle,
+            ),
+            actions: [
+              if (kDebugMode && !widget.isManual)
+                IconButton(
+                  icon: const Icon(Icons.bug_report_outlined),
+                  tooltip: l10n.exportFixture,
+                  onPressed: _export,
+                ),
+            ],
           ),
-          actions: [
-            if (kDebugMode && !widget.isManual)
-              IconButton(
-                icon: const Icon(Icons.bug_report_outlined),
-                tooltip: l10n.exportFixture,
-                onPressed: _export,
-              ),
-          ],
         ),
         // Products still to check: "Conferma tutti". Once none is left the
         // bar splits: "Annulla tutto" (back to check) and "Salva".
-        bottomNavigationBar: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: _draft.pendingCount > 0
-                ? FilledButton.icon(
-                    key: const Key('review-confirm-all'),
-                    icon: const Icon(Icons.done_all),
-                    label: Text(l10n.reviewConfirmAll(_draft.pendingCount)),
-                    onPressed: _saving
-                        ? null
-                        : () => _update(_draft.confirmAll()),
-                  )
-                : Row(
-                    spacing: 12,
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          key: const Key('review-unconfirm-all'),
-                          icon: const Icon(Icons.undo),
-                          label: Text(l10n.reviewUnconfirmAll),
-                          onPressed: _saving || _draft.items.isEmpty
-                              ? null
-                              : () => _update(_draft.unconfirmAll()),
-                        ),
-                      ),
-                      Expanded(
-                        child: FilledButton.icon(
-                          key: const Key('review-save'),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: _saveGreen,
-                            foregroundColor: Colors.white,
+        bottomNavigationBar: _Dim(
+          dim: dim,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: _draft.pendingCount > 0
+                  ? FilledButton.icon(
+                      key: const Key('review-confirm-all'),
+                      icon: const Icon(Icons.done_all),
+                      label: Text(l10n.reviewConfirmAll(_draft.pendingCount)),
+                      onPressed: _saving
+                          ? null
+                          : () => _update(_draft.confirmAll()),
+                    )
+                  : Row(
+                      spacing: 12,
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            key: const Key('review-unconfirm-all'),
+                            icon: const Icon(Icons.undo),
+                            label: Text(l10n.reviewUnconfirmAll),
+                            onPressed: _saving || _draft.items.isEmpty
+                                ? null
+                                : () => _update(_draft.unconfirmAll()),
                           ),
-                          icon: const Icon(Icons.check),
-                          label: Text(l10n.reviewSave),
-                          onPressed: _saving || !_draft.canSave
-                              ? null
-                              : _confirm,
                         ),
-                      ),
-                    ],
-                  ),
+                        Expanded(
+                          child: FilledButton.icon(
+                            key: const Key('review-save'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: _saveGreen,
+                              foregroundColor: Colors.white,
+                            ),
+                            icon: const Icon(Icons.check),
+                            label: Text(l10n.reviewSave),
+                            onPressed: _saving || !_draft.canSave
+                                ? null
+                                : _confirm,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
           ),
         ),
         // The receipt printed on paper; the sheet scrolls with it. The side
         // padding is the room the paper bleeds into.
-        body: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-          // Top, not centred: a short receipt must not move when it grows.
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: PaperBubble(
-                params: ref.watch(paperSettingsProvider).receipt,
-                controller: _scroll,
-                child: _PrintTheme(
-                  child: _StuckToPaper(
-                    // Not a lazy list: the sheet is as long as the content.
-                    child: SingleChildScrollView(
-                      controller: _scroll,
-                      physics: const ClampingScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _Header(
-                            draft: _draft,
-                            onChanged: _update,
-                            // By hand the total is the rows' sum unless typed.
-                            manual: widget.isManual,
-                            selected: _selected,
-                            onSelect: _select,
-                          ),
-                          const _Rule(),
-                          _ItemsHeading(draft: _draft, onAdd: _addItem),
-                          const _Rule(),
-                          if (_draft.items.isEmpty)
-                            // Its own context: the style must come from the
-                            // print's theme (ink), not this screen's.
-                            Builder(
-                              builder: (context) => Text(
-                                l10n.reviewNoItems,
-                                textAlign: TextAlign.center,
-                                style: _body(context),
+        body: Stack(
+          children: [
+            // Under the paper: the scrim darkens only what is around it.
+            Positioned.fill(child: _Scrim(visible: dim)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+              // Top, not centred: a short receipt must not move when it grows.
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: PaperBubble(
+                    params: ref.watch(paperSettingsProvider).receipt,
+                    controller: _scroll,
+                    onReady: widget.onPaperReady,
+                    hideUntilReady: true,
+                    child: _PrintTheme(
+                      child: _StuckToPaper(
+                        // Not a lazy list: the sheet is as long as the content.
+                        child: SingleChildScrollView(
+                          controller: _scroll,
+                          physics: const ClampingScrollPhysics(),
+                          padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _Header(
+                                draft: _draft,
+                                onChanged: _update,
+                                // By hand: no total = the rows' sum.
+                                manual: widget.isManual,
+                                selected: _selected,
+                                onSelect: _select,
                               ),
-                            ),
-                          for (final (i, item) in _draft.items.indexed)
-                            _ItemLine(
-                              item: item,
-                              categoryName: names[item.categoryId],
-                              selected: _selected == i,
-                              onTap: () => _select(i),
-                              onCorrect: () => _editItem(i),
-                              onConfirm: (confirmed) => _update(
-                                _draft.withConfirmed(i, confirmed: confirmed),
-                              ),
-                            ),
-                          const _Rule(),
-                          if (widget.result?.receipt.unparsedLines ??
-                                  const <String>[]
-                              case final unparsed when unparsed.isNotEmpty)
-                            ExpansionTile(
-                              title: Text(l10n.extractionUnparsed),
-                              subtitle: Text(l10n.reviewUnparsedHint),
-                              children: [
-                                for (final line in unparsed)
-                                  ListTile(
-                                    dense: true,
-                                    title: Text(
-                                      line,
-                                      style: const TextStyle(
-                                        fontFamily: 'monospace',
-                                      ),
+                              const _Rule(),
+                              _ItemsHeading(draft: _draft, onAdd: _addItem),
+                              const _Rule(),
+                              if (_draft.items.isEmpty)
+                                // Its own context: the style must come from the
+                                // print's theme (ink), not this screen's.
+                                Builder(
+                                  builder: (context) => Text(
+                                    l10n.reviewNoItems,
+                                    textAlign: TextAlign.center,
+                                    style: _body(context),
+                                  ),
+                                ),
+                              for (final (i, item) in _draft.items.indexed)
+                                _ItemLine(
+                                  item: item,
+                                  categoryName: names[item.categoryId],
+                                  selected: _selected == i,
+                                  onTap: () => _select(i),
+                                  onCorrect: () => _editItem(i),
+                                  onConfirm: (confirmed) => _update(
+                                    _draft.withConfirmed(
+                                      i,
+                                      confirmed: confirmed,
                                     ),
                                   ),
-                              ],
-                            ),
-                        ],
+                                ),
+                              const _Rule(),
+                              if (widget.result?.receipt.unparsedLines ??
+                                      const <String>[]
+                                  case final unparsed when unparsed.isNotEmpty)
+                                ExpansionTile(
+                                  title: Text(l10n.extractionUnparsed),
+                                  subtitle: Text(l10n.reviewUnparsedHint),
+                                  children: [
+                                    for (final line in unparsed)
+                                      ListTile(
+                                        dense: true,
+                                        title: Text(
+                                          line,
+                                          style: const TextStyle(
+                                            fontFamily: 'monospace',
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -360,6 +387,7 @@ Future<bool> _confirmDiscard(BuildContext context) async {
   final l10n = AppLocalizations.of(context);
   final discard = await showDialog<bool>(
     context: context,
+    barrierColor: _noScrim,
     builder: (context) => AlertDialog(
       title: Text(l10n.reviewDiscardTitle),
       content: Text(l10n.reviewDiscardBody),
@@ -376,6 +404,56 @@ Future<bool> _confirmDiscard(BuildContext context) async {
     ),
   );
   return discard ?? false;
+}
+
+/// Modals of this screen bring no scrim: the screen dims itself around the
+/// paper instead, so the receipt being corrected stays lit.
+const Color _noScrim = Colors.transparent;
+
+/// The dark veil behind a modal, faded in and out.
+class _Scrim extends StatelessWidget {
+  const new({required this.visible});
+
+  final bool visible;
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+    child: AnimatedOpacity(
+      opacity: visible ? 1 : 0,
+      duration: const Duration(milliseconds: 200),
+      child: const ColoredBox(color: Colors.black54),
+    ),
+  );
+}
+
+/// [child] with [_Scrim] over it while [dim].
+class _Dim extends StatelessWidget {
+  const new({required this.dim, required this.child});
+
+  final bool dim;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    children: [
+      child,
+      Positioned.fill(child: _Scrim(visible: dim)),
+    ],
+  );
+}
+
+/// The app bar, dimmed like [_Dim].
+class _DimmedBar extends StatelessWidget implements PreferredSizeWidget {
+  const new({required this.dim, required this.child});
+
+  final bool dim;
+  final PreferredSizeWidget child;
+
+  @override
+  Size get preferredSize => child.preferredSize;
+
+  @override
+  Widget build(BuildContext context) => _Dim(dim: dim, child: child);
 }
 
 /// The save button's green.
@@ -834,6 +912,7 @@ Future<String?> _editText(
   required String initial,
 }) => showDialog<String>(
   context: context,
+  barrierColor: _noScrim,
   builder: (context) => _TextDialog(title: title, initial: initial),
 );
 
@@ -850,6 +929,7 @@ Future<_Amount?> _editAmount(
   final l10n = AppLocalizations.of(context);
   final text = await showDialog<String>(
     context: context,
+    barrierColor: _noScrim,
     builder: (context) => _TextDialog(
       title: title,
       initial: initial == null || initial == 0 ? '' : Money.inputText(initial),
@@ -875,6 +955,7 @@ Future<DateTime?> _pickDateTime(BuildContext context, DateTime? current) async {
   final initial = current ?? now;
   final day = await showDatePicker(
     context: context,
+    barrierColor: _noScrim,
     initialDate: initial.isAfter(now) ? now : initial,
     firstDate: DateTime(2000),
     lastDate: now,
@@ -882,6 +963,7 @@ Future<DateTime?> _pickDateTime(BuildContext context, DateTime? current) async {
   if (day == null || !context.mounted) return null;
   final time = await showTimePicker(
     context: context,
+    barrierColor: _noScrim,
     initialTime: TimeOfDay.fromDateTime(initial),
   );
   final t = time ?? TimeOfDay.fromDateTime(initial);

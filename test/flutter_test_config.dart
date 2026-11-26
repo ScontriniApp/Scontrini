@@ -13,6 +13,8 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   TestWidgetsFlutterBinding.ensureInitialized();
   // The fake clock never sees an isolate's answer: build fold maps inline.
   PaperBubble.backgroundMaps = false;
+  // Nor do shaders load: every paper is ready at once.
+  PaperBubble.waitForPaper = false;
   final bytes = File('assets/fonts/VT323-Regular.ttf').readAsBytesSync();
   await (FontLoader(
     'VT323',
