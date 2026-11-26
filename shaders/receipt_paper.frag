@@ -189,15 +189,35 @@ void main() {
     // Thermal dots bleed: push antialiased edges to full ink (bolder text).
     ink = clamp(ink * 1.8, 0.0, 1.0);
 
-    // Thermal head prints rows of dots: faint banding every other row.
-    float row = mod(floor(sheet.y / dotSize), 2.0);
-    ink *= 1.0 - row * 0.25 * uLines;
+    // Positions in print dots (the head's resolution).
+    vec2 dp = sheet / dotSize;
+    vec2 dcell = floor(dp);
 
-    // Dirty head: vertical streaks, plus random missing dots.
-    float streak = valueNoise(vec2(sheet.x * 0.35, uSeed));
-    float dots = hash1(floor(sheet / dotSize));
-    ink *= 1.0 - uDropout * (smoothstep(0.75, 0.95, streak) * 0.7 +
-                             step(1.0 - 0.25 * uDropout, dots));
+    // Thermal head prints rows of dots. Every other row is a little weaker
+    // (a soft wave, not on/off), the strength of that banding and the head
+    // pressure drift slowly down and across the sheet, and now and then a
+    // few rows fade out and back in (the paper slipped).
+    float rowWave = 0.5 - 0.5 * cos(dp.y * 3.14159265);
+    float rowHeat = valueNoise(vec2(dp.y * 0.08, 3.0));
+    float band = rowWave * (0.4 + 0.8 * rowHeat) * 0.25;
+    float pressure = valueNoise(vec2(dp.x * 0.04, dp.y * 0.06));
+    float skipped = smoothstep(0.72, 0.95, valueNoise(vec2(dp.y * 0.05, 9.0)));
+    ink *= 1.0 - uLines * clamp(band + 0.3 * pressure * rowHeat + 0.6 * skipped,
+                                0.0, 1.0);
+
+    // Dirty head: streaks that fade in and out down the sheet, with soft
+    // sides, plus missing dots only inside patches that fade at their edges.
+    float streak = valueNoise(vec2(dp.x * 0.25, dp.y * 0.012)) *
+                   valueNoise(vec2(dp.x * 0.08 + 5.0, dp.y * 0.003 + 1.0));
+    float streakMask = smoothstep(0.15, 0.7, streak);
+    float patches = smoothstep(0.35, 0.8, fbm(dp * 0.04 + 7.0));
+    float threshold = 1.0 - 0.7 * uDropout;
+    float missing = patches *
+        smoothstep(threshold - 0.15, threshold + 0.15, hash1(dcell));
+    // Uneven heat over a few letters at a time.
+    float blotchy = valueNoise(dp * 0.15 + 3.0);
+    ink *= clamp(1.0 - uDropout * (0.8 * streakMask + 0.3 * blotchy) - missing,
+                 0.0, 1.0);
 
     // Fading: overall, and unevenly over the sheet.
     float fade = 0.7 * uInkFade * (0.55 + 0.45 * fbm(p * 4.0 + 2.0));
