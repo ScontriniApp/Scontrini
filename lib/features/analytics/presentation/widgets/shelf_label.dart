@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:qr/qr.dart';
+import 'package:scontrini/core/plastic/plastic_params.dart';
+import 'package:scontrini/core/plastic/plastic_plate.dart';
 import 'package:scontrini/core/utils/money.dart';
 
 /// An electronic shelf label: white plastic frame around a grey e-ink
@@ -12,6 +14,9 @@ import 'package:scontrini/core/utils/money.dart';
 /// [footer] along the bottom.
 ///
 /// The label is a physical object, so it keeps its colours in dark mode.
+/// With [plastic] (the default) it is a hard plastic [PlasticPlate]: raised
+/// rim, glossy screen, tilting under a finger, with the look saved in the
+/// plastic lab (`plasticSettingsProvider`).
 class ShelfLabel extends StatelessWidget {
   const new({
     required this.title,
@@ -19,6 +24,8 @@ class ShelfLabel extends StatelessWidget {
     required this.leading,
     required this.footer,
     this.corner,
+    this.plastic = true,
+    this.plasticParams,
     super.key,
   });
 
@@ -27,6 +34,22 @@ class ShelfLabel extends StatelessWidget {
   final String leading;
   final String footer;
   final Widget? corner;
+
+  /// Whether the label is a [PlasticPlate] (lit, tilting, with its own
+  /// shadow) or a flat drawing with a soft shadow.
+  final bool plastic;
+
+  /// Overrides the saved plastic look (the lab's debug views).
+  final PlasticParams? plasticParams;
+
+  /// Corner radius of the plastic frame.
+  static const frameRadius = 10.0;
+
+  /// Where the screen sits inside the frame.
+  static const screenInsets = EdgeInsets.fromLTRB(12, 10, 12, 16);
+
+  /// Corner radius of the screen.
+  static const screenRadius = 2.0;
 
   static const _frame = Color(0xFFF5F5F3);
   static const _frameEdge = Color(0xFFD9D9D6);
@@ -59,18 +82,20 @@ class ShelfLabel extends StatelessWidget {
     final small = smallStyle(context);
     final corner = this.corner;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 16),
+    final label = Container(
+      padding: screenInsets,
       decoration: BoxDecoration(
         color: _frame,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(frameRadius),
         border: Border.all(color: _frameEdge),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1F000000),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
+        boxShadow: [
+          // The plate casts its own shadow, following the lamp.
+          if (!plastic)
+            const BoxShadow(
+              color: Color(0x1F000000),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
         ],
       ),
       child: CustomPaint(
@@ -79,7 +104,7 @@ class ShelfLabel extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
           decoration: BoxDecoration(
             color: _screen,
-            borderRadius: BorderRadius.circular(2),
+            borderRadius: BorderRadius.circular(screenRadius),
             border: Border.all(color: _frameEdge, width: 2),
           ),
           child: Column(
@@ -152,6 +177,13 @@ class ShelfLabel extends StatelessWidget {
           ),
         ),
       ),
+    );
+    if (!plastic) return label;
+    return PlasticPlate(
+      params: plasticParams,
+      // frameRadius and screenRadius are the plate's defaults.
+      screenInsets: screenInsets,
+      child: label,
     );
   }
 }

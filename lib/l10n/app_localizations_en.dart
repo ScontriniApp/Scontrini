@@ -296,6 +296,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shaderLabHideControls => 'Show/hide the controls';
 
   @override
+  String get plasticLabTitle => 'Plastic lab';
+
+  @override
+  String get plasticLabHint =>
+      'Tune the plastic shelf label: rim, gloss, tilt on touch.';
+
+  @override
+  String get plasticLabUnsupported =>
+      'Plastic lighting isn\'t available here (needs Impeller): the label tilts without reflections.';
+
+  @override
+  String get plasticLabTouchHint => 'Touch and drag the label to tilt it.';
+
+  @override
   String get demoDataTitle => 'Demo data (debug only)';
 
   @override
