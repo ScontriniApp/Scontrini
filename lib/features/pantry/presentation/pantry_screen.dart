@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/router.dart';
-import 'package:scontrini/core/section_colors/section_surface.dart';
 import 'package:scontrini/core/widgets/placeholder_view.dart';
 import 'package:scontrini/core/widgets/scroll_away_scaffold.dart';
 import 'package:scontrini/features/pantry/data/pantry_providers.dart';
@@ -12,7 +11,7 @@ import 'package:scontrini/features/pantry/presentation/category_label.dart';
 import 'package:scontrini/features/pantry/presentation/category_sprites.dart';
 import 'package:scontrini/features/pantry/presentation/pantry_providers.dart';
 import 'package:scontrini/features/pantry/presentation/quantity_format.dart';
-import 'package:scontrini/features/pantry/presentation/widgets/category_section_header.dart';
+import 'package:scontrini/features/pantry/presentation/widgets/category_drawer.dart';
 import 'package:scontrini/features/pantry/presentation/widgets/lot_actions_sheet.dart';
 import 'package:scontrini/features/pantry/presentation/widgets/pantry_lot_tile.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
@@ -42,8 +41,6 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     _search.dispose();
     super.dispose();
   }
-
-  static const _fallbackColor = Color(0xFF9E9E9E);
 
   @override
   Widget build(BuildContext context) {
@@ -132,42 +129,33 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                   padding: const EdgeInsets.only(bottom: 8),
                   children: [
                     for (final key in keys)
-                      SectionSurface(
-                        panel: true,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            CategorySectionHeader(
-                              title: key == null
-                                  ? l10n.pantryUncategorised
-                                  : categoryLabel(l10n, byId[key]!.name),
-                              sprite: categorySprite(byId[key]?.name),
-                              trailing: '${groups[key]!.length}',
-                              // While searching, every section with a match is
-                              // open; otherwise the user opens them.
-                              open: query.isNotEmpty || _open.contains(key),
-                              onTap: query.isNotEmpty
-                                  ? null
-                                  : () => setState(
-                                      () => _open.contains(key)
-                                          ? _open.remove(key)
-                                          : _open.add(key),
-                                    ),
+                      CategoryDrawer(
+                        key: ValueKey(key),
+                        title: key == null
+                            ? l10n.pantryUncategorised
+                            : categoryLabel(l10n, byId[key]!.name),
+                        sprite: categorySprite(byId[key]?.name),
+                        trailing: '${groups[key]!.length}',
+                        // While searching, every section with a match is
+                        // open; otherwise the user opens them.
+                        open: query.isNotEmpty || _open.contains(key),
+                        onTap: query.isNotEmpty
+                            ? null
+                            : () => setState(
+                                () => _open.contains(key)
+                                    ? _open.remove(key)
+                                    : _open.add(key),
+                              ),
+                        children: [
+                          for (final lot in groups[key]!)
+                            PantryLotTile(
+                              key: ValueKey(lot.id),
+                              lot: lot,
+                              onSetRemaining: (value) =>
+                                  _setRemaining(lot, value),
+                              onTap: () => _choose(lot),
                             ),
-                            if (query.isNotEmpty || _open.contains(key))
-                              for (final lot in groups[key]!)
-                                PantryLotTile(
-                                  key: ValueKey(lot.id),
-                                  lot: lot,
-                                  color: key == null
-                                      ? _fallbackColor
-                                      : Color(byId[key]!.color),
-                                  onSetRemaining: (value) =>
-                                      _setRemaining(lot, value),
-                                  onTap: () => _choose(lot),
-                                ),
-                          ],
-                        ),
+                        ],
                       ),
                   ],
                 ),

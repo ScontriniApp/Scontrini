@@ -310,6 +310,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get plasticLabTouchHint => 'Touch and drag the label to tilt it.';
 
   @override
+  String get pantryLabTitle => 'Pantry lab';
+
+  @override
+  String get pantryLabHint =>
+      'Tune the pantry drawers: depth, perspective, shadows.';
+
+  @override
+  String get pantryLabUnsupported =>
+      'Drawers aren\'t available here (needs Impeller): a flat tray is shown.';
+
+  @override
+  String get pantryLabTapHint => 'Tap a drawer to open or close it.';
+
+  @override
   String get demoDataTitle => 'Demo data (debug only)';
 
   @override

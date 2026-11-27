@@ -8,6 +8,7 @@ import 'package:scontrini/core/database/database_key_store.dart';
 import 'package:scontrini/core/database/database_provider.dart';
 import 'package:scontrini/core/paper/paper_settings.dart';
 import 'package:scontrini/core/plastic/plastic_settings.dart';
+import 'package:scontrini/core/recess/recess_settings.dart';
 import 'package:scontrini/core/section_colors/section_colors_provider.dart';
 import 'package:scontrini/core/section_colors/section_colors_store.dart';
 import 'package:scontrini/features/settings/data/language_store.dart';
@@ -26,6 +27,8 @@ Future<void> main() async {
     ..flushOnPause();
   final plastic = await openPlasticSettingsFile()
     ..flushOnPause();
+  final recess = await openRecessSettingsFile()
+    ..flushOnPause();
 
   runApp(
     ProviderScope(
@@ -35,6 +38,7 @@ Future<void> main() async {
         sectionColorsStoreProvider.overrideWithValue(sectionColors),
         paperSettingsStoreProvider.overrideWithValue(paper),
         plasticSettingsStoreProvider.overrideWithValue(plastic),
+        recessSettingsStoreProvider.overrideWithValue(recess),
       ],
       child: const ScontriniApp(),
     ),

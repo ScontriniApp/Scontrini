@@ -312,6 +312,20 @@ class AppLocalizationsIt extends AppLocalizations {
       'Tocca e trascina la targhetta per inclinarla.';
 
   @override
+  String get pantryLabTitle => 'Laboratorio dispensa';
+
+  @override
+  String get pantryLabHint =>
+      'Regola i cassettoni della dispensa: profondità, prospettiva, ombre.';
+
+  @override
+  String get pantryLabUnsupported =>
+      'Cassettoni non disponibili qui (serve Impeller): si vede un vassoio piatto.';
+
+  @override
+  String get pantryLabTapHint => 'Tocca un cassettone per aprirlo o chiuderlo.';
+
+  @override
   String get demoDataTitle => 'Dati demo (solo debug)';
 
   @override

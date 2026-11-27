@@ -3,25 +3,22 @@ import 'package:scontrini/core/database/tables/pantry_enums.dart';
 import 'package:scontrini/features/pantry/domain/lot_ledger.dart';
 import 'package:scontrini/features/pantry/domain/pantry_lot.dart';
 import 'package:scontrini/features/pantry/presentation/quantity_format.dart';
-import 'package:scontrini/features/pantry/presentation/widgets/lot_avatar.dart';
 import 'package:scontrini/features/receipts/domain/transaction_hash.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
-/// One lot: initials tile, name, origin and quantity, the share left and,
+/// One lot: name, origin and quantity, the share left and,
 /// while active, a 0-100 % slider. The slider reports only on release, so
 /// one drag is one event, and hands back a quantity
 /// ([onSetRemaining] = initial × percent).
 class PantryLotTile extends StatefulWidget {
   const new({
     required this.lot,
-    required this.color,
     required this.onSetRemaining,
     required this.onTap,
     super.key,
   });
 
   final PantryLot lot;
-  final Color color;
   final ValueChanged<double> onSetRemaining;
   final VoidCallback onTap;
 
@@ -60,8 +57,6 @@ class _PantryLotTileState extends State<PantryLotTile> {
             children: [
               Row(
                 children: [
-                  LotAvatar(name: lot.name, color: widget.color),
-                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

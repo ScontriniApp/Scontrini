@@ -650,6 +650,30 @@ abstract class AppLocalizations {
   /// **'Tocca e trascina la targhetta per inclinarla.'**
   String get plasticLabTouchHint;
 
+  /// No description provided for @pantryLabTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Laboratorio dispensa'**
+  String get pantryLabTitle;
+
+  /// No description provided for @pantryLabHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Regola i cassettoni della dispensa: profondità, prospettiva, ombre.'**
+  String get pantryLabHint;
+
+  /// No description provided for @pantryLabUnsupported.
+  ///
+  /// In it, this message translates to:
+  /// **'Cassettoni non disponibili qui (serve Impeller): si vede un vassoio piatto.'**
+  String get pantryLabUnsupported;
+
+  /// No description provided for @pantryLabTapHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Tocca un cassettone per aprirlo o chiuderlo.'**
+  String get pantryLabTapHint;
+
   /// No description provided for @demoDataTitle.
   ///
   /// In it, this message translates to:

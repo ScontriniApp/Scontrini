@@ -37,7 +37,6 @@ void main() {
               status: PantryLotStatus.active,
               addedAt: DateTime(2026, 11, 24),
             ),
-            color: Colors.green,
             onSetRemaining: set.add,
             onTap: () {},
           ),
@@ -65,9 +64,9 @@ void main() {
     expect(set, [0.5]);
   });
 
-  testWidgets('items show initials, never the category sprite', (tester) async {
+  testWidgets('items show no initials tile and no sprite', (tester) async {
     await pump(tester, remaining: 2);
-    expect(find.text('MG'), findsOneWidget);
+    expect(find.text('MG'), findsNothing);
     expect(find.byType(Image), findsNothing);
   });
 }
