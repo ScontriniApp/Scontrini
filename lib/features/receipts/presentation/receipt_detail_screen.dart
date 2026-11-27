@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:scontrini/core/section_colors/section_surface.dart';
 import 'package:scontrini/core/utils/money.dart';
 import 'package:scontrini/features/pantry/domain/pantry_category.dart';
 import 'package:scontrini/features/pantry/presentation/category_label.dart';
@@ -66,7 +67,6 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
     ReceiptDetail detail,
     List<PantryCategory> categories,
   ) {
-    final theme = Theme.of(context);
     final byId = {for (final c in categories) c.id: c};
     final groups = <int?, List<ReceiptLine>>{};
     for (final line in detail.lines) {
@@ -90,54 +90,71 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
     return ListView(
       padding: const EdgeInsets.only(bottom: 24),
       children: [
-        Card(
-          margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 4,
-              children: [
-                Text(
-                  Money.format(summary.totalCents),
-                  style: theme.textTheme.headlineMedium,
-                ),
-                Text(date),
-                Text(
-                  [
-                    l10n.receiptsItemCount(summary.itemCount),
-                    if (summary.manual) l10n.receiptsManual,
-                    if (summary.transactionHash case final hash?)
-                      shortTransactionTag(hash),
-                  ].join(' · '),
-                  style: theme.textTheme.bodySmall,
-                ),
-                if (detail.discountCents > 0)
-                  Text(
-                    '${l10n.extractionReceiptDiscount}: '
-                    '-${Money.format(detail.discountCents)}',
+        // Read the theme inside, so the chosen section colours reach it.
+        SectionSurface(
+          child: Builder(
+            builder: (context) {
+              final theme = Theme.of(context);
+              return Card(
+                margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 4,
+                    children: [
+                      Text(
+                        Money.format(summary.totalCents),
+                        style: theme.textTheme.headlineMedium,
+                      ),
+                      Text(date),
+                      Text(
+                        [
+                          l10n.receiptsItemCount(summary.itemCount),
+                          if (summary.manual) l10n.receiptsManual,
+                          if (summary.transactionHash case final hash?)
+                            shortTransactionTag(hash),
+                        ].join(' · '),
+                        style: theme.textTheme.bodySmall,
+                      ),
+                      if (detail.discountCents > 0)
+                        Text(
+                          '${l10n.extractionReceiptDiscount}: '
+                          '-${Money.format(detail.discountCents)}',
+                        ),
+                    ],
                   ),
+                ),
+              );
+            },
+          ),
+        ),
+        for (final key in keys)
+          SectionSurface(
+            panel: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                CategorySectionHeader(
+                  title: key == null
+                      ? l10n.pantryUncategorised
+                      : categoryLabel(l10n, byId[key]!.name),
+                  sprite: categorySprite(byId[key]?.name),
+                  trailing: Money.format(
+                    groups[key]!.fold(0, (sum, line) => sum + line.netCents),
+                  ),
+                  open: _open.contains(key),
+                  onTap: () => setState(
+                    () => _open.contains(key)
+                        ? _open.remove(key)
+                        : _open.add(key),
+                  ),
+                ),
+                if (_open.contains(key))
+                  for (final line in groups[key]!) _LineTile(line: line),
               ],
             ),
           ),
-        ),
-        for (final key in keys) ...[
-          CategorySectionHeader(
-            title: key == null
-                ? l10n.pantryUncategorised
-                : categoryLabel(l10n, byId[key]!.name),
-            sprite: categorySprite(byId[key]?.name),
-            trailing: Money.format(
-              groups[key]!.fold(0, (sum, line) => sum + line.netCents),
-            ),
-            open: _open.contains(key),
-            onTap: () => setState(
-              () => _open.contains(key) ? _open.remove(key) : _open.add(key),
-            ),
-          ),
-          if (_open.contains(key))
-            for (final line in groups[key]!) _LineTile(line: line),
-        ],
       ],
     );
   }
