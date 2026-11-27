@@ -14,20 +14,11 @@ import 'package:scontrini/l10n/app_localizations.dart';
 /// its quantity and discount, then the total discount and the total.
 ///
 /// The sheet scrolls with the print; its torn top shows when the receipt
-/// opens and its torn bottom at the end. In the Storico tab
-/// ([belowAddButton]) the paper stops above the shell's "Aggiungi" button,
-/// so the button never covers the print.
+/// opens and its torn bottom at the end.
 class ReceiptDetailScreen extends ConsumerStatefulWidget {
-  const new({required this.receiptId, this.belowAddButton = false, super.key});
+  const new({required this.receiptId, super.key});
 
   final int receiptId;
-
-  /// Shown inside the shell, under its floating "Aggiungi" button.
-  final bool belowAddButton;
-
-  /// Room left under the paper for the shell's extended button (56 px tall,
-  /// 16 px above the screen's bottom) plus a gap.
-  static const double addButtonRoom = 88;
 
   /// How far the scrolled paper reaches past its top edge, which is 8 px
   /// below the app bar: those 8 px, then hidden under the bar. The text
@@ -90,12 +81,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
     // As the review screen: the side padding is the room the paper bleeds
     // into; top, not centred.
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        8,
-        20,
-        widget.belowAddButton ? ReceiptDetailScreen.addButtonRoom : 8,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
       child: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
@@ -104,11 +90,10 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
             params: ref.watch(paperSettingsProvider).receipt,
             controller: _scroll,
             hideUntilReady: true,
-            // Up under the app bar; down to just above "Aggiungi" (its top
-            // is 72 px up, the paper's cut edge 88) or the screen's edge.
-            overscan: EdgeInsets.only(
+            // Up under the app bar; down to the screen's edge.
+            overscan: const EdgeInsets.only(
               top: ReceiptDetailScreen._overscanTop,
-              bottom: widget.belowAddButton ? 12 : 8,
+              bottom: 8,
             ),
             child: _StuckToPaper(
               // Not a lazy list: the sheet is as long as the content.

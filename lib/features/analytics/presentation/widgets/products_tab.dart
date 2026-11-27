@@ -27,7 +27,7 @@ class ProductsTab extends StatelessWidget {
         overview.priceRises.isEmpty && overview.priceDrops.isEmpty;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       children: [
         Card(
           child: _ExpandableList(

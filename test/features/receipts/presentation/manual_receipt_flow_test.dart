@@ -130,10 +130,10 @@ void main() {
     await closeApp(tester);
   });
 
-  testWidgets('a receipt in the history is printed on paper above "Aggiungi"', (
+  testWidgets('a receipt in the history is printed on paper, no "Aggiungi"', (
     tester,
   ) async {
-    // Tall enough products to scroll: the end must clear the button.
+    // Tall enough products to scroll.
     await tester.runAsync(
       () => ReceiptRepository(db).saveConfirmed(
         ParsedReceipt(
@@ -173,11 +173,13 @@ void main() {
     expect(find.text('SCONTO TOTALE'), findsOneWidget);
     expect(find.text(Money.format(2400)), findsOneWidget);
 
-    final button = tester.getRect(find.byType(FloatingActionButton));
-    final total = tester.getRect(find.text('TOTALE'));
-    expect(total.bottom, lessThan(button.top));
-    // The whole paper (and its torn bottom) ends above the button too.
-    expect(tester.getRect(paper).bottom, lessThan(button.top));
+    // "Aggiungi" is on the home tab only, so the paper runs down to just
+    // above the navigation bar: no room left for a button.
+    expect(find.byType(FloatingActionButton), findsNothing);
+    final bar = tester.getRect(find.byType(NavigationBar));
+    final bottom = tester.getRect(paper).bottom;
+    expect(bottom, lessThan(bar.top));
+    expect(bar.top - bottom, lessThan(24));
 
     await closeApp(tester);
   });

@@ -84,8 +84,6 @@ GoRouter _createRouter() => GoRouter(
                   builder: (_, state) => ReceiptDetailScreen(
                     receiptId:
                         int.tryParse(state.pathParameters['id'] ?? '') ?? -1,
-                    // In the shell: the paper stops above "Aggiungi".
-                    belowAddButton: true,
                   ),
                 ),
               ],
@@ -161,11 +159,14 @@ class _AppShell extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: shell,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push(Routes.capture),
-        icon: const Icon(Icons.document_scanner_outlined),
-        label: Text(l10n.addReceipt),
-      ),
+      // "Aggiungi" lives on the home tab only.
+      floatingActionButton: shell.currentIndex == ShellBranch.home
+          ? FloatingActionButton.extended(
+              onPressed: () => context.push(Routes.capture),
+              icon: const Icon(Icons.document_scanner_outlined),
+              label: Text(l10n.addReceipt),
+            )
+          : null,
       bottomNavigationBar: NavigationBar(
         selectedIndex: shell.currentIndex,
         onDestinationSelected: (index) {

@@ -132,8 +132,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
           child: keys.isEmpty
               ? Center(child: Text(l10n.pantryNoResults))
               : ListView(
-                  // Clear of the shell's FAB.
-                  padding: const EdgeInsets.only(bottom: 96),
+                  padding: const EdgeInsets.only(bottom: 8),
                   children: [
                     for (final key in keys)
                       SectionSurface(
@@ -213,7 +212,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     final choice = await showModalBottomSheet<_LotChoice>(
       context: context,
       showDragHandle: true,
-      // Above the shell's FAB and navigation bar.
+      // Above the shell's navigation bar.
       useRootNavigator: true,
       builder: (context) => SafeArea(
         child: Column(

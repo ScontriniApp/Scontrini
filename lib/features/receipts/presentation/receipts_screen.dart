@@ -52,8 +52,7 @@ class ReceiptsScreen extends ConsumerWidget {
           .add(receipt);
     }
     return ListView(
-      // Clear of the shell's FAB.
-      padding: const EdgeInsets.only(bottom: 96),
+      padding: const EdgeInsets.only(bottom: 8),
       children: [
         for (final MapEntry(:key, :value) in months.entries)
           SectionSurface(

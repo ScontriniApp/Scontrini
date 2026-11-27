@@ -24,7 +24,7 @@ class SpendingTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListView(
-    padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
     children: [
       _TotalCard(overview: overview),
       const SizedBox(height: 12),
