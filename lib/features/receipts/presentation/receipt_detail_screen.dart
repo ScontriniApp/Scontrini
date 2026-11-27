@@ -103,6 +103,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
           child: PaperBubble(
             params: ref.watch(paperSettingsProvider).receipt,
             controller: _scroll,
+            tilt: true,
             hideUntilReady: true,
             // Up under the app bar; down to just above "Aggiungi" (its top
             // is 72 px up, the paper's cut edge 88) or the screen's edge.

@@ -96,6 +96,7 @@ class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
             child: PaperBubble(
               params: settings.receipt.copyWith(debugView: _debugView),
               controller: _receiptScroll,
+              tilt: true,
               child: _SampleReceipt(controller: _receiptScroll),
             ),
           ),

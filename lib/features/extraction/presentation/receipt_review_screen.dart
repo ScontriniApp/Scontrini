@@ -213,6 +213,7 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                   child: PaperBubble(
                     params: ref.watch(paperSettingsProvider).receipt,
                     controller: _scroll,
+                    tilt: true,
                     onReady: widget.onPaperReady,
                     hideUntilReady: true,
                     child: _PrintTheme(

@@ -161,19 +161,57 @@ void main() {
     await gesture.up();
   });
 
-  testWidgets('no tilt without the flag, on a scrolling sheet, or at 0', (
-    tester,
-  ) async {
+  testWidgets('no tilt without the flag or at 0', (tester) async {
     await pump(tester, params: params, tilt: false);
-    expect(tiltTransforms(), findsNothing);
-
-    final controller = ScrollController();
-    addTearDown(controller.dispose);
-    await pump(tester, params: params, controller: controller);
     expect(tiltTransforms(), findsNothing);
 
     await pump(tester, params: params.copyWith(tilt: 0));
     expect(tiltTransforms(), findsNothing);
+  });
+
+  testWidgets('a scrolling sheet tilts, and lets go when it scrolls', (
+    tester,
+  ) async {
+    final controller = ScrollController();
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Center(
+            child: SizedBox(
+              width: 300,
+              height: 400,
+              child: PaperBubble(
+                params: params,
+                controller: controller,
+                tilt: true,
+                child: SingleChildScrollView(
+                  controller: controller,
+                  child: const SizedBox(height: 3000),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    final box = tester.getRect(find.byType(PaperBubble));
+    final gesture = await tester.startGesture(
+      box.centerRight - const Offset(4, 0),
+    );
+    await frames(tester);
+    expect(tiltY(tester), lessThan(-0.1));
+
+    for (var i = 0; i < 10; i++) {
+      await gesture.moveBy(const Offset(0, -15));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await frames(tester);
+    expect(controller.offset, greaterThan(0));
+    // Still held, but the content scrolled: flat again.
+    expect(tiltY(tester), closeTo(0, 1e-3));
+    await gesture.up();
   });
 
   testWidgets('the sheet casts a shadow unless its strength is 0', (
@@ -184,5 +222,51 @@ void main() {
 
     await pump(tester, params: params.copyWith(dropShadow: 0));
     expect(hasShadow(tester), isFalse);
+  });
+
+  testWidgets('a moving lamp or a tilt never rebuilds the content', (
+    tester,
+  ) async {
+    var builds = 0;
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          home: Center(
+            child: SizedBox(
+              width: 300,
+              child: PaperBubble(
+                params: params,
+                tilt: true,
+                child: Builder(
+                  builder: (context) {
+                    builds++;
+                    return const SizedBox(height: 200);
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    final before = builds;
+
+    container
+        .read(paperLightProvider.notifier)
+        .set(const PaperLight(azimuth: 0.4, elevation: 1.2));
+    await tester.pump();
+    final box = tester.getRect(find.byType(PaperBubble));
+    final gesture = await tester.startGesture(
+      box.centerLeft + const Offset(4, 0),
+    );
+    await frames(tester);
+    expect(tiltY(tester), greaterThan(0.1));
+    await gesture.up();
+    await frames(tester);
+    expect(builds, before);
   });
 }
