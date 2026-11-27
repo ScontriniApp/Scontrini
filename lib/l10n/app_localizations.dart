@@ -254,12 +254,6 @@ abstract class AppLocalizations {
   /// **'Righe non riconosciute'**
   String get extractionUnparsed;
 
-  /// No description provided for @extractionRawText.
-  ///
-  /// In it, this message translates to:
-  /// **'Testo riconosciuto'**
-  String get extractionRawText;
-
   /// No description provided for @warningMissingStore.
   ///
   /// In it, this message translates to:
@@ -512,6 +506,12 @@ abstract class AppLocalizations {
   /// **'Ricostruisco lo scontrino…'**
   String get extractionStepParsing;
 
+  /// No description provided for @extractionStepPaper.
+  ///
+  /// In it, this message translates to:
+  /// **'Preparo lo scontrino'**
+  String get extractionStepPaper;
+
   /// No description provided for @confirmFailed.
   ///
   /// In it, this message translates to:
@@ -625,6 +625,30 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Mostra/nascondi i controlli'**
   String get shaderLabHideControls;
+
+  /// No description provided for @plasticLabTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Laboratorio plastica'**
+  String get plasticLabTitle;
+
+  /// No description provided for @plasticLabHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Regola la targhetta di plastica: bordo, lucido, inclinazione al tocco.'**
+  String get plasticLabHint;
+
+  /// No description provided for @plasticLabUnsupported.
+  ///
+  /// In it, this message translates to:
+  /// **'Luce della plastica non disponibile qui (serve Impeller): la targhetta si inclina senza riflessi.'**
+  String get plasticLabUnsupported;
+
+  /// No description provided for @plasticLabTouchHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Tocca e trascina la targhetta per inclinarla.'**
+  String get plasticLabTouchHint;
 
   /// No description provided for @demoDataTitle.
   ///
@@ -769,12 +793,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Scontrino a mano'**
   String get manualReceiptTitle;
-
-  /// No description provided for @manualReceiptNotice.
-  ///
-  /// In it, this message translates to:
-  /// **'Aggiungi i prodotti che hai comprato. Salvando, lo scontrino entra nello storico e i prodotti in dispensa.'**
-  String get manualReceiptNotice;
 
   /// No description provided for @receiptsUnknownStore.
   ///
@@ -974,12 +992,6 @@ abstract class AppLocalizations {
   /// **'Controlla lo scontrino'**
   String get reviewTitle;
 
-  /// No description provided for @reviewNotice.
-  ///
-  /// In it, this message translates to:
-  /// **'Controlla ogni prodotto: confermalo se è stato letto bene, altrimenti correggilo. Salvando, lo scontrino entra nella dashboard e i prodotti in dispensa.'**
-  String get reviewNotice;
-
   /// No description provided for @reviewAddItem.
   ///
   /// In it, this message translates to:
@@ -1100,24 +1112,6 @@ abstract class AppLocalizations {
   /// **'Scarta'**
   String get reviewDiscard;
 
-  /// No description provided for @reviewMismatchDetail.
-  ///
-  /// In it, this message translates to:
-  /// **'Somma articoli {items}, totale {total}'**
-  String reviewMismatchDetail(String items, String total);
-
-  /// No description provided for @reviewMissingDateHint.
-  ///
-  /// In it, this message translates to:
-  /// **'Senza data, viene usata quella di oggi.'**
-  String get reviewMissingDateHint;
-
-  /// No description provided for @reviewMissingTotalHint.
-  ///
-  /// In it, this message translates to:
-  /// **'Senza totale, viene usata la somma degli articoli.'**
-  String get reviewMissingTotalHint;
-
   /// No description provided for @reviewUseItemsTotal.
   ///
   /// In it, this message translates to:
@@ -1129,12 +1123,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Salva scontrino'**
   String get reviewSave;
-
-  /// No description provided for @reviewSaveBlocked.
-  ///
-  /// In it, this message translates to:
-  /// **'{count, plural, =1{Manca 1 prodotto da controllare} other{Mancano {count} prodotti da controllare}}'**
-  String reviewSaveBlocked(int count);
 
   /// No description provided for @reviewItemsPending.
   ///
@@ -1171,6 +1159,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Conferma tutti ({count})'**
   String reviewConfirmAll(int count);
+
+  /// No description provided for @reviewUnconfirmAll.
+  ///
+  /// In it, this message translates to:
+  /// **'Annulla tutto'**
+  String get reviewUnconfirmAll;
 
   /// No description provided for @analyticsTabSpending.
   ///

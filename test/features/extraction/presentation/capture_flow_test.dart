@@ -8,6 +8,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:scontrini/app/app.dart';
 import 'package:scontrini/core/database/app_database.dart';
 import 'package:scontrini/core/database/database_provider.dart';
+import 'package:scontrini/core/paper/paper_bubble.dart';
 import 'package:scontrini/features/capture/data/capture_providers.dart';
 import 'package:scontrini/features/capture/data/receipt_capture_service.dart';
 import 'package:scontrini/features/capture/domain/receipt_source.dart';
@@ -66,7 +67,10 @@ void main() {
     }
   }
 
-  Future<void> openCapture(WidgetTester tester) async {
+  Future<void> openCapture(
+    WidgetTester tester, {
+    bool paperNeverLoads = false,
+  }) async {
     // A tall phone, so the review's rows fit without scrolling.
     tester.view
       ..physicalSize = const Size(1080, 9000)
@@ -86,6 +90,10 @@ void main() {
           appDatabaseProvider.overrideWithValue(db),
           receiptCaptureServiceProvider.overrideWithValue(capture),
           textExtractorProvider.overrideWithValue(extractor),
+          if (paperNeverLoads)
+            paperProgramProvider.overrideWith(
+              (ref) => Completer<PaperPrograms>().future,
+            ),
         ],
         child: const ScontriniApp(),
       ),
@@ -115,11 +123,36 @@ void main() {
     expect(find.text('SUPERMERCATO ESEMPIO'), findsOneWidget);
     expect(find.text('LATTE INTERO'), findsOneWidget);
     expect(find.text('Articoli (2), 2 da controllare'), findsOneWidget);
-    expect(find.text('Data non trovata'), findsOneWidget);
-    expect(
-      find.text('La somma degli articoli non corrisponde al totale'),
-      findsOneWidget,
-    );
+    // Problems show on their line, not as banners.
+    expect(find.text('Data non trovata'), findsNothing);
+    expect(find.text('Somma articoli'), findsOneWidget);
+  });
+
+  testWidgets('the progress stays up until the receipt paper is ready', (
+    tester,
+  ) async {
+    // As on the phone: the paper is waited for. Its shaders never load
+    // here, so only the time limit lets the review through.
+    PaperBubble.waitForPaper = true;
+    addTearDown(() => PaperBubble.waitForPaper = false);
+    when(() => capture.scan()).thenAnswer((_) async => _source);
+    when(
+      () => extractor.extract(_source, onProgress: any(named: 'onProgress')),
+    ).thenAnswer((_) async => _document(['SUPERMERCATO ESEMPIO', 'PANE 1,10']));
+
+    await openCapture(tester, paperNeverLoads: true);
+    await tester.tap(find.text('Scansiona con la fotocamera'));
+    await settle(tester);
+
+    // Read, but the paper isn't ready: the progress covers the review.
+    expect(find.text('Preparo lo scontrino'), findsOneWidget);
+    expect(find.text('Controlla lo scontrino'), findsNothing);
+
+    await tester.pump(PaperBubble.readyTimeout);
+    await tester.pump();
+    expect(find.text('Preparo lo scontrino'), findsNothing);
+    expect(find.text('Controlla lo scontrino'), findsOneWidget);
+    expect(find.text('PANE'), findsOneWidget);
   });
 
   testWidgets('cancelling the picker stays on the capture screen', (

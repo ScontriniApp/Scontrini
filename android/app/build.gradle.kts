@@ -31,6 +31,10 @@ android {
 
     buildTypes {
         release {
+            // The Flutter Gradle plugin turns on R8 (minify + resource
+            // shrinking) for release and reads proguard-rules.pro. R8 broke
+            // the document scanner and ML Kit silently: read that file before
+            // changing anything here, and run tool/release_check/run.sh after.
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")

@@ -7,7 +7,6 @@ import 'package:scontrini/app/router.dart';
 import 'package:scontrini/app/tab_reselect.dart';
 import 'package:scontrini/core/section_colors/section_surface.dart';
 import 'package:scontrini/core/widgets/placeholder_view.dart';
-import 'package:scontrini/core/widgets/refreshable_fill.dart';
 import 'package:scontrini/features/analytics/presentation/dashboard_providers.dart';
 import 'package:scontrini/features/analytics/presentation/refresh_analytics.dart';
 import 'package:scontrini/features/analytics/presentation/widgets/category_pie_card.dart';
@@ -16,8 +15,8 @@ import 'package:scontrini/features/analytics/presentation/widgets/shopping_list_
 import 'package:scontrini/features/insights/presentation/dashboard_insights_section.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
-/// Home: the month so far, categories, next shopping and suggestions. Pull
-/// down, or tap the Home tab again, to refresh.
+/// Home: the month so far, categories, next shopping and suggestions. Tap
+/// the Home tab again to refresh (pulling down does nothing on purpose).
 class DashboardScreen extends ConsumerStatefulWidget {
   const new({super.key});
 
@@ -52,9 +51,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       body: RefreshIndicator(
         key: _refresh,
         onRefresh: () => refreshPurchasesAndPantry(ref, dashboardWindows(ref)),
+        // Only a tap on the open tab refreshes: scrolling past the top must
+        // not reload the page.
+        notificationPredicate: (_) => false,
         child: switch (summary) {
           AsyncData(:final value) when value.hasHistory => ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
             // Room at the bottom so the last card scrolls clear of the
             // "Aggiungi" button.
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
@@ -68,15 +69,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               const SectionSurface(child: DashboardInsightsSection()),
             ],
           ),
-          AsyncData() => RefreshableFill(
-            child: PlaceholderView(
-              icon: Icons.receipt_long_outlined,
-              message: l10n.dashboardEmpty,
-            ),
+          AsyncData() => PlaceholderView(
+            icon: Icons.receipt_long_outlined,
+            message: l10n.dashboardEmpty,
           ),
-          AsyncError(:final error) => RefreshableFill(
-            child: Center(child: Text('$error')),
-          ),
+          AsyncError(:final error) => Center(child: Text('$error')),
           _ => const Center(child: CircularProgressIndicator()),
         },
       ),

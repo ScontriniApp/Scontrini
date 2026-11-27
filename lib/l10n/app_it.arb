@@ -40,7 +40,6 @@
   },
   "extractionReceiptDiscount": "Sconti sul totale",
   "extractionUnparsed": "Righe non riconosciute",
-  "extractionRawText": "Testo riconosciuto",
   "warningMissingStore": "Negozio non trovato",
   "warningMissingDate": "Data non trovata",
   "warningMissingTotal": "Totale non trovato",
@@ -131,6 +130,7 @@
   "extractionStepFindingLines": "Cerco le righe…",
   "extractionStepReadingLines": "Leggo le righe…",
   "extractionStepParsing": "Ricostruisco lo scontrino…",
+  "extractionStepPaper": "Preparo lo scontrino",
   "confirmFailed": "Impossibile salvare lo scontrino.",
   "navInsights": "Consigli",
   "insightsEmpty": "I consigli personalizzati appariranno qui.",
@@ -142,13 +142,18 @@
   "shaderLabComponents": "Componenti",
   "shaderLabInkOff": "Sopra",
   "shaderLabInkThermal": "Termica",
-  "shaderLabInkColour": "Colori",  "shaderLabNewSeed": "Nuove pieghe",
+  "shaderLabInkColour": "Colori",
+  "shaderLabNewSeed": "Nuove pieghe",
   "shaderLabReset": "Ripristina",
   "shaderLabCopy": "Copia valori",
   "shaderLabCopied": "Valori copiati negli appunti",
   "shaderLabTiltLight": "Luce dal giroscopio",
   "shaderLabTiltLightHint": "La luce viene dall'alto: inclina il telefono.",
   "shaderLabHideControls": "Mostra/nascondi i controlli",
+  "plasticLabTitle": "Laboratorio plastica",
+  "plasticLabHint": "Regola la targhetta di plastica: bordo, lucido, inclinazione al tocco.",
+  "plasticLabUnsupported": "Luce della plastica non disponibile qui (serve Impeller): la targhetta si inclina senza riflessi.",
+  "plasticLabTouchHint": "Tocca e trascina la targhetta per inclinarla.",
   "demoDataTitle": "Dati demo (solo debug)",
   "demoDataLoad": "Carica dati demo",
   "demoDataLoadHint": "6 mesi di acquisti inventati. Si sommano agli scontrini veri finché non li rimuovi.",
@@ -222,7 +227,6 @@
   "pantryNoResults": "Nessun prodotto trovato.",
   "captureManual": "Inserisci a mano",
   "manualReceiptTitle": "Scontrino a mano",
-  "manualReceiptNotice": "Aggiungi i prodotti che hai comprato. Salvando, lo scontrino entra nello storico e i prodotti in dispensa.",
   "receiptsUnknownStore": "Negozio sconosciuto",
   "receiptsManual": "A mano",
   "receiptsItemCount": "{count, plural, =1{1 articolo} other{{count} articoli}}",
@@ -308,7 +312,6 @@
     }
   },
   "reviewTitle": "Controlla lo scontrino",
-  "reviewNotice": "Controlla ogni prodotto: confermalo se è stato letto bene, altrimenti correggilo. Salvando, lo scontrino entra nella dashboard e i prodotti in dispensa.",
   "reviewAddItem": "Aggiungi articolo",
   "reviewEditItem": "Modifica articolo",
   "reviewFieldName": "Nome sullo scontrino",
@@ -336,29 +339,8 @@
   "reviewDiscardTitle": "Scartare le modifiche?",
   "reviewDiscardBody": "Lo scontrino non è ancora stato salvato.",
   "reviewDiscard": "Scarta",
-  "reviewMismatchDetail": "Somma articoli {items}, totale {total}",
-  "@reviewMismatchDetail": {
-    "placeholders": {
-      "items": {
-        "type": "String"
-      },
-      "total": {
-        "type": "String"
-      }
-    }
-  },
-  "reviewMissingDateHint": "Senza data, viene usata quella di oggi.",
-  "reviewMissingTotalHint": "Senza totale, viene usata la somma degli articoli.",
   "reviewUseItemsTotal": "Usa la somma",
   "reviewSave": "Salva scontrino",
-  "reviewSaveBlocked": "{count, plural, =1{Manca 1 prodotto da controllare} other{Mancano {count} prodotti da controllare}}",
-  "@reviewSaveBlocked": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "reviewItemsPending": "Articoli ({count}), {pending} da controllare",
   "@reviewItemsPending": {
     "placeholders": {
@@ -382,6 +364,7 @@
     }
   },
   "reviewConfirmAll": "Conferma tutti ({count})",
+  "reviewUnconfirmAll": "Annulla tutto",
   "@reviewConfirmAll": {
     "placeholders": {
       "count": {

@@ -18,8 +18,8 @@
 // light: with the light straight above they almost vanish, as on paper.
 //
 // Two uses, one file:
-// - ImageFilter.shader over the real widgets (uFilter = 1): the engine binds
-//   the rendered content (on white) to uTexture and its size to uSize.
+// - over a snapshot of the real widgets (uFilter = 1): uTexture is the
+//   content (on white), rendered by PaperBubble itself.
 // - CustomPaint behind the widgets (uFilter = 0), where shader image filters
 //   are not supported (Skia) or the print is off: paper only.
 //
@@ -32,7 +32,7 @@
 
 #include <flutter/runtime_effect.glsl>
 
-uniform vec2 uSize;       // bubble + 2 * uMargin (set by the engine in filter mode)
+uniform vec2 uSize;       // bubble + 2 * uMargin
 uniform vec2 uPaper;      // whole sheet (the scrolled content), px
 uniform float uScroll;    // paper y at the top of the bubble, px
 uniform float uScale;     // px per logical px
@@ -140,11 +140,6 @@ float outline(vec2 paper) {
 
 void main() {
   vec2 pos = FlutterFragCoord().xy;
-#ifdef IMPELLER_TARGET_OPENGLES
-  if (uFilter > 0.5) {
-    pos.y = uSize.y - pos.y;
-  }
-#endif
   // From here on, positions are relative to the bubble, not the bleed area.
   pos -= uMargin;
   vec2 bubble = uSize - 2.0 * uMargin;
@@ -293,6 +288,10 @@ void main() {
     // The content texture covers the bleed area too (white there).
     vec2 content = (paper - scroll + uMargin) / uSize;
     vec3 src = texture(uTexture, clamp(content, 0.0, 1.0)).rgb;
+    if (any(lessThan(content, vec2(0.0))) ||
+        any(greaterThan(content, vec2(1.0)))) {
+      src = vec3(1.0);
+    }
     if (uMode < 1.5) {
       // Thermal: darkness becomes ink; dots bleed, so edges go bold.
       float ink = clamp((1.0 - dot(src, vec3(0.299, 0.587, 0.114))) * 1.8, 0.0, 1.0);

@@ -67,6 +67,9 @@ dev_dependencies:
     sdk: flutter
   json_serializable: ^6.15.2
   mocktail: ^1.0.5
+  # tool/release_check opens an encrypted SQLite file directly (drift
+  # depends on it already; the version is the one in pubspec.lock).
+  sqlite3: ^3.9.1
   # Only the PC benchmark (tool/bench) matches product names.
   string_similarity: ^2.2.0
   very_good_analysis: ^11.0.0
@@ -92,6 +95,9 @@ flutter:
   # Fragment shaders (compiled by impellerc at build time).
   shaders:
     - shaders/receipt_paper.frag
+    - shaders/paper_bake.frag
+    - shaders/paper_print.frag
+    - shaders/plastic_plate.frag
 
   # VT323 (SIL Open Font License 1.1, assets/fonts/VT323-OFL.txt): the app's
   # font, bundled because the app makes no network calls.

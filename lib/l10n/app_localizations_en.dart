@@ -94,9 +94,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get extractionUnparsed => 'Unrecognised rows';
 
   @override
-  String get extractionRawText => 'Recognised text';
-
-  @override
   String get warningMissingStore => 'Store not found';
 
   @override
@@ -237,6 +234,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get extractionStepParsing => 'Putting the receipt together…';
 
   @override
+  String get extractionStepPaper => 'Preparing the receipt';
+
+  @override
   String get confirmFailed => 'Could not save the receipt.';
 
   @override
@@ -294,6 +294,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shaderLabHideControls => 'Show/hide the controls';
+
+  @override
+  String get plasticLabTitle => 'Plastic lab';
+
+  @override
+  String get plasticLabHint =>
+      'Tune the plastic shelf label: rim, gloss, tilt on touch.';
+
+  @override
+  String get plasticLabUnsupported =>
+      'Plastic lighting isn\'t available here (needs Impeller): the label tilts without reflections.';
+
+  @override
+  String get plasticLabTouchHint => 'Touch and drag the label to tilt it.';
 
   @override
   String get demoDataTitle => 'Demo data (debug only)';
@@ -397,10 +411,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get manualReceiptTitle => 'Receipt by hand';
-
-  @override
-  String get manualReceiptNotice =>
-      'Add the products you bought. Saving adds the receipt to the history and its products to the pantry.';
 
   @override
   String get receiptsUnknownStore => 'Unknown store';
@@ -537,10 +547,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewTitle => 'Check the receipt';
 
   @override
-  String get reviewNotice =>
-      'Check each product: confirm it if it was read correctly, otherwise correct it. Saving adds the receipt to the dashboard and its products to the pantry.';
-
-  @override
   String get reviewAddItem => 'Add item';
 
   @override
@@ -603,33 +609,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewDiscard => 'Discard';
 
   @override
-  String reviewMismatchDetail(String items, String total) {
-    return 'Items sum $items, total $total';
-  }
-
-  @override
-  String get reviewMissingDateHint => 'Without a date, today\'s is used.';
-
-  @override
-  String get reviewMissingTotalHint =>
-      'Without a total, the items\' sum is used.';
-
-  @override
   String get reviewUseItemsTotal => 'Use the sum';
 
   @override
   String get reviewSave => 'Save receipt';
-
-  @override
-  String reviewSaveBlocked(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count products left to check',
-      one: '1 product left to check',
-    );
-    return '$_temp0';
-  }
 
   @override
   String reviewItemsPending(int count, int pending) {
@@ -661,6 +644,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String reviewConfirmAll(int count) {
     return 'Confirm all ($count)';
   }
+
+  @override
+  String get reviewUnconfirmAll => 'Undo all';
 
   @override
   String get analyticsTabSpending => 'Spending';

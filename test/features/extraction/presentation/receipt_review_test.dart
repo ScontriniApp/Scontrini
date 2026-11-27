@@ -10,6 +10,7 @@ import 'package:scontrini/app/app.dart';
 import 'package:scontrini/app/router.dart';
 import 'package:scontrini/core/database/app_database.dart';
 import 'package:scontrini/core/database/database_provider.dart';
+import 'package:scontrini/core/paper/paper_bubble.dart';
 import 'package:scontrini/core/utils/money.dart';
 import 'package:scontrini/features/capture/domain/receipt_source.dart';
 import 'package:scontrini/features/extraction/data/extraction_providers.dart';
@@ -104,37 +105,155 @@ void main() {
   ButtonStyleButton saveButton(WidgetTester tester) =>
       tester.widget<ButtonStyleButton>(find.byKey(const Key('review-save')));
 
+  /// The bottom bar's "Conferma tutti", shown while products are left.
+  Finder confirmAll() => find.byKey(const Key('review-confirm-all'));
+
   /// The Android back button.
   Future<void> systemBack(WidgetTester tester) async {
     await tester.binding.handlePopRoute();
     await tester.pump();
   }
 
-  /// Types [text] in the field dialog opened by tapping [field].
+  /// Selects the header line [field], then types [text] in the dialog its
+  /// "Correggi" opens.
   Future<void> editField(WidgetTester tester, String field, String text) async {
     await tester.tap(find.text(field));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Correggi'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('review-dialog-field')), text);
     await tester.tap(find.text('Salva'));
     await tester.pumpAndSettle();
   }
 
+  /// Selects the product [name] and opens its correction form.
+  Future<void> correct(WidgetTester tester, String name) async {
+    await tester.tap(find.text(name));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Correggi'));
+    await tester.pumpAndSettle();
+  }
+
+  /// Selects the rows' sum and takes it as the total.
+  Future<void> useSum(WidgetTester tester) async {
+    await tester.tap(find.text('Somma articoli'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Usa la somma'));
+    await tester.pumpAndSettle();
+  }
+
+  /// The text style a line's [text] is drawn with (grows when selected).
+  TextStyle styleOf(WidgetTester tester, String text) => tester
+      .widget<AnimatedDefaultTextStyle>(
+        find
+            .ancestor(
+              of: find.text(text),
+              matching: find.byType(AnimatedDefaultTextStyle),
+            )
+            .first,
+      )
+      .style;
+
   Future<int> categoryId(String name) async => (await (db.select(
     db.categories,
   )..where((c) => c.name.equals(name))).getSingle()).id;
 
-  testWidgets('shows the guessed categories and the warnings', (tester) async {
+  testWidgets('a receipt on paper: header, items heading, products', (
+    tester,
+  ) async {
     await openReview(tester);
     expect(find.text('Controlla lo scontrino'), findsOneWidget);
+    expect(find.byType(PaperBubble), findsOneWidget);
     expect(find.text('LATTE INTERO'), findsOneWidget);
     expect(find.textContaining('Latticini e uova'), findsOneWidget);
-    expect(find.text('Data non trovata'), findsOneWidget);
+
+    // No advice and no banners: problems are triangles on their line.
+    expect(find.textContaining('Controlla ogni prodotto'), findsNothing);
+    expect(find.text('Data non trovata'), findsNothing);
     expect(
-      find.text(
-        'Somma articoli ${Money.format(239)}, totale ${Money.format(300)}',
-      ),
-      findsOneWidget,
+      find.text('La somma degli articoli non corrisponde al totale'),
+      findsNothing,
     );
+    Finder flagged(String line) => find.descendant(
+      of: find.byKey(ValueKey('review-$line')),
+      matching: find.byIcon(Icons.warning_amber),
+    );
+    expect(flagged('date'), findsOneWidget);
+    expect(flagged('total'), findsOneWidget);
+    expect(flagged('sum'), findsOneWidget);
+    expect(flagged('store'), findsNothing);
+    expect(flagged('discount'), findsNothing);
+
+    // The store is the title, centred like the rest of the head.
+    final store = tester.getCenter(find.text('SUPERMERCATO ESEMPIO')).dx;
+    final sheet = tester.getCenter(find.byType(PaperBubble)).dx;
+    expect(store, closeTo(sheet, 2));
+
+    // Printed in receipt order.
+    double top(String text) => tester.getTopLeft(find.text(text)).dy;
+    final order = [
+      'SUPERMERCATO ESEMPIO',
+      'Data',
+      'Totale',
+      'Sconti sul totale',
+      'Somma articoli',
+      'Articoli (2), 2 da controllare',
+      'Aggiungi articolo',
+      'LATTE INTERO',
+      'PANE',
+    ].map(top).toList();
+    expect(order, [...order]..sort());
+
+    // No buttons until a line is tapped.
+    expect(find.text('Corretto'), findsNothing);
+    expect(find.text('Correggi'), findsNothing);
+    expect(find.text('Usa la somma'), findsNothing);
+  });
+
+  testWidgets('header lines are selected like products', (tester) async {
+    await openReview(tester);
+    final plain = styleOf(tester, 'Data');
+    await tester.tap(find.text('Data'));
+    await tester.pumpAndSettle();
+    expect(find.text('Correggi'), findsOneWidget);
+    expect(find.text('Corretto'), findsNothing);
+    final picked = styleOf(tester, 'Data');
+    expect(picked.fontWeight, FontWeight.bold);
+    expect(picked.fontSize, greaterThan(plain.fontSize!));
+
+    // The sum offers itself as the total; one line at a time.
+    await tester.tap(find.text('Somma articoli'));
+    await tester.pumpAndSettle();
+    expect(find.text('Usa la somma'), findsOneWidget);
+    expect(find.text('Correggi'), findsNothing);
+    expect(styleOf(tester, 'Data').fontWeight, isNot(FontWeight.bold));
+  });
+
+  testWidgets('one product at a time shows its buttons', (tester) async {
+    await openReview(tester);
+    await tester.tap(find.text('LATTE INTERO'));
+    await tester.pumpAndSettle();
+    expect(find.text('Corretto'), findsOneWidget);
+    expect(find.text('Correggi'), findsOneWidget);
+
+    // Another product takes the selection.
+    await tester.tap(find.text('PANE'));
+    await tester.pumpAndSettle();
+    expect(find.text('Corretto'), findsOneWidget);
+    final buttons = tester.getTopLeft(find.text('Corretto')).dy;
+    expect(buttons, greaterThan(tester.getTopLeft(find.text('PANE')).dy));
+    // Selected: bigger and bold, no highlight box.
+    expect(styleOf(tester, 'PANE').fontWeight, FontWeight.bold);
+    expect(styleOf(tester, 'LATTE INTERO').fontWeight, isNot(FontWeight.bold));
+    expect(
+      find.ancestor(of: find.text('PANE'), matching: find.byType(ListTile)),
+      findsNothing,
+    );
+
+    // Tapped again, it closes.
+    await tester.tap(find.text('PANE'));
+    await tester.pumpAndSettle();
+    expect(find.text('Corretto'), findsNothing);
   });
 
   testWidgets('header edits clear their warnings', (tester) async {
@@ -150,8 +269,7 @@ void main() {
     );
 
     await editField(tester, 'Totale', '3,00');
-    await tester.tap(find.text('Usa la somma'));
-    await tester.pumpAndSettle();
+    await useSum(tester);
     expect(find.text('Usa la somma'), findsNothing);
     expect(
       find.text(Money.format(239)),
@@ -159,6 +277,8 @@ void main() {
     ); // total and items sum
 
     await tester.tap(find.text('Data'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Correggi'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('OK')); // date
     await tester.pumpAndSettle();
@@ -173,8 +293,7 @@ void main() {
   ) async {
     await openReview(tester);
 
-    await tester.tap(find.text('PANE'));
-    await tester.pumpAndSettle();
+    await correct(tester, 'PANE');
     await tester.enterText(
       find.byKey(const Key('review-item-name')),
       'PANE INTEGRALE',
@@ -222,8 +341,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.text('LATTE INTERO'));
-    await tester.pumpAndSettle();
+    await correct(tester, 'LATTE INTERO');
     await tester.tap(find.text('Elimina'));
     await tester.pumpAndSettle();
     expect(find.text('LATTE INTERO'), findsNothing);
@@ -258,36 +376,153 @@ void main() {
   ) async {
     await openReview(tester);
     expect(find.text('Articoli (2), 2 da controllare'), findsOneWidget);
-    expect(find.text('Mancano 2 prodotti da controllare'), findsOneWidget);
-    expect(saveButton(tester).onPressed, isNull);
+    // No save yet: the bar offers to confirm the two left.
+    expect(find.text('Conferma tutti (2)'), findsOneWidget);
+    expect(find.byKey(const Key('review-save')), findsNothing);
 
-    await tester.tap(find.text('Corretto').first);
+    await tester.tap(find.text('LATTE INTERO'));
     await tester.pumpAndSettle();
-    expect(find.text('Manca 1 prodotto da controllare'), findsOneWidget);
-    expect(find.text('Corretto'), findsOneWidget);
+    await tester.tap(find.text('Corretto'));
+    await tester.pumpAndSettle();
+    expect(find.text('Conferma tutti (1)'), findsOneWidget);
+    // Confirmed, the row closes.
+    expect(find.text('Corretto'), findsNothing);
 
     // A correction confirms the row.
-    await tester.tap(find.text('Correggi'));
-    await tester.pumpAndSettle();
+    await correct(tester, 'PANE');
     await tester.tap(find.text('Salva'));
     await tester.pumpAndSettle();
     expect(find.text('Articoli (2)'), findsOneWidget);
+    expect(confirmAll(), findsNothing);
     expect(saveButton(tester).onPressed, isNotNull);
 
     // A confirmed row can be put back to check again.
-    await tester.tap(find.byTooltip('Da ricontrollare').first);
+    await tester.tap(find.text('LATTE INTERO'));
     await tester.pumpAndSettle();
-    expect(find.text('Manca 1 prodotto da controllare'), findsOneWidget);
+    await tester.tap(find.text('Da ricontrollare'));
+    await tester.pumpAndSettle();
+    expect(find.text('Conferma tutti (1)'), findsOneWidget);
   });
 
-  testWidgets('confirm all confirms every product at once', (tester) async {
+  testWidgets('confirm all splits into undo all and save', (tester) async {
     await openReview(tester);
-    await tester.tap(find.text('Conferma tutti (2)'));
+    // Only in the bottom bar, not on the receipt.
+    expect(
+      find.descendant(
+        of: find.byType(PaperBubble),
+        matching: find.textContaining('Conferma tutti'),
+      ),
+      findsNothing,
+    );
+    await tester.tap(confirmAll());
     await tester.pumpAndSettle();
     expect(find.text('Articoli (2)'), findsOneWidget);
-    expect(find.text('Corretto'), findsNothing);
-    expect(find.textContaining('Conferma tutti'), findsNothing);
+    expect(confirmAll(), findsNothing);
     expect(saveButton(tester).onPressed, isNotNull);
+    // Undo all on the left, save on the right, in green.
+    final undo = tester.getCenter(
+      find.byKey(const Key('review-unconfirm-all')),
+    );
+    final save = tester.getCenter(find.byKey(const Key('review-save')));
+    expect(undo.dx, lessThan(save.dx));
+    expect(
+      saveButton(tester).style?.backgroundColor?.resolve({}),
+      const Color(0xFF2E7D32),
+    );
+
+    await tester.tap(find.text('Annulla tutto'));
+    await tester.pumpAndSettle();
+    expect(find.text('Articoli (2), 2 da controllare'), findsOneWidget);
+    expect(find.text('Conferma tutti (2)'), findsOneWidget);
+    expect(find.byKey(const Key('review-save')), findsNothing);
+  });
+
+  testWidgets('the print does not slide off its paper when dragged', (
+    tester,
+  ) async {
+    await openReview(tester);
+    final before = tester.getTopLeft(find.text('LATTE INTERO'));
+    // Pulled past the top (the receipt fits: nothing to scroll), held.
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('LATTE INTERO')),
+    );
+    await gesture.moveBy(const Offset(0, 120));
+    await tester.pump();
+    await gesture.moveBy(const Offset(0, 120));
+    await tester.pump();
+    expect(tester.getTopLeft(find.text('LATTE INTERO')), before);
+    expect(find.byType(StretchingOverscrollIndicator), findsNothing);
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(find.text('LATTE INTERO')), before);
+  });
+
+  testWidgets('a correction dims the screen around the receipt only', (
+    tester,
+  ) async {
+    await openReview(tester);
+    double lit(Finder of) => tester
+        .widgetList<AnimatedOpacity>(
+          find.descendant(of: of, matching: find.byType(AnimatedOpacity)),
+        )
+        .map((a) => a.opacity)
+        .fold(0, (a, b) => a + b);
+    final screen = find.byType(Scaffold).last;
+    expect(lit(screen), 0);
+
+    await correct(tester, 'PANE');
+    // The sheet brings no scrim of its own...
+    final barriers = tester.widgetList<ModalBarrier>(find.byType(ModalBarrier));
+    expect(barriers.every((b) => (b.color?.a ?? 0) == 0), isTrue);
+    // ...the screen dims its bar, its buttons and the space around the
+    // paper (three veils), none of them over the receipt.
+    expect(lit(screen), 3);
+    expect(
+      find.descendant(
+        of: find.byType(PaperBubble),
+        matching: find.byType(AnimatedOpacity),
+      ),
+      findsNothing,
+    );
+    final paper = tester.getRect(find.byType(PaperBubble));
+    final veil = find
+        .descendant(of: screen, matching: find.byType(AnimatedOpacity))
+        .evaluate()
+        .map((e) => e.renderObject! as RenderBox)
+        .map((box) => box.localToGlobal(Offset.zero) & box.size)
+        .firstWhere((rect) => rect.overlaps(paper));
+    // The body's veil is under the paper: painted before it.
+    expect(veil.contains(paper.center), isTrue);
+
+    // Closed (a tap outside it), the screen lights up again.
+    await tester.tapAt(const Offset(20, 20));
+    await tester.pumpAndSettle();
+    expect(lit(screen), 0);
+  });
+
+  testWidgets('a header correction dialog keeps the app theme, not ink', (
+    tester,
+  ) async {
+    await openReview(tester);
+    await tester.tap(find.text('Totale'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Correggi'));
+    await tester.pumpAndSettle();
+    final dialog = find.byType(AlertDialog);
+    expect(dialog, findsOneWidget);
+    // Opened from inside the paper it captured the print's theme: ink text
+    // and ink accents on the dialog's surface.
+    final title = tester.widget<RichText>(
+      find.descendant(of: dialog, matching: find.byType(RichText)).first,
+    );
+    expect(title.text.style?.color, isNot(receiptInk));
+    final theme = Theme.of(tester.element(dialog));
+    expect(theme.colorScheme.primary, isNot(receiptInk));
+  });
+
+  testWidgets('the recognised text is not shown', (tester) async {
+    await openReview(tester);
+    expect(find.text('Testo riconosciuto'), findsNothing);
   });
 
   testWidgets('saving stores the receipt and puts its products in the pantry', (
@@ -295,16 +530,16 @@ void main() {
   ) async {
     await openReview(tester);
     await editField(tester, 'SUPERMERCATO ESEMPIO', 'Coop');
-    await tester.tap(find.text('Usa la somma'));
-    await tester.pumpAndSettle();
+    await useSum(tester);
 
-    await tester.tap(find.text('PANE'));
-    await tester.pumpAndSettle();
+    await correct(tester, 'PANE');
     await tester.tap(find.byKey(const Key('review-item-category')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Casa e igiene').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Salva'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('LATTE INTERO'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Corretto'));
     await tester.pumpAndSettle();

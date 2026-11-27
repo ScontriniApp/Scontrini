@@ -63,6 +63,11 @@ class ReceiptDraft {
     for (final item in items) item.withConfirmed(true),
   ]);
 
+  /// Puts every row back to check again.
+  ReceiptDraft unconfirmAll() => ReceiptDraft._(receipt, [
+    for (final item in items) item.withConfirmed(false),
+  ]);
+
   /// Marks row [index] as read correctly (or not, to look at it again).
   ReceiptDraft withConfirmed(int index, {bool confirmed = true}) =>
       ReceiptDraft._(

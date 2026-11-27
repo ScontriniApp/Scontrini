@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// [f] of [a]'s value, keeping the last value while [a] reloads (a pull to
-/// refresh), so screens built on it never flash back to a spinner.
+/// [f] of [a]'s value, keeping the last value while [a] reloads (a refresh from
+/// the tab bar), so screens built on it never flash back to a spinner.
 AsyncValue<R> mapAsync<A, R>(AsyncValue<A> a, R Function(A) f) {
   if (a.hasValue) return AsyncData(f(a.requireValue));
   if (a case AsyncError(:final error, :final stackTrace)) {
