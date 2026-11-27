@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:scontrini/app/app.dart';
 import 'package:scontrini/app/router.dart';
+import 'package:scontrini/app/theme.dart';
 import 'package:scontrini/core/database/app_database.dart';
 import 'package:scontrini/core/database/database_provider.dart';
 import 'package:scontrini/core/paper/paper_bubble.dart';
@@ -419,7 +420,7 @@ void main() {
     expect(find.text('Articoli (2)'), findsOneWidget);
     expect(confirmAll(), findsNothing);
     expect(saveButton(tester).onPressed, isNotNull);
-    // Undo all on the left, save on the right, in green.
+    // Undo all on the left, save on the right, in the accent.
     final undo = tester.getCenter(
       find.byKey(const Key('review-unconfirm-all')),
     );
@@ -427,7 +428,11 @@ void main() {
     expect(undo.dx, lessThan(save.dx));
     expect(
       saveButton(tester).style?.backgroundColor?.resolve({}),
-      const Color(0xFF2E7D32),
+      AppTheme.accent,
+    );
+    expect(
+      saveButton(tester).style?.foregroundColor?.resolve({}),
+      AppTheme.onAccent,
     );
 
     await tester.tap(find.text('Annulla tutto'));

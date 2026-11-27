@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/router.dart';
+import 'package:scontrini/app/theme.dart';
 import 'package:scontrini/core/paper/paper_bubble.dart';
 import 'package:scontrini/core/paper/paper_settings.dart';
 import 'package:scontrini/core/utils/clock.dart';
@@ -177,8 +178,8 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                           child: FilledButton.icon(
                             key: const Key('review-save'),
                             style: FilledButton.styleFrom(
-                              backgroundColor: _saveGreen,
-                              foregroundColor: Colors.white,
+                              backgroundColor: AppTheme.accent,
+                              foregroundColor: AppTheme.onAccent,
                             ),
                             icon: const Icon(Icons.check),
                             // One line, however narrow the half.
@@ -462,9 +463,6 @@ class _DimmedBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) => _Dim(dim: dim, child: child);
 }
-
-/// The save button's green.
-const _saveGreen = Color(0xFF2E7D32);
 
 /// The receipt's body type, as in the paper lab's receipt.
 TextStyle? _body(BuildContext context) =>
