@@ -11,6 +11,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/core/paper/fold_surface.dart';
 import 'package:scontrini/core/paper/paper_params.dart';
 import 'package:scontrini/core/paper/paper_settings.dart';
+import 'package:scontrini/core/tilt/touch_tilt.dart';
 
 /// The paper's shaders, compiled once.
 @immutable
@@ -81,6 +82,13 @@ const receiptInk = Color(0xFF211F29);
 /// edges stay visible instead of being cut. That bleed paints outside the
 /// bubble's layout box: leave some room around it (or no clipping parent).
 ///
+/// The sheet casts a soft shadow on the surface under it, away from the
+/// lamp ([PaperParams.dropShadow], [PaperParams.hover]), following its torn
+/// ends and corners. With [tilt] (sheets without [controller]) it tilts
+/// under a finger and lifts like a shelf label ([TouchTilt]): the printed
+/// sheet is moved as a finished layer (a [RepaintBoundary]), so a frame of
+/// the tilt costs no shader work; the bake keeps the lamp where it was.
+///
 /// With [controller], [child] must contain the vertical scrollable it
 /// drives; the sheet is as long as that content, and only the sides bleed:
 /// the top and bottom are the viewport's edges, cut there, unless
@@ -94,8 +102,15 @@ class PaperBubble extends ConsumerStatefulWidget {
     this.onReady,
     this.hideUntilReady = false,
     this.overscan = EdgeInsets.zero,
+    this.tilt = false,
     super.key,
   });
+
+  /// Tilts and lifts under a finger ([PaperParams.tilt]). Only for a sheet
+  /// without [controller]: a scrolling sheet's touches scroll it. The
+  /// content keeps its touches (buttons, sliders), and a list around the
+  /// bubble still scrolls.
+  final bool tilt;
 
   /// With [controller]: how far the paper and its print reach past the
   /// viewport's top and bottom ([EdgeInsets.top] and [EdgeInsets.bottom];
@@ -531,7 +546,52 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
 
   @override
   Widget build(BuildContext context) {
-    final bubble = _buildPaper(context);
+    final shared = ref.watch(paperLightProvider);
+    final light = widget.light ?? shared;
+    // Its own layer: the shadow and the tilt move it without repainting
+    // (re-snapshotting and re-printing) the paper.
+    final paper = RepaintBoundary(child: _buildPaper(context, light));
+    final params = widget.params;
+    final tilting = widget.tilt && widget.controller == null && params.tilt > 0;
+    final bubble = TouchTilt(
+      knobs: params,
+      enabled: tilting,
+      claim: false,
+      builder: (context, motion, matrix) {
+        Widget tilted(Widget child) => tilting
+            ? Transform(
+                alignment: Alignment.center,
+                transform: matrix,
+                child: child,
+              )
+            : child;
+        return Stack(
+          clipBehavior: Clip.none,
+          fit: StackFit.passthrough,
+          children: [
+            if (params.dropShadow > 0 && _size != null)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: tilted(
+                    CustomPaint(
+                      painter: _ShadowPainter(
+                        sheet: _sheet() ?? _size!,
+                        scroll: _scroll,
+                        window: _shadowWindow(),
+                        params: params,
+                        light: light,
+                        lift: motion.lift,
+                        repaint: widget.controller,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            tilted(paper),
+          ],
+        );
+      },
+    );
     final ready =
         !PaperBubble.waitForPaper ||
         (_programs != null &&
@@ -548,10 +608,22 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
     );
   }
 
-  Widget _buildPaper(BuildContext context) {
+  /// The part of a scrolling sheet whose shadow can be seen, in the
+  /// bubble's coordinates: the paper is cut at [PaperBubble.overscan].
+  /// Everything for a sheet that doesn't scroll.
+  Rect? _shadowWindow() {
+    final size = _size;
+    if (widget.controller == null || size == null) return null;
+    return Rect.fromLTRB(
+      -_maxBleed,
+      -widget.overscan.top,
+      size.width + _maxBleed,
+      size.height + widget.overscan.bottom,
+    );
+  }
+
+  Widget _buildPaper(BuildContext context, PaperLight light) {
     final programs = ref.watch(paperProgramProvider).value;
-    final shared = ref.watch(paperLightProvider);
-    final light = widget.light ?? shared;
     final ink = widget.params.ink;
     final print = ink != PaperInk.off && PaperBubble.canPrint;
 
@@ -695,6 +767,115 @@ ui.Image _solid(Color colour) {
   Canvas(recorder)
       .drawRect(const Rect.fromLTWH(0, 0, 1, 1), Paint()..color = colour);
   return recorder.endRecording().toImageSync(1, 1);
+}
+
+/// The sheet's outline in its own coordinates: [corner] rounded corners and
+/// the torn top and bottom ends of `paper_print.frag` (teeth [torn] wide,
+/// as deep as half that). Only the rows from [top] to [bottom] (a scrolling
+/// sheet's visible part; the ends' teeth only where they show).
+@visibleForTesting
+Path paperOutline(
+  Size sheet, {
+  required double torn,
+  required double corner,
+  double top = double.negativeInfinity,
+  double bottom = double.infinity,
+}) {
+  final from = math.max(0, top).toDouble();
+  final to = math.min(sheet.height, bottom);
+  if (to <= from || sheet.width <= 0) return Path();
+  double tooth(double x) {
+    if (torn <= 0) return 0;
+    final f = x / torn - (x / torn).floorToDouble();
+    return torn * 0.5 * ((f - 0.5).abs() * 2);
+  }
+
+  final xs = <double>[];
+  if (torn > 0) {
+    for (var x = 0.0; x < sheet.width; x += torn / 2) {
+      xs.add(x);
+    }
+  } else {
+    xs.add(0);
+  }
+  xs.add(sheet.width);
+  final outline = Path()..moveTo(xs.first, math.max(tooth(xs.first), from));
+  for (final x in xs.skip(1)) {
+    outline.lineTo(x, math.max(tooth(x), from));
+  }
+  for (final x in xs.reversed) {
+    outline.lineTo(x, math.min(sheet.height - tooth(x), to));
+  }
+  outline.close();
+  if (corner <= 0) return outline;
+  final rounded = Path()
+    ..addRRect(
+      RRect.fromRectAndRadius(Offset.zero & sheet, Radius.circular(corner)),
+    );
+  return Path.combine(PathOperation.intersect, outline, rounded);
+}
+
+/// The shadow the sheet casts on the surface under it: its outline, blurred,
+/// pushed away from the lamp by how high the sheet sits (more while lifted,
+/// as the plastic plates' shadow).
+class _ShadowPainter extends CustomPainter {
+  new({
+    required this.sheet,
+    required this.scroll,
+    required this.window,
+    required this.params,
+    required this.light,
+    required this.lift,
+    super.repaint,
+  });
+
+  final Size sheet;
+
+  /// The sheet's y at the bubble's top (read on every paint: scrolling).
+  final double Function() scroll;
+
+  /// Rows that can be seen, in the bubble's coordinates (null = all).
+  final Rect? window;
+  final PaperParams params;
+  final PaperLight light;
+  final double lift;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final y = scroll();
+    final window = this.window;
+    final outline = paperOutline(
+      sheet,
+      torn: params.torn,
+      corner: params.corner,
+      top: window == null ? double.negativeInfinity : window.top + y,
+      bottom: window == null ? double.infinity : window.bottom + y,
+    );
+    final (lx, ly, lz) = light.direction;
+    final height = params.hover + (lift - 1) * 120;
+    final reach = height / math.max(lz, 0.25);
+    canvas
+      ..save()
+      ..translate(-lx * reach, -ly * reach - y)
+      ..drawPath(
+        outline,
+        Paint()
+          ..color = Colors.black.withValues(alpha: params.dropShadow)
+          ..maskFilter = MaskFilter.blur(
+            BlurStyle.normal,
+            Shadow.convertRadiusToSigma(params.dropBlur),
+          ),
+      )
+      ..restore();
+  }
+
+  @override
+  bool shouldRepaint(_ShadowPainter old) =>
+      old.sheet != sheet ||
+      old.window != window ||
+      old.params != params ||
+      old.light != light ||
+      old.lift != lift;
 }
 
 class _PaperPainter extends CustomPainter {

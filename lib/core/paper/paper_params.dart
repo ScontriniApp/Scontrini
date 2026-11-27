@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:scontrini/core/tilt/plate_motion.dart';
 
 /// How the content of a paper bubble is printed.
 enum PaperInk {
@@ -24,7 +25,7 @@ enum PaperDebugView { result, normals, height, light }
 /// The defaults are the look the app ships with; the shader lab (debug
 /// builds) tunes them on the phone.
 @immutable
-class PaperParams {
+class PaperParams implements TiltKnobs {
   const new({
     this.seed = 1,
     this.creases = 1,
@@ -51,6 +52,14 @@ class PaperParams {
     this.dropout = 0.1,
     this.torn = 6,
     this.corner = 0,
+    this.dropShadow = 0.22,
+    this.dropBlur = 8,
+    this.hover = 3,
+    this.tilt = 0.14,
+    this.perspective = 900,
+    this.stiffness = 220,
+    this.damping = 14,
+    this.lift = 1.03,
     this.debugView = PaperDebugView.result,
   });
 
@@ -89,6 +98,14 @@ class PaperParams {
       dropout: n('dropout', d.dropout),
       torn: n('torn', d.torn),
       corner: n('corner', d.corner),
+      dropShadow: n('dropShadow', d.dropShadow),
+      dropBlur: n('dropBlur', d.dropBlur),
+      hover: n('hover', d.hover),
+      tilt: n('tilt', d.tilt),
+      perspective: n('perspective', d.perspective),
+      stiffness: n('stiffness', d.stiffness),
+      damping: n('damping', d.damping),
+      lift: n('lift', d.lift),
     );
   }
 
@@ -173,6 +190,33 @@ class PaperParams {
   /// Corner radius, logical px.
   final double corner;
 
+  /// Opacity of the shadow the sheet casts on the surface under it.
+  final double dropShadow;
+
+  /// Blur of that shadow.
+  final double dropBlur;
+
+  /// How high the sheet sits above that surface, logical px: how far the
+  /// shadow falls from it (more while lifted).
+  final double hover;
+
+  /// Most the sheet tilts under a finger, radians (bubbles with
+  /// `PaperBubble.tilt` only; 0 = never).
+  @override
+  final double tilt;
+
+  @override
+  final double perspective;
+
+  @override
+  final double stiffness;
+
+  @override
+  final double damping;
+
+  @override
+  final double lift;
+
   /// Lab only: show an input of the shader instead of the result.
   final PaperDebugView debugView;
 
@@ -216,6 +260,14 @@ class PaperParams {
     double? dropout,
     double? torn,
     double? corner,
+    double? dropShadow,
+    double? dropBlur,
+    double? hover,
+    double? tilt,
+    double? perspective,
+    double? stiffness,
+    double? damping,
+    double? lift,
     PaperDebugView? debugView,
   }) => PaperParams(
     seed: seed ?? this.seed,
@@ -243,6 +295,14 @@ class PaperParams {
     dropout: dropout ?? this.dropout,
     torn: torn ?? this.torn,
     corner: corner ?? this.corner,
+    dropShadow: dropShadow ?? this.dropShadow,
+    dropBlur: dropBlur ?? this.dropBlur,
+    hover: hover ?? this.hover,
+    tilt: tilt ?? this.tilt,
+    perspective: perspective ?? this.perspective,
+    stiffness: stiffness ?? this.stiffness,
+    damping: damping ?? this.damping,
+    lift: lift ?? this.lift,
     debugView: debugView ?? this.debugView,
   );
 
@@ -272,6 +332,14 @@ class PaperParams {
     dropout,
     torn,
     corner,
+    dropShadow,
+    dropBlur,
+    hover,
+    tilt,
+    perspective,
+    stiffness,
+    damping,
+    lift,
     debugView,
   ];
 
@@ -303,6 +371,14 @@ class PaperParams {
     'dropout': dropout,
     'torn': torn,
     'corner': corner,
+    'dropShadow': dropShadow,
+    'dropBlur': dropBlur,
+    'hover': hover,
+    'tilt': tilt,
+    'perspective': perspective,
+    'stiffness': stiffness,
+    'damping': damping,
+    'lift': lift,
   };
 
   /// Dart source for these values, to paste back as the new defaults.
@@ -320,7 +396,11 @@ class PaperParams {
         'fibres: ${n(fibres)}, edge: ${n(edge)}, '
         'levels: ${n(levels)}, pixel: ${n(pixel)}, ink: PaperInk.${ink.name}, '
         'inkFade: ${n(inkFade)}, lines: ${n(lines)}, '
-        'dropout: ${n(dropout)}, torn: ${n(torn)}, corner: ${n(corner)})';
+        'dropout: ${n(dropout)}, torn: ${n(torn)}, corner: ${n(corner)}, '
+        'dropShadow: ${n(dropShadow)}, dropBlur: ${n(dropBlur)}, '
+        'hover: ${n(hover)}, tilt: ${n(tilt)}, '
+        'perspective: ${n(perspective)}, stiffness: ${n(stiffness)}, '
+        'damping: ${n(damping)}, lift: ${n(lift)})';
   }
 
   @override
