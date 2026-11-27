@@ -37,6 +37,20 @@ abstract final class AppTheme {
     ),
   );
 
+  /// The theme over a background the user chose (Settings): light or dark
+  /// after the colour's brightness, so text, app bar and cards stay
+  /// readable on it. Used for both the light and the dark system mode.
+  static ThemeData onBackground(Color color) => _withFont(
+    ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: _seed,
+        brightness: ThemeData.estimateBrightnessForColor(color),
+      ).copyWith(surface: color),
+      scaffoldBackgroundColor: color,
+      fontFamily: fontFamily,
+    ),
+  );
+
   static ThemeData _withFont(ThemeData theme) => theme.copyWith(
     textTheme: _scaled(theme.textTheme),
     primaryTextTheme: _scaled(theme.primaryTextTheme),

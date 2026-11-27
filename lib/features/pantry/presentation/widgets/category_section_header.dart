@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:scontrini/core/section_colors/section_surface.dart';
 import 'package:scontrini/features/pantry/presentation/widgets/lot_avatar.dart';
 
 /// A category's heading in a collapsible list (pantry, receipt detail):
@@ -40,7 +41,7 @@ class CategorySectionHeader extends StatelessWidget {
               child: Text(
                 title,
                 style: theme.textTheme.titleLarge?.copyWith(
-                  color: theme.colorScheme.primary,
+                  color: SectionSurface.headingColor(context),
                 ),
               ),
             ),

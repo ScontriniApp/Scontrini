@@ -37,6 +37,7 @@ void main() {
         .then((n) => n!);
 
     // Settings has grown: scroll the button into the 800 × 600 test view.
+    await tester.scrollUntilVisible(find.text('Carica dati demo'), 200);
     await tester.ensureVisible(find.text('Carica dati demo'));
     await tester.pump();
     await tester.runAsync(() async {
@@ -48,6 +49,7 @@ void main() {
     expect(find.textContaining('scontrini demo'), findsOneWidget);
 
     // Settings has grown: scroll the button into the 800 × 600 test view.
+    await tester.scrollUntilVisible(find.text('Rimuovi dati demo'), 200);
     await tester.ensureVisible(find.text('Rimuovi dati demo'));
     await tester.pump();
     await tester.runAsync(() async {

@@ -743,5 +743,53 @@
       }
     }
   },
-  "importFailed": "File non valido: scegli un CSV esportato da questa app"
+  "importFailed": "File non valido: scegli un CSV esportato da questa app",
+  "settingsSectionColors": "Colori",
+  "@settingsSectionColors": {
+    "description": "Settings: title of the section colour picker"
+  },
+  "settingsSectionColorsHint": "Sezioni: schede e liste di Home, Storico, Analisi e Dispensa. La carta e le etichette restano come sono.",
+  "@settingsSectionColorsHint": {
+    "description": "Settings: what the section colours change"
+  },
+  "settingsSectionBackground": "Sfondo",
+  "@settingsSectionBackground": {
+    "description": "Settings: section background colour row"
+  },
+  "settingsSectionText": "Testo",
+  "@settingsSectionText": {
+    "description": "Settings: section text colour row"
+  },
+  "settingsSectionColorDefault": "Predefinito",
+  "@settingsSectionColorDefault": {
+    "description": "Settings: swatch that keeps the theme's colour"
+  },
+  "settingsSectionPreviewTitle": "Anteprima",
+  "@settingsSectionPreviewTitle": {
+    "description": "Settings: title of the sample section"
+  },
+  "settingsSectionPreviewBody": "Così appariranno le sezioni.",
+  "@settingsSectionPreviewBody": {
+    "description": "Settings: text of the sample section"
+  },
+  "settingsColorHex": "Codice",
+  "@settingsColorHex": {
+    "description": "Colour picker: hex code field"
+  },
+  "settingsColorApply": "Applica",
+  "@settingsColorApply": {
+    "description": "Colour picker: confirm button"
+  },
+  "settingsColorSquare": "Saturazione e luminosità",
+  "@settingsColorSquare": {
+    "description": "Colour picker: semantics label of the square"
+  },
+  "settingsColorHue": "Tonalità",
+  "@settingsColorHue": {
+    "description": "Colour picker: semantics label of the hue bar"
+  },
+  "settingsAppBackground": "Sfondo dell'app",
+  "@settingsAppBackground": {
+    "description": "Settings: colour behind every screen"
+  }
 }

@@ -271,5 +271,17 @@
   "importTitle": "Import data from CSV",
   "importHint": "A file exported from this app: receipts and pantry. Receipts already here are skipped.",
   "importDone": "{receipts, plural, =1{Imported 1 receipt} other{Imported {receipts} receipts}}, {lots} in the pantry, {duplicates} already here",
-  "importFailed": "Invalid file: pick a CSV exported from this app"
+  "importFailed": "Invalid file: pick a CSV exported from this app",
+  "settingsSectionColors": "Colours",
+  "settingsSectionColorsHint": "Sections: cards and lists in Home, History, Analytics and Pantry. Paper and labels stay as they are.",
+  "settingsSectionBackground": "Background",
+  "settingsSectionText": "Text",
+  "settingsSectionColorDefault": "Default",
+  "settingsSectionPreviewTitle": "Preview",
+  "settingsSectionPreviewBody": "This is how sections will look.",
+  "settingsColorHex": "Code",
+  "settingsColorApply": "Apply",
+  "settingsColorSquare": "Saturation and brightness",
+  "settingsColorHue": "Hue",
+  "settingsAppBackground": "App background"
 }
