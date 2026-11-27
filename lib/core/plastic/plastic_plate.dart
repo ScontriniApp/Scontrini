@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/core/paper/paper_bubble.dart';
@@ -26,7 +27,15 @@ final plasticProgramProvider = FutureProvider<ui.FragmentProgram>(
 /// highlights), so it tilts, scrolls and clips with the plate. Only drawn
 /// on Impeller; elsewhere (Skia, widget tests) the plate still tilts,
 /// without the plastic light. The side wall and shadow paint outside the
-/// plate's box: leave room.
+/// plate's box.
+///
+/// The plate is drawn on the nearest [Overlay] ([OverlayPortal]), above
+/// everything else on the page: its shadow falls on the cards around it and,
+/// lifted, it covers them instead of sliding under them. A plate touched
+/// comes to the top of the other plates. Inside a scrollable it is clipped
+/// to the scrollable's viewport, as it would be in place, so it never paints
+/// over an app bar or a navigation bar. In place stays an invisible copy of
+/// [child] that gives the plate its size and takes the touches.
 class PlasticPlate extends ConsumerStatefulWidget {
   const new({
     required this.child,
@@ -60,6 +69,13 @@ class _PlasticPlateState extends ConsumerState<PlasticPlate> {
   List<ui.FragmentShader> _shaders = const [];
   ui.FragmentProgram? _program;
 
+  /// Always showing: [OverlayPortalController.show] again brings the plate
+  /// to the top.
+  final OverlayPortalController _portal = OverlayPortalController()..show();
+
+  /// The invisible copy of the child in place (the overlay's anchor).
+  final GlobalKey _anchor = GlobalKey();
+
   @override
   void dispose() {
     for (final shader in _shaders) {
@@ -84,7 +100,7 @@ class _PlasticPlateState extends ConsumerState<PlasticPlate> {
       _program = program;
     }
 
-    return TouchTilt(
+    final tilt = TouchTilt(
       knobs: p,
       builder: (context, motion, matrix) {
         var face = widget.child;
@@ -160,7 +176,7 @@ class _PlasticPlateState extends ConsumerState<PlasticPlate> {
           ),
         );
 
-        return Stack(
+        final plate = Stack(
           clipBehavior: Clip.none,
           children: [
             shadow,
@@ -172,9 +188,105 @@ class _PlasticPlateState extends ConsumerState<PlasticPlate> {
             ),
           ],
         );
+        if (Overlay.maybeOf(context) == null) return plate;
+        return OverlayPortal.overlayChildLayoutBuilder(
+          controller: _portal,
+          overlayChildBuilder: (context, info) =>
+              _onOverlay(context, info, plate),
+          child: _Ghost(key: _anchor, child: widget.child),
+        );
       },
     );
+    return Listener(
+      onPointerDown: (_) {
+        if (_portal.isShowing) _portal.show();
+      },
+      child: tilt,
+    );
   }
+
+  /// [plate] where the copy in place is, clipped to the scrollable around it.
+  Widget _onOverlay(
+    BuildContext context,
+    OverlayChildLayoutInfo info,
+    Widget plate,
+  ) {
+    final size = info.childSize;
+    final placed = Positioned(
+      left: 0,
+      top: 0,
+      width: size.width,
+      height: size.height,
+      child: Transform(
+        transform: info.childPaintTransform,
+        child: IgnorePointer(child: plate),
+      ),
+    );
+    final viewport = _viewport(context, info);
+    if (viewport == null) return Stack(children: [placed]);
+    return ClipRect(
+      clipper: _RectClipper(viewport),
+      child: Stack(clipBehavior: Clip.none, children: [placed]),
+    );
+  }
+
+  /// The enclosing scrollable's box in the overlay's coordinates.
+  Rect? _viewport(BuildContext context, OverlayChildLayoutInfo info) {
+    final scrollable = Scrollable.maybeOf(context)?.context.findRenderObject();
+    final anchor = _anchor.currentContext?.findRenderObject();
+    if (scrollable is! RenderBox ||
+        anchor is! RenderBox ||
+        !scrollable.hasSize ||
+        !anchor.attached) {
+      return null;
+    }
+    final toOverlay = info.childPaintTransform.clone()
+      ..multiply(scrollable.getTransformTo(anchor));
+    return MatrixUtils.transformRect(toOverlay, Offset.zero & scrollable.size);
+  }
+}
+
+class _RectClipper extends CustomClipper<Rect> {
+  const new(this.rect);
+
+  final Rect rect;
+
+  @override
+  Rect getClip(Size size) => rect;
+
+  @override
+  bool shouldReclip(_RectClipper old) => old.rect != rect;
+}
+
+/// Lays [child] out for its size but neither paints it nor lets it be
+/// touched, read by accessibility or found by tests: the plate's footprint.
+class _Ghost extends SingleChildRenderObjectWidget {
+  const new({super.key, super.child});
+
+  @override
+  SingleChildRenderObjectElement createElement() => _GhostElement(this);
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderGhost();
+}
+
+class _GhostElement extends SingleChildRenderObjectElement {
+  new(_Ghost super.widget);
+
+  @override
+  void debugVisitOnstageChildren(ElementVisitor visitor) {}
+}
+
+class _RenderGhost extends RenderProxyBox {
+  @override
+  void paint(PaintingContext context, Offset offset) {}
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      false;
+
+  @override
+  void visitChildrenForSemantics(RenderObjectVisitor visitor) {}
 }
 
 /// Paints the plastic light over the label in the plate's own coordinates.

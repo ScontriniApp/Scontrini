@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -157,6 +158,92 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(scroll.offset, greaterThan(0));
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('the plate is drawn above the cards around it', (tester) async {
+    final container = ProviderContainer(
+      overrides: [
+        plasticSettingsStoreProvider.overrideWithValue(
+          MemorySettingsStore(const PlasticParams()),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final scroll = ScrollController();
+    addTearDown(scroll.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          home: Scaffold(
+            appBar: AppBar(title: const Text('Analisi')),
+            body: ListView(
+              key: const Key('list'),
+              controller: scroll,
+              padding: const EdgeInsets.all(24),
+              children: const [
+                ShelfLabel(
+                  title: 'Speso',
+                  cents: 1234,
+                  leading: '3 scontrini',
+                  footer: 'Di solito 10,00 €',
+                ),
+                Card(key: Key('next'), child: SizedBox(height: 300)),
+                SizedBox(height: 2000),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // One visible copy of the label (the one in place is invisible), and it
+    // is painted on the overlay, not inside the list with the card.
+    expect(find.text('SPESO'), findsOneWidget);
+    bool inList(Finder finder) {
+      final list = tester.renderObject(find.byKey(const Key('list')));
+      for (RenderObject? n = tester.renderObject(finder); n != null;) {
+        if (n == list) return true;
+        n = n.parent;
+      }
+      return false;
+    }
+
+    expect(inList(find.byKey(const Key('next'))), isTrue);
+    expect(inList(find.text('SPESO')), isFalse);
+
+    // Printed where the label is laid out.
+    Offset textInPlate() =>
+        tester.getTopLeft(find.text('SPESO')) -
+        tester.getTopLeft(find.byType(PlasticPlate));
+    final before = textInPlate();
+    expect(
+      tester
+          .getRect(find.byType(PlasticPlate))
+          .contains(tester.getCenter(find.text('SPESO'))),
+      isTrue,
+    );
+
+    // Clipped to the list: it never paints over the app bar.
+    final clip = tester.renderObject<RenderClipRect>(
+      find
+          .descendant(
+            of: find.byType(PlasticPlate),
+            matching: find.byType(ClipRect),
+          )
+          .first,
+    );
+    expect(
+      clip.clipper!.getClip(Size.zero),
+      tester.getRect(find.byKey(const Key('list'))),
+    );
+
+    // Scrolled, the plate follows the list.
+    scroll.jumpTo(40);
+    await tester.pump();
+    expect(tester.getTopLeft(find.byType(PlasticPlate)).dy, lessThan(80));
+    expect(textInPlate(), before);
     await tester.pumpWidget(const SizedBox());
   });
 
