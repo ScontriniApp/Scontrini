@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/router.dart';
 import 'package:scontrini/core/section_colors/section_surface.dart';
 import 'package:scontrini/core/widgets/placeholder_view.dart';
+import 'package:scontrini/core/widgets/scroll_away_scaffold.dart';
 import 'package:scontrini/features/pantry/data/pantry_providers.dart';
 import 'package:scontrini/features/pantry/domain/pantry_category.dart';
 import 'package:scontrini/features/pantry/domain/pantry_lot.dart';
@@ -53,24 +54,20 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     final categories =
         ref.watch(pantryCategoriesProvider).value ?? const <PantryCategory>[];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.navPantry),
-        actions: [
-          IconButton(
-            tooltip: _showClosed
-                ? l10n.pantryHideClosed
-                : l10n.pantryShowClosed,
-            icon: Icon(_showClosed ? Icons.history_toggle_off : Icons.history),
-            onPressed: () => setState(() => _showClosed = !_showClosed),
-          ),
-          IconButton(
-            tooltip: l10n.pantryAdd,
-            icon: const Icon(Icons.add),
-            onPressed: () => context.push(Routes.manualReceipt),
-          ),
-        ],
-      ),
+    return ScrollAwayScaffold(
+      title: Text(l10n.navPantry),
+      actions: [
+        IconButton(
+          tooltip: _showClosed ? l10n.pantryHideClosed : l10n.pantryShowClosed,
+          icon: Icon(_showClosed ? Icons.history_toggle_off : Icons.history),
+          onPressed: () => setState(() => _showClosed = !_showClosed),
+        ),
+        IconButton(
+          tooltip: l10n.pantryAdd,
+          icon: const Icon(Icons.add),
+          onPressed: () => context.push(Routes.manualReceipt),
+        ),
+      ],
       body: switch (lots) {
         AsyncData(:final value) when value.isEmpty => PlaceholderView(
           icon: Icons.kitchen_outlined,
@@ -132,8 +129,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
           child: keys.isEmpty
               ? Center(child: Text(l10n.pantryNoResults))
               : ListView(
-                  // Clear of the shell's FAB.
-                  padding: const EdgeInsets.only(bottom: 96),
+                  padding: const EdgeInsets.only(bottom: 8),
                   children: [
                     for (final key in keys)
                       SectionSurface(
@@ -213,7 +209,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     final choice = await showModalBottomSheet<_LotChoice>(
       context: context,
       showDragHandle: true,
-      // Above the shell's FAB and navigation bar.
+      // Above the shell's navigation bar.
       useRootNavigator: true,
       builder: (context) => SafeArea(
         child: Column(

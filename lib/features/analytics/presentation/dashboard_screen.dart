@@ -7,6 +7,7 @@ import 'package:scontrini/app/router.dart';
 import 'package:scontrini/app/tab_reselect.dart';
 import 'package:scontrini/core/section_colors/section_surface.dart';
 import 'package:scontrini/core/widgets/placeholder_view.dart';
+import 'package:scontrini/core/widgets/scroll_away_scaffold.dart';
 import 'package:scontrini/features/analytics/presentation/dashboard_providers.dart';
 import 'package:scontrini/features/analytics/presentation/refresh_analytics.dart';
 import 'package:scontrini/features/analytics/presentation/widgets/category_pie_card.dart';
@@ -37,17 +38,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       }
     });
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.appTitle),
-        actions: [
-          IconButton(
-            tooltip: l10n.settings,
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.push(Routes.settings),
-          ),
-        ],
-      ),
+    return ScrollAwayScaffold(
+      title: Text(l10n.appTitle),
+      actions: [
+        IconButton(
+          tooltip: l10n.settings,
+          icon: const Icon(Icons.settings_outlined),
+          onPressed: () => context.push(Routes.settings),
+        ),
+      ],
       body: RefreshIndicator(
         key: _refresh,
         onRefresh: () => refreshPurchasesAndPantry(ref, dashboardWindows(ref)),

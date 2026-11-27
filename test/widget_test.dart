@@ -28,6 +28,13 @@ void main() {
     expect(find.text('Scontrini'), findsOneWidget);
     expect(find.byType(NavigationBar), findsOneWidget);
 
+    // "Aggiungi" is on the home tab only.
+    await tester.tap(find.text('Storico'));
+    await tester.pumpAndSettle();
+    expect(find.text('Aggiungi'), findsNothing);
+    await tester.tap(find.text('Home'));
+    await tester.pumpAndSettle();
+
     await tester.tap(find.text('Aggiungi'));
     await tester.pumpAndSettle();
 
