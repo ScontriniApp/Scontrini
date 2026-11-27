@@ -82,9 +82,10 @@ const receiptInk = Color(0xFF211F29);
 /// bubble's layout box: leave some room around it (or no clipping parent).
 ///
 /// With [controller], [child] must contain the vertical scrollable it
-/// drives; the sheet is as long as that content, and only the sides bleed:
-/// the top and bottom are the viewport's edges, cut there, unless
-/// [overscan] carries the paper past them.
+/// drives; the sheet is as long as that content (torn off a little before
+/// its end, within [tailBlank]), and only the sides bleed: the top and
+/// bottom are the viewport's edges, cut there, unless [overscan] carries
+/// the paper past them.
 class PaperBubble extends ConsumerStatefulWidget {
   const new({
     required this.params,
@@ -135,6 +136,11 @@ class PaperBubble extends ConsumerStatefulWidget {
 
   /// A scrolling sheet's length grows in steps of this many logical px.
   static const double sheetBlock = 512;
+
+  /// Blank a scrolling sheet's content must end with: the sheet is torn
+  /// off up to this far before the content's end, so a fold near the end
+  /// can't push the torn edge out of view.
+  static const double tailBlank = 24;
 
   /// Whether readiness waits for the shaders, the creases and the bake.
   /// Widget tests turn it off (their fake clock never loads them): every
@@ -311,7 +317,25 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
         position.maxScrollExtent -
         position.minScrollExtent +
         position.viewportDimension;
-    return Size(size.width, length);
+    return Size(size.width, math.max(1, length - _tailRoom()));
+  }
+
+  /// How far above the content's end a scrolling sheet is torn off.
+  ///
+  /// Seen by the tilted camera, a valley in the paper shows further from
+  /// the eye than where it lies: with the eye below the row, the torn
+  /// bottom shows lower than the content's end, past the bubble's bottom,
+  /// and was cut there when a fold happened to fall at the end. Tearing it
+  /// this much earlier keeps the whole edge in view: |eye y| · h / (eye
+  /// height − h) for the deepest point h, plus the outline. The content
+  /// must end with at least [PaperBubble.tailBlank] of blank (its padding).
+  double _tailRoom() {
+    final top = _mapHeight * widget.params.depth;
+    if (top <= 0) return 0;
+    final (_, cy, cz) = widget.params.camera;
+    final room = cz - top;
+    if (room <= 1) return PaperBubble.tailBlank;
+    return math.min(cy.abs() * top / room + 2, PaperBubble.tailBlank);
   }
 
   /// The sheet the creases and the bake are made for: [sheet], or for a
