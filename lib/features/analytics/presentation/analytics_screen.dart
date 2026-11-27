@@ -6,6 +6,7 @@ import 'package:scontrini/app/tab_reselect.dart';
 import 'package:scontrini/core/section_colors/section_surface.dart';
 import 'package:scontrini/core/utils/clock.dart';
 import 'package:scontrini/core/widgets/placeholder_view.dart';
+import 'package:scontrini/core/widgets/scroll_away_scaffold.dart';
 import 'package:scontrini/features/analytics/domain/analytics_metrics.dart';
 import 'package:scontrini/features/analytics/domain/models/analytics_overview.dart';
 import 'package:scontrini/features/analytics/presentation/analytics_overview_providers.dart';
@@ -85,16 +86,14 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
 
     return DefaultTabController(
       length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(l10n.navAnalytics),
-          bottom: TabBar(
-            tabs: [
-              Tab(text: l10n.analyticsTabSpending),
-              Tab(text: l10n.analyticsTabProducts),
-              Tab(text: l10n.analyticsTabPantry),
-            ],
-          ),
+      child: ScrollAwayScaffold(
+        title: Text(l10n.navAnalytics),
+        bottom: TabBar(
+          tabs: [
+            Tab(text: l10n.analyticsTabSpending),
+            Tab(text: l10n.analyticsTabProducts),
+            Tab(text: l10n.analyticsTabPantry),
+          ],
         ),
         body: Column(
           children: [

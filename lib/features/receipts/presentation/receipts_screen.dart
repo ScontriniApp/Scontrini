@@ -6,6 +6,7 @@ import 'package:scontrini/app/router.dart';
 import 'package:scontrini/core/section_colors/section_surface.dart';
 import 'package:scontrini/core/utils/money.dart';
 import 'package:scontrini/core/widgets/placeholder_view.dart';
+import 'package:scontrini/core/widgets/scroll_away_scaffold.dart';
 import 'package:scontrini/features/receipts/data/receipt_providers.dart';
 import 'package:scontrini/features/receipts/domain/receipt_history.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
@@ -19,17 +20,15 @@ class ReceiptsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final receipts = ref.watch(receiptHistoryProvider);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.navReceipts),
-        actions: [
-          IconButton(
-            tooltip: l10n.manualReceiptTitle,
-            icon: const Icon(Icons.edit_note),
-            onPressed: () => context.push(Routes.manualReceipt),
-          ),
-        ],
-      ),
+    return ScrollAwayScaffold(
+      title: Text(l10n.navReceipts),
+      actions: [
+        IconButton(
+          tooltip: l10n.manualReceiptTitle,
+          icon: const Icon(Icons.edit_note),
+          onPressed: () => context.push(Routes.manualReceipt),
+        ),
+      ],
       body: switch (receipts) {
         AsyncData(:final value) when value.isEmpty => PlaceholderView(
           icon: Icons.history,

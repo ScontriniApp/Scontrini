@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/router.dart';
 import 'package:scontrini/core/section_colors/section_surface.dart';
 import 'package:scontrini/core/widgets/placeholder_view.dart';
+import 'package:scontrini/core/widgets/scroll_away_scaffold.dart';
 import 'package:scontrini/features/pantry/data/pantry_providers.dart';
 import 'package:scontrini/features/pantry/domain/pantry_category.dart';
 import 'package:scontrini/features/pantry/domain/pantry_lot.dart';
@@ -53,24 +54,20 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     final categories =
         ref.watch(pantryCategoriesProvider).value ?? const <PantryCategory>[];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.navPantry),
-        actions: [
-          IconButton(
-            tooltip: _showClosed
-                ? l10n.pantryHideClosed
-                : l10n.pantryShowClosed,
-            icon: Icon(_showClosed ? Icons.history_toggle_off : Icons.history),
-            onPressed: () => setState(() => _showClosed = !_showClosed),
-          ),
-          IconButton(
-            tooltip: l10n.pantryAdd,
-            icon: const Icon(Icons.add),
-            onPressed: () => context.push(Routes.manualReceipt),
-          ),
-        ],
-      ),
+    return ScrollAwayScaffold(
+      title: Text(l10n.navPantry),
+      actions: [
+        IconButton(
+          tooltip: _showClosed ? l10n.pantryHideClosed : l10n.pantryShowClosed,
+          icon: Icon(_showClosed ? Icons.history_toggle_off : Icons.history),
+          onPressed: () => setState(() => _showClosed = !_showClosed),
+        ),
+        IconButton(
+          tooltip: l10n.pantryAdd,
+          icon: const Icon(Icons.add),
+          onPressed: () => context.push(Routes.manualReceipt),
+        ),
+      ],
       body: switch (lots) {
         AsyncData(:final value) when value.isEmpty => PlaceholderView(
           icon: Icons.kitchen_outlined,

@@ -15,6 +15,12 @@ import 'package:scontrini/features/analytics/presentation/dashboard_screen.dart'
 import 'package:scontrini/l10n/app_localizations.dart';
 
 void main() {
+  // The dashboard's list (the page around it scrolls the bar away).
+  final list = find.descendant(
+    of: find.byType(ListView),
+    matching: find.byType(Scrollable),
+  );
+
   final today = DateTime(2026, 11, 23, 12);
 
   Future<AppDatabase> pumpDashboard(
@@ -88,7 +94,11 @@ void main() {
     expect(find.text('Latticini e uova'), findsOneWidget);
     expect(find.text('Altre categorie'), findsNothing);
 
-    await tester.scrollUntilVisible(find.text('Consigli'), 200);
+    await tester.scrollUntilVisible(
+      find.text('Consigli'),
+      200,
+      scrollable: list,
+    );
     expect(find.text('Consigli'), findsOneWidget);
   });
 
@@ -107,7 +117,11 @@ void main() {
   testWidgets('the next-shopping list shows what ran out', (tester) async {
     await pumpDashboard(tester, seed: true);
 
-    await tester.scrollUntilVisible(find.text('Prossima spesa'), 200);
+    await tester.scrollUntilVisible(
+      find.text('Prossima spesa'),
+      200,
+      scrollable: list,
+    );
     expect(find.text('Prossima spesa'), findsOneWidget);
     // In the demo, yogurt and water go within two days of the last trip.
     expect(find.text('Yogurt bianco x2'), findsOneWidget);
@@ -122,13 +136,25 @@ void main() {
       'thrown away, ranked', (tester) async {
     await pumpDashboard(tester, seed: true);
 
-    await tester.scrollUntilVisible(find.text('Consigli'), 200);
-    await tester.scrollUntilVisible(find.textContaining('Bevande: +'), 200);
+    await tester.scrollUntilVisible(
+      find.text('Consigli'),
+      200,
+      scrollable: list,
+    );
+    await tester.scrollUntilVisible(
+      find.textContaining('Bevande: +'),
+      200,
+      scrollable: list,
+    );
     expect(find.textContaining('rispetto al solito'), findsOneWidget);
     expect(find.text('Butti spesso: Macinato di manzo 500 g'), findsOneWidget);
     // Three shown, the rest behind "Mostra tutti".
     expect(find.textContaining('Butti spesso:'), findsNWidgets(2));
-    await tester.scrollUntilVisible(find.text('Mostra tutti (5)'), 200);
+    await tester.scrollUntilVisible(
+      find.text('Mostra tutti (5)'),
+      200,
+      scrollable: list,
+    );
     await tester.ensureVisible(find.text('Mostra tutti (5)'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Mostra tutti (5)'));
@@ -136,6 +162,7 @@ void main() {
     await tester.scrollUntilVisible(
       find.text('Butti spesso: Latte intero 1 l'),
       200,
+      scrollable: list,
     );
     expect(find.text('Butti spesso: Latte intero 1 l'), findsOneWidget);
     expect(find.text('Mostra meno'), findsOneWidget);
