@@ -1111,4 +1111,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAppBackground => 'App background';
+
+  @override
+  String get receiptTotal => 'TOTAL';
+
+  @override
+  String get receiptTotalDiscount => 'TOTAL DISCOUNT';
+
+  @override
+  String get receiptDiscount => 'Discount';
 }

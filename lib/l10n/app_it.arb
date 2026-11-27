@@ -791,5 +791,17 @@
   "settingsAppBackground": "Sfondo dell'app",
   "@settingsAppBackground": {
     "description": "Settings: colour behind every screen"
+  },
+  "receiptTotal": "TOTALE",
+  "@receiptTotal": {
+    "description": "Receipt detail: total line, in capitals as printed"
+  },
+  "receiptTotalDiscount": "SCONTO TOTALE",
+  "@receiptTotalDiscount": {
+    "description": "Receipt detail: products' and receipt's discounts together"
+  },
+  "receiptDiscount": "Sconto",
+  "@receiptDiscount": {
+    "description": "Receipt detail: a product's discount"
   }
 }

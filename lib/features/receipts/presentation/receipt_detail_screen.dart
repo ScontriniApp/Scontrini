@@ -1,25 +1,38 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:scontrini/core/section_colors/section_surface.dart';
+import 'package:scontrini/core/paper/paper_bubble.dart';
+import 'package:scontrini/core/paper/paper_settings.dart';
 import 'package:scontrini/core/utils/money.dart';
-import 'package:scontrini/features/pantry/domain/pantry_category.dart';
-import 'package:scontrini/features/pantry/presentation/category_label.dart';
-import 'package:scontrini/features/pantry/presentation/category_sprites.dart';
-import 'package:scontrini/features/pantry/presentation/pantry_providers.dart';
 import 'package:scontrini/features/pantry/presentation/quantity_format.dart';
-import 'package:scontrini/features/pantry/presentation/widgets/category_section_header.dart';
 import 'package:scontrini/features/receipts/data/receipt_providers.dart';
 import 'package:scontrini/features/receipts/domain/receipt_history.dart';
-import 'package:scontrini/features/receipts/domain/transaction_hash.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
-/// What one receipt bought: a summary, then the rows in collapsible
-/// category sections (closed at first, each with what it cost).
+/// One saved receipt, printed on paper like the review screen after a scan
+/// (the paper lab's saved look): the store, the date, every product with
+/// its quantity and discount, then the total discount and the total.
+///
+/// The sheet scrolls with the print; its torn top shows when the receipt
+/// opens and its torn bottom at the end. In the Storico tab
+/// ([belowAddButton]) the paper stops above the shell's "Aggiungi" button,
+/// so the button never covers the print.
 class ReceiptDetailScreen extends ConsumerStatefulWidget {
-  const new({required this.receiptId, super.key});
+  const new({required this.receiptId, this.belowAddButton = false, super.key});
 
   final int receiptId;
+
+  /// Shown inside the shell, under its floating "Aggiungi" button.
+  final bool belowAddButton;
+
+  /// Room left under the paper for the shell's extended button (56 px tall,
+  /// 16 px above the screen's bottom) plus a gap.
+  static const double addButtonRoom = 88;
+
+  /// How far the scrolled paper reaches past its top edge, which is 8 px
+  /// below the app bar: those 8 px, then hidden under the bar. The text
+  /// slides up under the bar with the paper, no gap and no blank band.
+  static const double _overscanTop = 40;
 
   @override
   ConsumerState<ReceiptDetailScreen> createState() =>
@@ -27,23 +40,25 @@ class ReceiptDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
-  /// Open sections, by category id (`null`: uncategorised).
-  final _open = <int?>{};
+  final _scroll = ScrollController();
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final receipt = ref.watch(receiptDetailProvider(widget.receiptId));
-    final categories =
-        ref.watch(pantryCategoriesProvider).value ?? const <PantryCategory>[];
     final detail = receipt.value;
     return Scaffold(
+      // The store's name is printed on the paper.
       appBar: AppBar(
-        title: Text(
-          detail == null
-              ? ''
-              : detail.summary.storeName ?? l10n.receiptsUnknownStore,
-        ),
+        // The paper scrolls under it: no tint or shadow when it does.
+        notificationPredicate: (_) => false,
+        scrolledUnderElevation: 0,
         actions: [
           if (detail != null)
             IconButton(
@@ -54,7 +69,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
         ],
       ),
       body: switch (receipt) {
-        AsyncData(value: final detail?) => _body(l10n, detail, categories),
+        AsyncData(value: final detail?) => _paper(l10n, detail),
         AsyncData() => Center(child: Text(l10n.receiptNotFound)),
         AsyncError(:final error) => Center(child: Text('$error')),
         _ => const Center(child: CircularProgressIndicator()),
@@ -62,100 +77,92 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
     );
   }
 
-  Widget _body(
-    AppLocalizations l10n,
-    ReceiptDetail detail,
-    List<PantryCategory> categories,
-  ) {
-    final byId = {for (final c in categories) c.id: c};
-    final groups = <int?, List<ReceiptLine>>{};
-    for (final line in detail.lines) {
-      final key = byId.containsKey(line.categoryId) ? line.categoryId : null;
-      groups.putIfAbsent(key, () => []).add(line);
-    }
-    final keys = groups.keys.toList()
-      ..sort((a, b) {
-        if (a == null) return 1;
-        if (b == null) return -1;
-        return categoryLabel(
-          l10n,
-          byId[a]!.name,
-        ).compareTo(categoryLabel(l10n, byId[b]!.name));
-      });
+  Widget _paper(AppLocalizations l10n, ReceiptDetail detail) {
     final summary = detail.summary;
     final date = DateFormat.yMMMMd(l10n.localeName)
         .add_Hm()
         .format(summary.purchaseDate);
+    final totalDiscount = detail.lines.fold(
+      detail.discountCents,
+      (sum, line) => sum + line.discountCents,
+    );
 
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
-      children: [
-        // Read the theme inside, so the chosen section colours reach it.
-        SectionSurface(
-          child: Builder(
-            builder: (context) {
-              final theme = Theme.of(context);
-              return Card(
-                margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 4,
-                    children: [
-                      Text(
-                        Money.format(summary.totalCents),
-                        style: theme.textTheme.headlineMedium,
-                      ),
-                      Text(date),
-                      Text(
-                        [
-                          l10n.receiptsItemCount(summary.itemCount),
-                          if (summary.manual) l10n.receiptsManual,
-                          if (summary.transactionHash case final hash?)
-                            shortTransactionTag(hash),
-                        ].join(' · '),
-                        style: theme.textTheme.bodySmall,
-                      ),
-                      if (detail.discountCents > 0)
+    // As the review screen: the side padding is the room the paper bleeds
+    // into; top, not centred.
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        8,
+        20,
+        widget.belowAddButton ? ReceiptDetailScreen.addButtonRoom : 8,
+      ),
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: PaperBubble(
+            params: ref.watch(paperSettingsProvider).receipt,
+            controller: _scroll,
+            hideUntilReady: true,
+            // Up under the app bar; down to just above "Aggiungi" (its top
+            // is 72 px up, the paper's cut edge 88) or the screen's edge.
+            overscan: EdgeInsets.only(
+              top: ReceiptDetailScreen._overscanTop,
+              bottom: widget.belowAddButton ? 12 : 8,
+            ),
+            child: _StuckToPaper(
+              // Not a lazy list: the sheet is as long as the content.
+              child: SingleChildScrollView(
+                controller: _scroll,
+                physics: const ClampingScrollPhysics(),
+                // The print past the edges is read by the paper
+                // (PaperBubble.overscan), which clips it.
+                clipBehavior: Clip.none,
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
+                // Inside the paper: the styles carry its ink.
+                child: Builder(
+                  builder: (context) {
+                    final text = Theme.of(context).textTheme;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
                         Text(
-                          '${l10n.extractionReceiptDiscount}: '
-                          '-${Money.format(detail.discountCents)}',
+                          summary.storeName ?? l10n.receiptsUnknownStore,
+                          textAlign: TextAlign.center,
+                          style: text.headlineSmall,
                         ),
-                    ],
-                  ),
+                        const SizedBox(height: 4),
+                        Text(
+                          date,
+                          textAlign: TextAlign.center,
+                          style: text.titleMedium,
+                        ),
+                        const _Rule(),
+                        for (final line in detail.lines) _LineRows(line: line),
+                        if (detail.discountCents > 0)
+                          _Row(
+                            l10n.extractionReceiptDiscount,
+                            '-${Money.format(detail.discountCents)}',
+                          ),
+                        const _Rule(),
+                        _Row(
+                          l10n.receiptTotalDiscount,
+                          '-${Money.format(totalDiscount)}',
+                        ),
+                        _Row(
+                          l10n.receiptTotal,
+                          Money.format(summary.totalCents),
+                          style: text.headlineSmall,
+                        ),
+                      ],
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-        ),
-        for (final key in keys)
-          SectionSurface(
-            panel: true,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                CategorySectionHeader(
-                  title: key == null
-                      ? l10n.pantryUncategorised
-                      : categoryLabel(l10n, byId[key]!.name),
-                  sprite: categorySprite(byId[key]?.name),
-                  trailing: Money.format(
-                    groups[key]!.fold(0, (sum, line) => sum + line.netCents),
-                  ),
-                  open: _open.contains(key),
-                  onTap: () => setState(
-                    () => _open.contains(key)
-                        ? _open.remove(key)
-                        : _open.add(key),
-                  ),
-                ),
-                if (_open.contains(key))
-                  for (final line in groups[key]!) _LineTile(line: line),
-              ],
+              ),
             ),
           ),
-      ],
+        ),
+      ),
     );
   }
 
@@ -186,9 +193,25 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
   }
 }
 
-/// One row: name, quantity × unit price when it says more than the
-/// total, discount, and what was paid.
-class _LineTile extends StatelessWidget {
+/// Keeps the print on its paper: no overscroll stretch or bounce, which
+/// would move the text while the paper, drawn from the scroll position,
+/// stays put (as on the review screen).
+class _StuckToPaper extends StatelessWidget {
+  const new({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => ScrollConfiguration(
+    behavior: ScrollConfiguration.of(context)
+        .copyWith(overscroll: false, physics: const ClampingScrollPhysics()),
+    child: child,
+  );
+}
+
+/// One product: name and price, quantity × unit price when it says more
+/// than the price, then its discount.
+class _LineRows extends StatelessWidget {
   const new({required this.line});
 
   final ReceiptLine line;
@@ -196,21 +219,71 @@ class _LineTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final quantity = formatQuantity(l10n, line.quantity, line.unit);
-    final details = [
-      if (line.quantity != 1 || line.unit != 'pz')
-        '$quantity × ${Money.format(line.unitPriceCents)}',
-      if (line.discountCents > 0)
-        l10n.extractionDiscount(Money.format(line.discountCents)),
-    ];
-    return ListTile(
-      contentPadding: const EdgeInsets.fromLTRB(32, 0, 24, 0),
-      title: Text(line.name),
-      subtitle: details.isEmpty ? null : Text(details.join(' · ')),
-      trailing: Text(
-        Money.format(line.netCents),
-        style: Theme.of(context).textTheme.bodyLarge,
+    final body = Theme.of(context).textTheme.titleMedium;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _Row(line.name, Money.format(line.lineTotalCents)),
+          if (line.quantity != 1 || line.unit != 'pz')
+            Padding(
+              padding: const EdgeInsets.only(left: 16),
+              child: Text(
+                '${formatQuantity(l10n, line.quantity, line.unit)} × '
+                '${Money.format(line.unitPriceCents)}',
+                style: body,
+              ),
+            ),
+          if (line.discountCents > 0)
+            Padding(
+              padding: const EdgeInsets.only(left: 16),
+              child: _Row(
+                l10n.receiptDiscount,
+                '-${Money.format(line.discountCents)}',
+              ),
+            ),
+        ],
       ),
     );
   }
+}
+
+/// A label on the left, an amount on the right.
+class _Row extends StatelessWidget {
+  const new(this.label, this.amount, {this.style});
+
+  final String label;
+  final String amount;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = style ?? Theme.of(context).textTheme.titleMedium;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: Text(label, style: text)),
+        const SizedBox(width: 12),
+        Text(amount, style: text),
+      ],
+    );
+  }
+}
+
+/// A dashed rule across the receipt, as printed.
+class _Rule extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Text(
+      '-' * 80,
+      maxLines: 1,
+      softWrap: false,
+      overflow: TextOverflow.clip,
+      style: Theme.of(context).textTheme.titleMedium,
+    ),
+  );
 }

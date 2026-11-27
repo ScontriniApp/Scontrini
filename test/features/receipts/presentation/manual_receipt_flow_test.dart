@@ -113,16 +113,71 @@ void main() {
       ('Latte intero', 1.0, 'pz'),
     });
     expect(lots.every((l) => l.source == PantrySource.receipt), isTrue);
-    expect(find.text('Latticini e uova'), findsOneWidget);
-    await tester.tap(find.text('Latticini e uova'));
-    await settle(tester);
+    // Printed like the receipt: store, products, total discount, total.
+    expect(find.text('Negozio sconosciuto'), findsOneWidget);
+    expect(find.text('Farina'), findsOneWidget);
     expect(find.text('Latte intero'), findsOneWidget);
+    expect(find.text('SCONTO TOTALE'), findsOneWidget);
+    expect(find.text('TOTALE'), findsOneWidget);
+    expect(find.text(Money.format(339)), findsOneWidget);
 
     await tester.binding.handlePopRoute();
     await settle(tester);
     expect(find.text('Negozio sconosciuto'), findsOneWidget);
     expect(find.text(Money.format(339)), findsOneWidget);
     expect(find.textContaining('2 articoli · A mano'), findsOneWidget);
+
+    await closeApp(tester);
+  });
+
+  testWidgets('a receipt in the history is printed on paper above "Aggiungi"', (
+    tester,
+  ) async {
+    // Tall enough products to scroll: the end must clear the button.
+    await tester.runAsync(
+      () => ReceiptRepository(db).saveConfirmed(
+        ParsedReceipt(
+          storeName: 'CONAD',
+          purchaseDate: DateTime(2026, 11, 20, 12, 30),
+          totalCents: 2400,
+          discountCents: 100,
+          items: [
+            for (var i = 0; i < 20; i++)
+              ParsedItem(
+                rawName: 'PRODOTTO $i',
+                unitPriceCents: 125,
+                lineTotalCents: 125,
+                discountCents: i == 0 ? 50 : 0,
+              ),
+          ],
+        ),
+      ),
+    );
+    await openApp(tester);
+    await tester.tap(find.text('Storico'));
+    await settle(tester);
+    await tester.tap(find.text('CONAD'));
+    await settle(tester);
+
+    // Store and date, no tag; the products; then the totals.
+    expect(find.text('CONAD'), findsOneWidget);
+    expect(find.text('20 novembre 2026 12:30'), findsOneWidget);
+    expect(find.textContaining('#'), findsNothing);
+    expect(find.text('PRODOTTO 0'), findsOneWidget);
+
+    final paper = find.byType(SingleChildScrollView);
+    await tester.drag(paper, const Offset(0, -3000));
+    await settle(tester);
+    // Line discount + receipt discount.
+    expect(find.text('-${Money.format(150)}'), findsOneWidget);
+    expect(find.text('SCONTO TOTALE'), findsOneWidget);
+    expect(find.text(Money.format(2400)), findsOneWidget);
+
+    final button = tester.getRect(find.byType(FloatingActionButton));
+    final total = tester.getRect(find.text('TOTALE'));
+    expect(total.bottom, lessThan(button.top));
+    // The whole paper (and its torn bottom) ends above the button too.
+    expect(tester.getRect(paper).bottom, lessThan(button.top));
 
     await closeApp(tester);
   });

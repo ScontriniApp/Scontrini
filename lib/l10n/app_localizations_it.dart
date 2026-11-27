@@ -1115,4 +1115,13 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get settingsAppBackground => 'Sfondo dell\'app';
+
+  @override
+  String get receiptTotal => 'TOTALE';
+
+  @override
+  String get receiptTotalDiscount => 'SCONTO TOTALE';
+
+  @override
+  String get receiptDiscount => 'Sconto';
 }

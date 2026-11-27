@@ -82,8 +82,9 @@ const receiptInk = Color(0xFF211F29);
 /// bubble's layout box: leave some room around it (or no clipping parent).
 ///
 /// With [controller], [child] must contain the vertical scrollable it
-/// drives; the sheet is as long as that content, and only the sides bleed
-/// (the top and bottom are the viewport's edges, cut on purpose).
+/// drives; the sheet is as long as that content, and only the sides bleed:
+/// the top and bottom are the viewport's edges, cut there, unless
+/// [overscan] carries the paper past them.
 class PaperBubble extends ConsumerStatefulWidget {
   const new({
     required this.params,
@@ -92,8 +93,19 @@ class PaperBubble extends ConsumerStatefulWidget {
     this.light,
     this.onReady,
     this.hideUntilReady = false,
+    this.overscan = EdgeInsets.zero,
     super.key,
   });
+
+  /// With [controller]: how far the paper and its print reach past the
+  /// viewport's top and bottom ([EdgeInsets.top] and [EdgeInsets.bottom];
+  /// the sides bleed anyway). The folds make the paper show print from a
+  /// little beyond where it is drawn, so at a cut edge the print stops
+  /// short and leaves a blank band; past the edge it reads on. Put the cut
+  /// where it is hidden (under an app bar) or out of the way. The
+  /// scrollable must not clip (`clipBehavior: Clip.none`), so the print is
+  /// there to read; nothing is drawn past [overscan].
+  final EdgeInsets overscan;
 
   final PaperParams params;
   final Widget child;
@@ -337,7 +349,15 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
     }
 
     final side = reach(size.width / 2, cx);
-    final ends = widget.controller == null ? reach(size.height / 2, cy) : 0.0;
+    if (widget.controller != null) {
+      return EdgeInsets.fromLTRB(
+        side,
+        widget.overscan.top,
+        side,
+        widget.overscan.bottom,
+      );
+    }
+    final ends = reach(size.height / 2, cy);
     return EdgeInsets.symmetric(horizontal: side, vertical: ends);
   }
 
@@ -627,7 +647,11 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
     }
 
     final scroll = widget.controller ?? const AlwaysStoppedAnimation(0);
-    final padded = Padding(padding: bleed, child: content);
+    // Clipped to the bleed area: a scrollable that doesn't clip (for
+    // [PaperBubble.overscan]) paints no further than the paper.
+    final padded = ClipRect(
+      child: Padding(padding: bleed, child: content),
+    );
     if (print) {
       return _Bleed(
         margin: bleed,
