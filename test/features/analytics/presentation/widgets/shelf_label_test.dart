@@ -101,6 +101,65 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
+  testWidgets('a drag that starts on the plate tilts it, not the list', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [
+        plasticSettingsStoreProvider.overrideWithValue(
+          MemorySettingsStore(const PlasticParams()),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final scroll = ScrollController();
+    addTearDown(scroll.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          home: Scaffold(
+            body: ListView(
+              controller: scroll,
+              padding: const EdgeInsets.all(24),
+              children: const [
+                ShelfLabel(
+                  title: 'Speso',
+                  cents: 1234,
+                  leading: '3 scontrini',
+                  footer: 'Di solito 10,00 €',
+                ),
+                SizedBox(height: 2000),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // Dragged up from the label's right side: the list stays, the plate
+    // follows the finger.
+    final plate = tester.getRect(find.byType(PlasticPlate));
+    final start = plate.centerRight - const Offset(10, 0);
+    final gesture = await tester.startGesture(start);
+    await gesture.moveBy(const Offset(0, -10));
+    await gesture.moveBy(const Offset(0, -20));
+    await frames(tester);
+    expect(scroll.offset, 0);
+    expect(tiltY(tester), lessThan(0));
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    // The same drag below the label scrolls.
+    await tester.dragFrom(
+      Offset(start.dx, plate.bottom + 100),
+      const Offset(0, -200),
+    );
+    await tester.pumpAndSettle();
+    expect(scroll.offset, greaterThan(0));
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('a flat label has no plate', (tester) async {
     await pumpLabel(tester, plastic: false);
     expect(find.byType(PlasticPlate), findsNothing);

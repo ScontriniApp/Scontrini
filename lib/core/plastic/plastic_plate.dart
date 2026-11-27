@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -18,7 +19,8 @@ final plasticProgramProvider = FutureProvider<ui.FragmentProgram>(
 /// a rounded edge around a glossy, recessed screen, lit by the room's lamp
 /// ([paperLightProvider]). Touched, it tilts towards the finger like a
 /// Balatro card, lifts a little and shows its side wall; let go, it springs
-/// back flat.
+/// back flat. A touch that starts on the plate is the plate's: the list
+/// around it doesn't scroll, so tilting and scrolling never fight.
 ///
 /// [child] should fill a rounded rectangle of [radius], with its screen
 /// [screenInsets] in from the edges. The plastic is a light overlay painted
@@ -101,7 +103,8 @@ class _PlasticPlateState extends ConsumerState<PlasticPlate>
   void _touch(Offset local, {required bool pressed}) {
     final size = context.size;
     if (size == null || size.isEmpty) return;
-    // A finger that slid off (scrolling the list) lets the plate go.
+    // A finger that slid off lets the plate go (the touch stays the
+    // plate's: the list doesn't scroll).
     if (!(Offset.zero & size).inflate(8).contains(local)) {
       _release();
       return;
@@ -216,26 +219,38 @@ class _PlasticPlateState extends ConsumerState<PlasticPlate>
       ),
     );
 
-    return Listener(
+    // Claims every touch that starts on the plate at once, so a scrollable
+    // around it loses the gesture; the Listener still follows the finger.
+    return RawGestureDetector(
       behavior: HitTestBehavior.opaque,
-      onPointerDown: (e) => _touch(e.localPosition, pressed: true),
-      onPointerMove: (e) => _touch(e.localPosition, pressed: true),
-      onPointerHover: (e) => _touch(e.localPosition, pressed: false),
-      onPointerUp: (_) => _release(),
-      onPointerCancel: (_) => _release(),
-      child: MouseRegion(
-        onExit: (_) => _release(),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            shadow,
-            ...wall,
-            Transform(
-              alignment: Alignment.center,
-              transform: matrix,
-              child: face,
+      gestures: {
+        EagerGestureRecognizer:
+            GestureRecognizerFactoryWithHandlers<EagerGestureRecognizer>(
+              EagerGestureRecognizer.new,
+              (_) {},
             ),
-          ],
+      },
+      child: Listener(
+        behavior: HitTestBehavior.opaque,
+        onPointerDown: (e) => _touch(e.localPosition, pressed: true),
+        onPointerMove: (e) => _touch(e.localPosition, pressed: true),
+        onPointerHover: (e) => _touch(e.localPosition, pressed: false),
+        onPointerUp: (_) => _release(),
+        onPointerCancel: (_) => _release(),
+        child: MouseRegion(
+          onExit: (_) => _release(),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              shadow,
+              ...wall,
+              Transform(
+                alignment: Alignment.center,
+                transform: matrix,
+                child: face,
+              ),
+            ],
+          ),
         ),
       ),
     );
