@@ -118,7 +118,12 @@ void main() {
     final paper = tester.getRect(
       find.descendant(
         of: find.byType(PaperBubble),
-        matching: find.byType(CustomPaint),
+        // The paper, not its shadow.
+        matching: find.byWidgetPredicate(
+          (w) =>
+              w is CustomPaint &&
+              w.painter.runtimeType.toString() == '_PaperPainter',
+        ),
       ),
     );
     expect(paper.width, greaterThan(bubble.width));

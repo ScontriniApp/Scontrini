@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/core/plastic/plastic_params.dart';
-import 'package:scontrini/core/plastic/plate_motion.dart';
+import 'package:scontrini/core/tilt/plate_motion.dart';
 
 void main() {
   const params = PlasticParams();

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:scontrini/core/tilt/plate_motion.dart';
 
 /// What the plastic shader shows: the result, or one of its inputs (lab
 /// only).
@@ -11,7 +12,7 @@ enum PlasticDebugView { result, normals, height, light }
 /// The defaults are the look the app ships with; the plastic lab (debug
 /// builds) tunes them on the phone.
 @immutable
-class PlasticParams {
+class PlasticParams implements TiltKnobs {
   const new({
     this.rim = 3,
     this.bevel = 7,
@@ -121,18 +122,23 @@ class PlasticParams {
   final double dropBlur;
 
   /// Most the plate tilts under a finger, radians.
+  @override
   final double tilt;
 
   /// Eye distance for the tilt's perspective (smaller = stronger).
+  @override
   final double perspective;
 
   /// Spring stiffness of the tilt: higher follows the finger faster.
+  @override
   final double stiffness;
 
   /// Spring damping: low wobbles after release, high settles flat.
+  @override
   final double damping;
 
   /// Scale while touched (Balatro-style lift).
+  @override
   final double lift;
 
   /// Lab only: show an input of the shader instead of the result.

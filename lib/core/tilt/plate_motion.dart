@@ -1,6 +1,23 @@
 import 'dart:math' as math;
 
-import 'package:scontrini/core/plastic/plastic_params.dart';
+/// The knobs of a touch tilt, shared by everything that tilts under a
+/// finger (plastic plates, paper).
+abstract interface class TiltKnobs {
+  /// Most the surface tilts under a finger, radians.
+  double get tilt;
+
+  /// Eye distance for the tilt's perspective (smaller = stronger).
+  double get perspective;
+
+  /// Spring stiffness of the tilt: higher follows the finger faster.
+  double get stiffness;
+
+  /// Spring damping: low wobbles after release, high settles flat.
+  double get damping;
+
+  /// Scale while touched (Balatro-style lift).
+  double get lift;
+}
 
 /// A damped spring towards a target: follows quickly, overshoots a little
 /// when lightly damped (the wobble after a card is let go).
@@ -63,12 +80,7 @@ class PlateMotion {
   /// A finger (or pointer) at [nx], [ny] on the plate, each -1 (left / top
   /// edge) to 1 (right / bottom edge). [pressed] lifts the plate (a hover
   /// only tilts it).
-  void touch(
-    double nx,
-    double ny,
-    PlasticParams params, {
-    bool pressed = true,
-  }) {
+  void touch(double nx, double ny, TiltKnobs params, {bool pressed = true}) {
     final x = nx.clamp(-1.0, 1.0);
     final y = ny.clamp(-1.0, 1.0);
     // Pressing the bottom pushes it away: positive rotation about x.
@@ -86,7 +98,7 @@ class PlateMotion {
   }
 
   /// Advances [dt] seconds; false once the plate is at rest.
-  bool step(double dt, PlasticParams params) {
+  bool step(double dt, TiltKnobs params) {
     for (final (spring, target) in [
       (_x, _targetX),
       (_y, _targetY),

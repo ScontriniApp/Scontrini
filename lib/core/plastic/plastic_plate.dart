@@ -1,14 +1,13 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:flutter/gestures.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/core/paper/paper_bubble.dart';
 import 'package:scontrini/core/plastic/plastic_params.dart';
 import 'package:scontrini/core/plastic/plastic_settings.dart';
-import 'package:scontrini/core/plastic/plate_motion.dart';
+import 'package:scontrini/core/tilt/touch_tilt.dart';
 
 /// The compiled `shaders/plastic_plate.frag`, loaded once.
 final plasticProgramProvider = FutureProvider<ui.FragmentProgram>(
@@ -28,7 +27,15 @@ final plasticProgramProvider = FutureProvider<ui.FragmentProgram>(
 /// highlights), so it tilts, scrolls and clips with the plate. Only drawn
 /// on Impeller; elsewhere (Skia, widget tests) the plate still tilts,
 /// without the plastic light. The side wall and shadow paint outside the
-/// plate's box: leave room.
+/// plate's box.
+///
+/// The plate is drawn on the nearest [Overlay] ([OverlayPortal]), above
+/// everything else on the page: its shadow falls on the cards around it and,
+/// lifted, it covers them instead of sliding under them. A plate touched
+/// comes to the top of the other plates. Inside a scrollable it is clipped
+/// to the scrollable's viewport, as it would be in place, so it never paints
+/// over an app bar or a navigation bar. In place stays an invisible copy of
+/// [child] that gives the plate its size and takes the touches.
 class PlasticPlate extends ConsumerStatefulWidget {
   const new({
     required this.child,
@@ -57,78 +64,25 @@ class PlasticPlate extends ConsumerStatefulWidget {
   ConsumerState<PlasticPlate> createState() => _PlasticPlateState();
 }
 
-class _PlasticPlateState extends ConsumerState<PlasticPlate>
-    with SingleTickerProviderStateMixin {
-  final PlateMotion _motion = PlateMotion();
-  late final Ticker _ticker = createTicker(_tick);
-  Duration? _last;
-
+class _PlasticPlateState extends ConsumerState<PlasticPlate> {
   /// One shader per pass (multiply, plus, debug): each keeps its uniforms.
   List<ui.FragmentShader> _shaders = const [];
   ui.FragmentProgram? _program;
 
-  PlasticParams get _params =>
-      widget.params ?? ref.read(plasticSettingsProvider);
+  /// Always showing: [OverlayPortalController.show] again brings the plate
+  /// to the top.
+  final OverlayPortalController _portal = OverlayPortalController()..show();
+
+  /// The invisible copy of the child in place (the overlay's anchor).
+  final GlobalKey _anchor = GlobalKey();
 
   @override
   void dispose() {
-    _ticker.dispose();
     for (final shader in _shaders) {
       shader.dispose();
     }
     super.dispose();
   }
-
-  void _tick(Duration elapsed) {
-    final last = _last;
-    _last = elapsed;
-    if (last == null) return;
-    // At most 50 ms per frame: a stalled frame must not fling the plate.
-    final dt = math.min((elapsed - last).inMicroseconds / 1e6, 0.05);
-    final moving = _motion.step(dt, _params);
-    setState(() {});
-    if (!moving) {
-      _ticker.stop();
-      _last = null;
-    }
-  }
-
-  void _wake() {
-    if (!_ticker.isActive) {
-      _last = null;
-      _ticker.start();
-    }
-  }
-
-  void _touch(Offset local, {required bool pressed}) {
-    final size = context.size;
-    if (size == null || size.isEmpty) return;
-    // A finger that slid off lets the plate go (the touch stays the
-    // plate's: the list doesn't scroll).
-    if (!(Offset.zero & size).inflate(8).contains(local)) {
-      _release();
-      return;
-    }
-    _motion.touch(
-      local.dx / size.width * 2 - 1,
-      local.dy / size.height * 2 - 1,
-      _params,
-      pressed: pressed,
-    );
-    _wake();
-  }
-
-  void _release() {
-    _motion.release();
-    _wake();
-  }
-
-  /// The plate's transform: perspective, tilt, lift, about its centre.
-  Matrix4 _transform(PlasticParams p) => Matrix4.identity()
-    ..setEntry(3, 2, 1 / math.max(p.perspective, 100))
-    ..rotateX(_motion.tiltX)
-    ..rotateY(_motion.tiltY)
-    ..scaleByDouble(_motion.lift, _motion.lift, 1, 1);
 
   @override
   Widget build(BuildContext context) {
@@ -136,125 +90,203 @@ class _PlasticPlateState extends ConsumerState<PlasticPlate>
     final p = widget.params ?? watched;
     final light = ref.watch(paperLightProvider);
     final program = ref.watch(plasticProgramProvider).value;
-    final matrix = _transform(p);
     final shape = BorderRadius.circular(widget.radius);
-
-    var face = widget.child;
-    if (program != null && PlasticPlate.canShade) {
-      if (program != _program) {
-        for (final shader in _shaders) {
-          shader.dispose();
-        }
-        _shaders = [for (var i = 0; i < 3; i++) program.fragmentShader()];
-        _program = program;
+    final shade = program != null && PlasticPlate.canShade;
+    if (shade && program != _program) {
+      for (final shader in _shaders) {
+        shader.dispose();
       }
-      face = Stack(
-        fit: StackFit.passthrough,
-        children: [
-          face,
-          Positioned.fill(
-            child: IgnorePointer(
-              child: CustomPaint(
-                painter: _PlasticLight(
-                  shaders: _shaders,
-                  plate: widget,
-                  params: p,
-                  light: _motion.toPlate(light.direction),
-                  view: _motion.toPlate((0, 0, 1)),
+      _shaders = [for (var i = 0; i < 3; i++) program.fragmentShader()];
+      _program = program;
+    }
+
+    final tilt = TouchTilt(
+      knobs: p,
+      builder: (context, motion, matrix) {
+        var face = widget.child;
+        if (shade) {
+          face = Stack(
+            fit: StackFit.passthrough,
+            children: [
+              face,
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: CustomPaint(
+                    painter: _PlasticLight(
+                      shaders: _shaders,
+                      plate: widget,
+                      params: p,
+                      light: motion.toPlate(light.direction),
+                      view: motion.toPlate((0, 0, 1)),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+
+        // The side wall: copies of the outline stacked behind the face
+        // along the plate's normal, so tilting shows them as a solid edge.
+        final layers = math.min(8, math.max(1, p.thickness.ceil()));
+        final wall = [
+          for (var i = layers; i >= 1; i--)
+            Positioned.fill(
+              child: Transform(
+                alignment: Alignment.center,
+                transform: matrix.clone()
+                  ..translateByDouble(0, 0, p.thickness * i / layers, 1),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: shape,
+                    color: Color.lerp(
+                      widget.wallColour,
+                      const Color(0xFF8E8E88),
+                      0.15 + 0.35 * i / layers,
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      );
-    }
+        ];
 
-    // The side wall: copies of the outline stacked behind the face along
-    // the plate's normal, so tilting shows them as a solid edge.
-    final layers = math.min(8, math.max(1, p.thickness.ceil()));
-    final wall = [
-      for (var i = layers; i >= 1; i--)
-        Positioned.fill(
+        // The shadow on the surface under the plate, away from the lamp and
+        // further while it is lifted.
+        final (lx, ly, lz) = light.direction;
+        final height = p.thickness + p.rim + (motion.lift - 1) * 120;
+        final reach = height / math.max(lz, 0.25);
+        // It follows the plate's tilt: the tilted outline, pushed along the
+        // light on the table.
+        final shadow = Positioned.fill(
           child: Transform(
             alignment: Alignment.center,
-            transform: matrix.clone()
-              ..translateByDouble(0, 0, p.thickness * i / layers, 1),
+            transform: matrix,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 borderRadius: shape,
-                color: Color.lerp(
-                  widget.wallColour,
-                  const Color(0xFF8E8E88),
-                  0.15 + 0.35 * i / layers,
-                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: p.dropShadow),
+                    blurRadius: p.dropBlur,
+                    offset: Offset(-lx, -ly) * reach,
+                  ),
+                ],
               ),
             ),
           ),
-        ),
-    ];
+        );
 
-    // The shadow on the surface under the plate, away from the lamp and
-    // further while it is lifted.
-    final (lx, ly, lz) = light.direction;
-    final height = p.thickness + p.rim + (_motion.lift - 1) * 120;
-    final reach = height / math.max(lz, 0.25);
-    // It follows the plate's tilt: the tilted outline, pushed along the
-    // light on the table.
-    final shadow = Positioned.fill(
-      child: Transform(
-        alignment: Alignment.center,
-        transform: matrix,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: shape,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: p.dropShadow),
-                blurRadius: p.dropBlur,
-                offset: Offset(-lx, -ly) * reach,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    // Claims every touch that starts on the plate at once, so a scrollable
-    // around it loses the gesture; the Listener still follows the finger.
-    return RawGestureDetector(
-      behavior: HitTestBehavior.opaque,
-      gestures: {
-        EagerGestureRecognizer:
-            GestureRecognizerFactoryWithHandlers<EagerGestureRecognizer>(
-              EagerGestureRecognizer.new,
-              (_) {},
+        final plate = Stack(
+          clipBehavior: Clip.none,
+          children: [
+            shadow,
+            ...wall,
+            Transform(
+              alignment: Alignment.center,
+              transform: matrix,
+              child: face,
             ),
+          ],
+        );
+        if (Overlay.maybeOf(context) == null) return plate;
+        return OverlayPortal.overlayChildLayoutBuilder(
+          controller: _portal,
+          overlayChildBuilder: (context, info) =>
+              _onOverlay(context, info, plate),
+          child: _Ghost(key: _anchor, child: widget.child),
+        );
       },
-      child: Listener(
-        behavior: HitTestBehavior.opaque,
-        onPointerDown: (e) => _touch(e.localPosition, pressed: true),
-        onPointerMove: (e) => _touch(e.localPosition, pressed: true),
-        onPointerHover: (e) => _touch(e.localPosition, pressed: false),
-        onPointerUp: (_) => _release(),
-        onPointerCancel: (_) => _release(),
-        child: MouseRegion(
-          onExit: (_) => _release(),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              shadow,
-              ...wall,
-              Transform(
-                alignment: Alignment.center,
-                transform: matrix,
-                child: face,
-              ),
-            ],
-          ),
-        ),
-      ),
+    );
+    return Listener(
+      onPointerDown: (_) {
+        if (_portal.isShowing) _portal.show();
+      },
+      child: tilt,
     );
   }
+
+  /// [plate] where the copy in place is, clipped to the scrollable around it.
+  Widget _onOverlay(
+    BuildContext context,
+    OverlayChildLayoutInfo info,
+    Widget plate,
+  ) {
+    final size = info.childSize;
+    final placed = Positioned(
+      left: 0,
+      top: 0,
+      width: size.width,
+      height: size.height,
+      child: Transform(
+        transform: info.childPaintTransform,
+        child: IgnorePointer(child: plate),
+      ),
+    );
+    final viewport = _viewport(context, info);
+    if (viewport == null) return Stack(children: [placed]);
+    return ClipRect(
+      clipper: _RectClipper(viewport),
+      child: Stack(clipBehavior: Clip.none, children: [placed]),
+    );
+  }
+
+  /// The enclosing scrollable's box in the overlay's coordinates.
+  Rect? _viewport(BuildContext context, OverlayChildLayoutInfo info) {
+    final scrollable = Scrollable.maybeOf(context)?.context.findRenderObject();
+    final anchor = _anchor.currentContext?.findRenderObject();
+    if (scrollable is! RenderBox ||
+        anchor is! RenderBox ||
+        !scrollable.hasSize ||
+        !anchor.attached) {
+      return null;
+    }
+    final toOverlay = info.childPaintTransform.clone()
+      ..multiply(scrollable.getTransformTo(anchor));
+    return MatrixUtils.transformRect(toOverlay, Offset.zero & scrollable.size);
+  }
+}
+
+class _RectClipper extends CustomClipper<Rect> {
+  const new(this.rect);
+
+  final Rect rect;
+
+  @override
+  Rect getClip(Size size) => rect;
+
+  @override
+  bool shouldReclip(_RectClipper old) => old.rect != rect;
+}
+
+/// Lays [child] out for its size but neither paints it nor lets it be
+/// touched, read by accessibility or found by tests: the plate's footprint.
+class _Ghost extends SingleChildRenderObjectWidget {
+  const new({super.key, super.child});
+
+  @override
+  SingleChildRenderObjectElement createElement() => _GhostElement(this);
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderGhost();
+}
+
+class _GhostElement extends SingleChildRenderObjectElement {
+  new(_Ghost super.widget);
+
+  @override
+  void debugVisitOnstageChildren(ElementVisitor visitor) {}
+}
+
+class _RenderGhost extends RenderProxyBox {
+  @override
+  void paint(PaintingContext context, Offset offset) {}
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      false;
+
+  @override
+  void visitChildrenForSemantics(RenderObjectVisitor visitor) {}
 }
 
 /// Paints the plastic light over the label in the plate's own coordinates.

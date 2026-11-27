@@ -89,6 +89,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
           child: PaperBubble(
             params: ref.watch(paperSettingsProvider).receipt,
             controller: _scroll,
+            tilt: true,
             hideUntilReady: true,
             // Up under the app bar; down to the screen's edge.
             overscan: const EdgeInsets.only(

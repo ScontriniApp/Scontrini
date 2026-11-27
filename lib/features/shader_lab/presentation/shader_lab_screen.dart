@@ -96,6 +96,7 @@ class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
             child: PaperBubble(
               params: settings.receipt.copyWith(debugView: _debugView),
               controller: _receiptScroll,
+              tilt: true,
               child: _SampleReceipt(controller: _receiptScroll),
             ),
           ),
@@ -315,6 +316,30 @@ class _ShaderLabScreenState extends ConsumerState<ShaderLabScreen> {
                       _knob('corner', _params.corner, 0, 24, (v) {
                         _update(_params.copyWith(corner: v));
                       }),
+                      _knob('dropShadow', _params.dropShadow, 0, 1, (v) {
+                        _update(_params.copyWith(dropShadow: v));
+                      }),
+                      _knob('dropBlur', _params.dropBlur, 0, 40, (v) {
+                        _update(_params.copyWith(dropBlur: v));
+                      }),
+                      _knob('hover', _params.hover, 0, 40, (v) {
+                        _update(_params.copyWith(hover: v));
+                      }),
+                      _knob('tilt', _params.tilt, 0, 0.4, (v) {
+                        _update(_params.copyWith(tilt: v));
+                      }),
+                      _knob('perspective', _params.perspective, 200, 3000, (v) {
+                        _update(_params.copyWith(perspective: v));
+                      }),
+                      _knob('stiffness', _params.stiffness, 40, 600, (v) {
+                        _update(_params.copyWith(stiffness: v));
+                      }),
+                      _knob('damping', _params.damping, 2, 40, (v) {
+                        _update(_params.copyWith(damping: v));
+                      }),
+                      _knob('lift', _params.lift, 1, 1.15, (v) {
+                        _update(_params.copyWith(lift: v));
+                      }),
                     ],
                   ),
                 ),
@@ -451,6 +476,7 @@ class _ComponentGallery extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 380),
           child: PaperBubble(
             params: params.copyWith(seed: params.seed + i * 7),
+            tilt: true,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
               child: bubbles[i],

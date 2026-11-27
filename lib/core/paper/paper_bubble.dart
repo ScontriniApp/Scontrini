@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:isolate';
 import 'dart:math' as math;
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +11,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/core/paper/fold_surface.dart';
 import 'package:scontrini/core/paper/paper_params.dart';
 import 'package:scontrini/core/paper/paper_settings.dart';
+import 'package:scontrini/core/tilt/plate_motion.dart';
+import 'package:scontrini/core/tilt/touch_tilt.dart';
 
 /// The paper's shaders, compiled once.
 @immutable
@@ -81,6 +83,13 @@ const receiptInk = Color(0xFF211F29);
 /// edges stay visible instead of being cut. That bleed paints outside the
 /// bubble's layout box: leave some room around it (or no clipping parent).
 ///
+/// The sheet casts a soft shadow on the surface under it, away from the
+/// lamp ([PaperParams.dropShadow], [PaperParams.hover]), following its torn
+/// ends and corners. With [tilt] it tilts under a finger and lifts like a
+/// shelf label ([TouchTilt]): the printed sheet is moved as a finished
+/// layer (a [RepaintBoundary]) and relit, so a frame of the tilt runs only
+/// the print shader (no snapshot, no bake).
+///
 /// With [controller], [child] must contain the vertical scrollable it
 /// drives; the sheet is as long as that content, and only the sides bleed:
 /// the top and bottom are the viewport's edges, cut there, unless
@@ -94,8 +103,14 @@ class PaperBubble extends ConsumerStatefulWidget {
     this.onReady,
     this.hideUntilReady = false,
     this.overscan = EdgeInsets.zero,
+    this.tilt = false,
     super.key,
   });
+
+  /// Tilts and lifts under a finger ([PaperParams.tilt]). The content keeps
+  /// its touches (buttons, sliders) and scrolls as before: the sheet lets go
+  /// as soon as it scrolls ([controller]) or a list around it does.
+  final bool tilt;
 
   /// With [controller]: how far the paper and its print reach past the
   /// viewport's top and bottom ([EdgeInsets.top] and [EdgeInsets.bottom];
@@ -179,21 +194,22 @@ _MapData _buildMap(_MapSpec spec) {
 Future<_MapData> _buildMapInBackground(_MapSpec spec) =>
     Isolate.run(() => _buildMap(spec));
 
-/// The baked sheet: lit colour and the ray's offset + ink, and where they
-/// lie on the paper.
+/// The baked material of the sheet (`paper_bake.frag`'s four passes), and
+/// where it lies on the paper. No light in it: the print shader lights it.
 class _Bake {
   new({
     required this.key,
-    required this.colour,
-    required this.offset,
+    required this.images,
     required this.origin,
     required this.size,
     required this.reach,
   });
 
   final Object key;
-  final ui.Image colour;
-  final ui.Image offset;
+
+  /// Surface (normal, fibres, age), offset (ray offset, ink, height),
+  /// horizon A (+ occlusion), horizon B.
+  final List<ui.Image> images;
 
   /// Paper point of the images' top-left corner, logical px.
   final Offset origin;
@@ -205,17 +221,45 @@ class _Bake {
   final double reach;
 
   void dispose() {
-    colour.dispose();
-    offset.dispose();
+    for (final image in images) {
+      image.dispose();
+    }
   }
+}
+
+/// How the sheet is lit right now: the lamp in the room ([screen]) and the
+/// lamp and eye seen from the (maybe tilted) sheet.
+@immutable
+class _Lighting {
+  const new({required this.screen, required this.light, required this.eye});
+
+  /// Towards the lamp, screen frame (x right, y down, z to the viewer).
+  final (double, double, double) screen;
+
+  /// Towards the lamp, the sheet's frame.
+  final (double, double, double) light;
+
+  /// The eye relative to the sheet's centre, the sheet's frame.
+  final (double, double, double) eye;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _Lighting &&
+      other.screen == screen &&
+      other.light == light &&
+      other.eye == eye;
+
+  @override
+  int get hashCode => Object.hash(screen, light, eye);
 }
 
 class _PaperBubbleState extends ConsumerState<PaperBubble> {
   PaperPrograms? _programs;
   ui.FragmentShader? _live;
   ui.FragmentShader? _frame;
-  ui.FragmentShader? _bakeColour;
-  ui.FragmentShader? _bakeOffset;
+
+  /// One per bake pass: each keeps its uniforms until its image is drawn.
+  List<ui.FragmentShader> _bakeShaders = const [];
   Size? _size;
   ui.Image? _map;
 
@@ -235,6 +279,15 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
   Object? _mapKey;
   int _mapRequest = 0;
   _Bake? _bake;
+
+  /// The light the paper is drawn with: the print repaints from it without
+  /// re-snapshotting its content, so a moving lamp or a tilt is cheap.
+  late final ValueNotifier<_Lighting> _lighting = ValueNotifier(
+    _lightingFor(null),
+  );
+
+  /// The tilt's motion, once [TouchTilt] has built (null = flat).
+  PlateMotion? _motion;
 
   /// The content's length last seen, to repaint when it changes.
   double? _contentLength;
@@ -265,10 +318,12 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
     _timeout?.cancel();
     _live?.dispose();
     _frame?.dispose();
-    _bakeColour?.dispose();
-    _bakeOffset?.dispose();
+    for (final shader in _bakeShaders) {
+      shader.dispose();
+    }
     _map?.dispose();
     _bake?.dispose();
+    _lighting.dispose();
     super.dispose();
   }
 
@@ -412,13 +467,13 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
     }
   }
 
-  /// Bakes the lit sheet when anything it shows changed.
+  /// Bakes the sheet's material when anything it shows changed (never for
+  /// the light: the print shader lights it per frame).
   void _ensureBake({
     required PaperPrograms programs,
     required Size sheet,
     required EdgeInsets bleed,
     required double dpr,
-    required PaperLight light,
   }) {
     final p = widget.params;
     final map = _map ?? _flat;
@@ -431,14 +486,16 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
       _maxBakeSide / area.height,
       math.sqrt(_maxBakePixels / (area.width * area.height)),
     ].reduce(math.min);
-    final width = math.max(1, (area.width * k).ceil());
-    final height = math.max(1, (area.height * k).ceil());
+    // Even, so the half-size horizon images cover exactly the same area.
+    final halfWidth = math.max(1, (area.width * k / 2).ceil());
+    final halfHeight = math.max(1, (area.height * k / 2).ceil());
+    final width = halfWidth * 2;
+    final height = halfHeight * 2;
     final key = (
       programs.bake,
       map,
       _mapHeight,
       p,
-      light,
       sheet,
       bleed,
       width,
@@ -458,11 +515,20 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
     final origin = Offset(-bleed.left, -bleed.top);
     final covered = Size(width / k, height / k);
 
-    ui.Image pass(ui.FragmentShader shader, int index) {
-      final (lx, ly, lz) = light.direction;
+    if (_bakeShaders.isEmpty) {
+      _bakeShaders = [
+        for (var i = 0; i < 4; i++) programs.bake.fragmentShader(),
+      ];
+    }
+    ui.Image pass(int index) {
+      final shader = _bakeShaders[index];
+      // The horizon (passes 2, 3) is soft: half the resolution.
+      final half = index >= 2;
+      final w = half ? halfWidth : width;
+      final h = half ? halfHeight : height;
       var i = 0;
       void set(double v) => shader.setFloat(i++, v);
-      set(k);
+      set(half ? k / 2 : k);
       set(origin.dx);
       set(origin.dy);
       set(sheet.width);
@@ -473,22 +539,11 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
       set(p.seed);
       set(p.depth);
       set(_mapHeight);
-      set(lx);
-      set(ly);
-      set(lz);
-      set(p.lightDistance);
       set(cx);
       set(cy);
       set(cz);
-      set(p.ambient);
-      set(p.occlusion);
-      set(p.shadow);
-      set(p.softness);
-      set(p.sheen);
       set(p.roughness);
-      set(p.fibres);
       set(p.edge);
-      set(p.levels);
       set(p.pixel);
       set(p.inkFade);
       set(p.lines);
@@ -496,28 +551,43 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
       shader.setImageSampler(0, map, filterQuality: FilterQuality.low);
       final recorder = ui.PictureRecorder();
       Canvas(recorder).drawRect(
-        Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+        Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
         Paint()..shader = shader,
       );
       final picture = recorder.endRecording();
       // Drawn on the raster thread; the image is usable at once.
-      final image = picture.toImageSync(width, height);
+      final image = picture.toImageSync(w, h);
       picture.dispose();
       return image;
     }
 
-    final colour = pass(_bakeColour ??= programs.bake.fragmentShader(), 0);
-    final offset = pass(_bakeOffset ??= programs.bake.fragmentShader(), 1);
+    final images = [for (var i = 0; i < 4; i++) pass(i)];
     _bake?.dispose();
     _bake = _Bake(
       key: key,
-      colour: colour,
-      offset: offset,
+      images: images,
       origin: origin,
       size: covered,
       reach: reach,
     );
   }
+
+  /// The light for the sheet tilted by [motion] (null = flat).
+  _Lighting _lightingFor(PlateMotion? motion) {
+    final light = widget.light ?? ref.read<PaperLight>(paperLightProvider);
+    final screen = light.direction;
+    final eye = widget.params.camera;
+    if (motion == null) {
+      return _Lighting(screen: screen, light: screen, eye: eye);
+    }
+    return _Lighting(
+      screen: screen,
+      light: motion.toPlate(screen),
+      eye: motion.toPlate(eye),
+    );
+  }
+
+  void _relight() => _lighting.value = _lightingFor(_motion);
 
   /// Reports [PaperBubble.onReady] once, after the frame that shows it.
   void _reportReady() {
@@ -531,7 +601,61 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
 
   @override
   Widget build(BuildContext context) {
-    final bubble = _buildPaper(context);
+    // A new lamp relights the paper without rebuilding it (no new content
+    // snapshot): the print repaints from [_lighting].
+    ref.listen(paperLightProvider, (_, _) => _relight());
+    // Its own layer: the shadow and the tilt move it without repainting
+    // (re-snapshotting) the paper.
+    final paper = RepaintBoundary(child: _buildPaper(context));
+    final params = widget.params;
+    final tilting = widget.tilt && params.tilt > 0;
+    final bubble = TouchTilt(
+      knobs: params,
+      enabled: tilting,
+      claim: false,
+      letGo: widget.controller,
+      builder: (context, motion, matrix) {
+        _motion = tilting ? motion : null;
+        // The lamp and the eye seen from the tilted sheet (every frame of
+        // the tilt): only the print shader runs again.
+        _relight();
+        Widget tilted(Widget child) => tilting
+            ? Transform(
+                alignment: Alignment.center,
+                transform: matrix,
+                child: child,
+              )
+            : child;
+        return Stack(
+          clipBehavior: Clip.none,
+          fit: StackFit.passthrough,
+          children: [
+            if (params.dropShadow > 0 && _size != null)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: tilted(
+                    CustomPaint(
+                      painter: _ShadowPainter(
+                        sheet: _sheet() ?? _size!,
+                        scroll: _scroll,
+                        window: _shadowWindow(),
+                        params: params,
+                        lighting: _lighting,
+                        lift: motion.lift,
+                        repaint: Listenable.merge([
+                          widget.controller,
+                          _lighting,
+                        ]),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            tilted(paper),
+          ],
+        );
+      },
+    );
     final ready =
         !PaperBubble.waitForPaper ||
         (_programs != null &&
@@ -548,10 +672,22 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
     );
   }
 
+  /// The part of a scrolling sheet whose shadow can be seen, in the
+  /// bubble's coordinates: the paper is cut at [PaperBubble.overscan].
+  /// Everything for a sheet that doesn't scroll.
+  Rect? _shadowWindow() {
+    final size = _size;
+    if (widget.controller == null || size == null) return null;
+    return Rect.fromLTRB(
+      -_maxBleed,
+      -widget.overscan.top,
+      size.width + _maxBleed,
+      size.height + widget.overscan.bottom,
+    );
+  }
+
   Widget _buildPaper(BuildContext context) {
     final programs = ref.watch(paperProgramProvider).value;
-    final shared = ref.watch(paperLightProvider);
-    final light = widget.light ?? shared;
     final ink = widget.params.ink;
     final print = ink != PaperInk.off && PaperBubble.canPrint;
 
@@ -571,13 +707,12 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
       return ColoredBox(color: const Color(0xFFFBF8EF), child: content);
     }
     if (programs != _programs) {
-      for (final shader in [_live, _frame, _bakeColour, _bakeOffset]) {
+      for (final shader in [_live, _frame, ..._bakeShaders]) {
         shader?.dispose();
       }
       _live = programs.live.fragmentShader();
       _frame = programs.frame.fragmentShader();
-      _bakeColour = null;
-      _bakeOffset = null;
+      _bakeShaders = const [];
       _bake?.dispose();
       _bake = null;
       _programs = programs;
@@ -595,7 +730,6 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
         sheet: paperSheet,
         bleed: bleed,
         dpr: dpr,
-        light: light,
       );
     }
     final bake = _bake;
@@ -617,7 +751,7 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
           height: _map == null ? 0 : _mapHeight,
           scale: 1,
           params: widget.params,
-          light: light,
+          light: _lighting.value.screen,
           filter: print,
         );
         if (!print) shader.setImageSampler(0, _blank);
@@ -636,14 +770,18 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
         sheet: sheet,
         scroll: _scroll(),
         bake: bake,
+        paper: paperSheet ?? sheet,
+        rowEye: widget.controller != null,
+        top: _mapHeight * widget.params.depth,
+        lighting: _lighting.value,
         params: widget.params,
         filter: print,
       );
       // When printing, _Printed binds sampler 0 to the content.
       if (!print) shader.setImageSampler(0, _blank);
-      shader
-        ..setImageSampler(1, bake.colour, filterQuality: FilterQuality.low)
-        ..setImageSampler(2, bake.offset, filterQuality: FilterQuality.low);
+      for (final (i, image) in bake.images.indexed) {
+        shader.setImageSampler(i + 1, image, filterQuality: FilterQuality.low);
+      }
     }
 
     final scroll = widget.controller ?? const AlwaysStoppedAnimation(0);
@@ -661,6 +799,7 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
             shader: shader,
             pixelRatio: dpr,
             configure: configure,
+            lighting: _lighting,
             child: child,
           ),
           // Opaque white, so the snapshot covers the whole area and the
@@ -674,7 +813,7 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
       child: CustomPaint(
         painter: _PaperPainter(
           shader: shader,
-          repaint: scroll,
+          repaint: Listenable.merge([scroll, _lighting]),
           configure: configure,
         ),
         child: padded,
@@ -695,6 +834,117 @@ ui.Image _solid(Color colour) {
   Canvas(recorder)
       .drawRect(const Rect.fromLTWH(0, 0, 1, 1), Paint()..color = colour);
   return recorder.endRecording().toImageSync(1, 1);
+}
+
+/// The sheet's outline in its own coordinates: [corner] rounded corners and
+/// the torn top and bottom ends of `paper_print.frag` (teeth [torn] wide,
+/// as deep as half that). Only the rows from [top] to [bottom] (a scrolling
+/// sheet's visible part; the ends' teeth only where they show).
+@visibleForTesting
+Path paperOutline(
+  Size sheet, {
+  required double torn,
+  required double corner,
+  double top = double.negativeInfinity,
+  double bottom = double.infinity,
+}) {
+  final from = math.max(0, top).toDouble();
+  final to = math.min(sheet.height, bottom);
+  if (to <= from || sheet.width <= 0) return Path();
+  double tooth(double x) {
+    if (torn <= 0) return 0;
+    final f = x / torn - (x / torn).floorToDouble();
+    return torn * 0.5 * ((f - 0.5).abs() * 2);
+  }
+
+  final xs = <double>[];
+  if (torn > 0) {
+    for (var x = 0.0; x < sheet.width; x += torn / 2) {
+      xs.add(x);
+    }
+  } else {
+    xs.add(0);
+  }
+  xs.add(sheet.width);
+  final outline = Path()..moveTo(xs.first, math.max(tooth(xs.first), from));
+  for (final x in xs.skip(1)) {
+    outline.lineTo(x, math.max(tooth(x), from));
+  }
+  for (final x in xs.reversed) {
+    outline.lineTo(x, math.min(sheet.height - tooth(x), to));
+  }
+  outline.close();
+  if (corner <= 0) return outline;
+  final rounded = Path()
+    ..addRRect(
+      RRect.fromRectAndRadius(Offset.zero & sheet, Radius.circular(corner)),
+    );
+  return Path.combine(PathOperation.intersect, outline, rounded);
+}
+
+/// The shadow the sheet casts on the surface under it: its outline, blurred,
+/// pushed away from the lamp by how high the sheet sits (more while lifted,
+/// as the plastic plates' shadow).
+class _ShadowPainter extends CustomPainter {
+  new({
+    required this.sheet,
+    required this.scroll,
+    required this.window,
+    required this.params,
+    required this.lighting,
+    required this.lift,
+    super.repaint,
+  });
+
+  final Size sheet;
+
+  /// The sheet's y at the bubble's top (read on every paint: scrolling).
+  final double Function() scroll;
+
+  /// Rows that can be seen, in the bubble's coordinates (null = all).
+  final Rect? window;
+  final PaperParams params;
+
+  /// The lamp in the room (its screen direction): read on every paint.
+  final ValueListenable<_Lighting> lighting;
+  final double lift;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final y = scroll();
+    final window = this.window;
+    final outline = paperOutline(
+      sheet,
+      torn: params.torn,
+      corner: params.corner,
+      top: window == null ? double.negativeInfinity : window.top + y,
+      bottom: window == null ? double.infinity : window.bottom + y,
+    );
+    final (lx, ly, lz) = lighting.value.screen;
+    final height = params.hover + (lift - 1) * 120;
+    final reach = height / math.max(lz, 0.25);
+    canvas
+      ..save()
+      ..translate(-lx * reach, -ly * reach - y)
+      ..drawPath(
+        outline,
+        Paint()
+          ..color = Colors.black.withValues(alpha: params.dropShadow)
+          ..maskFilter = MaskFilter.blur(
+            BlurStyle.normal,
+            Shadow.convertRadiusToSigma(params.dropBlur),
+          ),
+      )
+      ..restore();
+  }
+
+  @override
+  bool shouldRepaint(_ShadowPainter old) =>
+      old.sheet != sheet ||
+      old.window != window ||
+      old.params != params ||
+      old.lighting != lighting ||
+      old.lift != lift;
 }
 
 class _PaperPainter extends CustomPainter {
@@ -727,9 +977,16 @@ void _setFrameUniforms(
   required Size sheet,
   required double scroll,
   required _Bake bake,
+  required Size paper,
+  required bool rowEye,
+  required double top,
+  required _Lighting lighting,
   required PaperParams params,
   required bool filter,
 }) {
+  final p = params;
+  final (lx, ly, lz) = lighting.light;
+  final (ex, ey, ez) = lighting.eye;
   var i = 0;
   void set(double v) => shader.setFloat(i++, v);
   set(area.width);
@@ -745,11 +1002,33 @@ void _setFrameUniforms(
   set(bake.size.width);
   set(bake.size.height);
   set(bake.reach);
-  set(filter ? params.ink.index.toDouble() : 0);
-  set(params.edge);
-  set(params.torn);
-  set(params.corner);
+  set(filter ? p.ink.index.toDouble() : 0);
+  set(p.edge);
+  set(p.torn);
+  set(p.corner);
   set(filter ? 1 : 0);
+  set(paper.width);
+  set(paper.height);
+  set(rowEye ? 1 : 0);
+  set(top);
+  set(lx);
+  set(ly);
+  set(lz);
+  set(p.lightDistance);
+  set(ex);
+  set(ey);
+  set(ez);
+  // The room's exposure: a tilt changes the light on the sheet, not it.
+  set(1 / math.max(lighting.screen.$3, 0.12));
+  set(p.ambient);
+  set(p.occlusion);
+  set(p.shadow);
+  set(p.softness);
+  set(p.sheen);
+  set(p.roughness);
+  set(p.fibres);
+  set(p.levels);
+  set(p.pixel);
 }
 
 /// Uniform order of `receipt_paper.frag`.
@@ -762,11 +1041,11 @@ void _setLiveUniforms(
   required double height,
   required double scale,
   required PaperParams params,
-  required PaperLight light,
+  required (double, double, double) light,
   required bool filter,
 }) {
   final p = params;
-  final (lx, ly, lz) = light.direction;
+  final (lx, ly, lz) = light;
   final (cx, cy, cz) = p.camera;
   var i = 0;
   void set(double v) => shader.setFloat(i++, v);
@@ -995,18 +1274,22 @@ class _Printed extends SingleChildRenderObjectWidget {
     required this.shader,
     required this.pixelRatio,
     required this.configure,
+    required this.lighting,
     super.child,
   });
 
   final ui.FragmentShader shader;
   final double pixelRatio;
 
+  /// A new light repaints the print without a new snapshot of [child].
+  final Listenable lighting;
+
   /// Sets the shader's uniforms (sampler 0 is bound here).
   final VoidCallback configure;
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
-      _RenderPrinted(shader, pixelRatio, configure);
+      _RenderPrinted(shader, pixelRatio, configure, lighting);
 
   @override
   void updateRenderObject(BuildContext context, _RenderPrinted object) {
@@ -1014,24 +1297,72 @@ class _Printed extends SingleChildRenderObjectWidget {
       ..shader = shader
       ..pixelRatio = pixelRatio
       ..configure = configure
+      ..lighting = lighting
       ..markNeedsPaint();
   }
 }
 
 class _RenderPrinted extends RenderProxyBox {
-  new(this.shader, this.pixelRatio, this.configure);
+  new(this.shader, this.pixelRatio, this.configure, this._lighting);
 
   ui.FragmentShader shader;
   double pixelRatio;
   VoidCallback configure;
 
+  Listenable _lighting;
+
+  Listenable get lighting => _lighting;
+
+  set lighting(Listenable value) {
+    if (value == _lighting) return;
+    if (attached) {
+      _lighting.removeListener(_relight);
+      value.addListener(_relight);
+    }
+    _lighting = value;
+  }
+
   /// The last snapshot, kept until the next one replaces it.
   ui.Image? _content;
+
+  /// The content changed (or may have) since [_content] was taken.
+  var _contentDirty = true;
+
+  /// Inside [_relight]: this repaint is for the light alone.
+  var _relighting = false;
+
+  @override
+  void attach(PipelineOwner owner) {
+    super.attach(owner);
+    _lighting.addListener(_relight);
+  }
+
+  @override
+  void detach() {
+    _lighting.removeListener(_relight);
+    super.detach();
+  }
 
   @override
   void dispose() {
     _content?.dispose();
     super.dispose();
+  }
+
+  /// Repaints for a new light: the same snapshot, new uniforms. A tilt or a
+  /// moving lamp runs only the print shader.
+  void _relight() {
+    _relighting = true;
+    markNeedsPaint();
+    _relighting = false;
+  }
+
+  // Every other repaint comes from the content (a child below asked, its
+  // layout changed) or from a rebuild: take a new snapshot.
+  @override
+  void markNeedsPaint() {
+    if (!_relighting) _contentDirty = true;
+    super.markNeedsPaint();
   }
 
   ui.Image _snapshot() {
@@ -1050,9 +1381,13 @@ class _RenderPrinted extends RenderProxyBox {
   @override
   void paint(PaintingContext context, Offset offset) {
     if (child == null || size.isEmpty) return;
-    final content = _snapshot();
-    _content?.dispose();
-    _content = content;
+    var content = _content;
+    if (_contentDirty || content == null) {
+      content = _snapshot();
+      _content?.dispose();
+      _content = content;
+      _contentDirty = false;
+    }
     configure();
     shader.setImageSampler(0, content, filterQuality: FilterQuality.low);
     // Translated, so FlutterFragCoord is this box's own position.
