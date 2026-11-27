@@ -433,6 +433,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get receiptNotFound => 'Receipt not found.';
 
   @override
+  String get receiptDiscount => 'Discount';
+
+  @override
+  String get receiptTotal => 'TOTAL';
+
+  @override
+  String get receiptTotalDiscount => 'TOTAL DISCOUNT';
+
+  @override
   String get pantryManage => 'Manage in the pantry';
 
   @override

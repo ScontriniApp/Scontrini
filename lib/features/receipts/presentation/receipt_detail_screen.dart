@@ -1,20 +1,40 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:scontrini/core/paper/paper_bubble.dart';
+import 'package:scontrini/core/paper/paper_params.dart';
 import 'package:scontrini/core/utils/money.dart';
-import 'package:scontrini/features/pantry/domain/pantry_category.dart';
-import 'package:scontrini/features/pantry/presentation/category_label.dart';
-import 'package:scontrini/features/pantry/presentation/category_sprites.dart';
-import 'package:scontrini/features/pantry/presentation/pantry_providers.dart';
 import 'package:scontrini/features/pantry/presentation/quantity_format.dart';
-import 'package:scontrini/features/pantry/presentation/widgets/category_section_header.dart';
 import 'package:scontrini/features/receipts/data/receipt_providers.dart';
 import 'package:scontrini/features/receipts/domain/receipt_history.dart';
 import 'package:scontrini/features/receipts/domain/transaction_hash.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
-/// What one receipt bought: a summary, then the rows in collapsible
-/// category sections (closed at first, each with what it cost).
+/// The paper a receipt is printed on in its detail screen: a crumpled
+/// thermal receipt, tuned in the shader lab.
+///
+/// Only the knobs that differ from [PaperParams]' defaults are listed;
+/// `receipt_detail_paper_test.dart` pins every value.
+const receiptDetailPaper = PaperParams(
+  creases: 0.64,
+  crumple: 1.77,
+  sharpness: 0.26,
+  depth: 0.75,
+  cameraTurn: 1.77,
+  ambient: 0.73,
+  occlusion: 1.07,
+  softness: 0.53,
+  sheen: 0,
+  roughness: 0.13,
+  inkFade: 0.37,
+  lines: 0.44,
+  dropout: 0.19,
+  torn: 8.57,
+);
+
+/// A receipt as it was printed, on a scrolling sheet of
+/// [receiptDetailPaper]: store and date, every product with its discount
+/// and price, then the total and the total discount.
 class ReceiptDetailScreen extends ConsumerStatefulWidget {
   const new({required this.receiptId, super.key});
 
@@ -26,23 +46,24 @@ class ReceiptDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
-  /// Open sections, by category id (`null`: uncategorised).
-  final _open = <int?>{};
+  /// Room above the sheet, logical px.
+  static const double _lead = 16;
+
+  final _scroll = ScrollController();
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final receipt = ref.watch(receiptDetailProvider(widget.receiptId));
-    final categories =
-        ref.watch(pantryCategoriesProvider).value ?? const <PantryCategory>[];
     final detail = receipt.value;
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          detail == null
-              ? ''
-              : detail.summary.storeName ?? l10n.receiptsUnknownStore,
-        ),
         actions: [
           if (detail != null)
             IconButton(
@@ -53,7 +74,7 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
         ],
       ),
       body: switch (receipt) {
-        AsyncData(value: final detail?) => _body(l10n, detail, categories),
+        AsyncData(value: final detail?) => _paper(l10n, detail),
         AsyncData() => Center(child: Text(l10n.receiptNotFound)),
         AsyncError(:final error) => Center(child: Text('$error')),
         _ => const Center(child: CircularProgressIndicator()),
@@ -61,84 +82,73 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
     );
   }
 
-  Widget _body(
-    AppLocalizations l10n,
-    ReceiptDetail detail,
-    List<PantryCategory> categories,
-  ) {
-    final theme = Theme.of(context);
-    final byId = {for (final c in categories) c.id: c};
-    final groups = <int?, List<ReceiptLine>>{};
-    for (final line in detail.lines) {
-      final key = byId.containsKey(line.categoryId) ? line.categoryId : null;
-      groups.putIfAbsent(key, () => []).add(line);
-    }
-    final keys = groups.keys.toList()
-      ..sort((a, b) {
-        if (a == null) return 1;
-        if (b == null) return -1;
-        return categoryLabel(
-          l10n,
-          byId[a]!.name,
-        ).compareTo(categoryLabel(l10n, byId[b]!.name));
-      });
+  Widget _paper(AppLocalizations l10n, ReceiptDetail detail) {
     final summary = detail.summary;
     final date = DateFormat.yMMMMd(l10n.localeName)
         .add_Hm()
         .format(summary.purchaseDate);
+    final totalDiscount = detail.lines.fold(
+      detail.discountCents,
+      (sum, line) => sum + line.discountCents,
+    );
+    final tag = summary.transactionHash;
 
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
-      children: [
-        Card(
-          margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 4,
+    // The side padding is the room the paper bleeds into. The list reaches
+    // the app bar, so print and paper scroll under it together; the sheet
+    // starts [_lead] down, so its torn top shows when the receipt opens.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: PaperBubble(
+        params: receiptDetailPaper,
+        controller: _scroll,
+        leading: _lead,
+        // Inside the paper, so the big styles carry its ink colour too.
+        child: Builder(
+          builder: (context) {
+            final ink = Theme.of(context).textTheme;
+            return ListView(
+              controller: _scroll,
+              // Bottom: room for the shell's "add" button over the last lines.
+              padding: const EdgeInsets.fromLTRB(20, _lead + 32, 20, 112),
               children: [
                 Text(
-                  Money.format(summary.totalCents),
-                  style: theme.textTheme.headlineMedium,
+                  summary.storeName ?? l10n.receiptsUnknownStore,
+                  textAlign: TextAlign.center,
+                  style: ink.headlineSmall,
                 ),
-                Text(date),
-                Text(
-                  [
-                    l10n.receiptsItemCount(summary.itemCount),
-                    if (summary.manual) l10n.receiptsManual,
-                    if (summary.transactionHash case final hash?)
-                      shortTransactionTag(hash),
-                  ].join(' · '),
-                  style: theme.textTheme.bodySmall,
-                ),
-                if (detail.discountCents > 0)
+                const SizedBox(height: 4),
+                Text(date, textAlign: TextAlign.center),
+                if (summary.manual || tag != null)
                   Text(
-                    '${l10n.extractionReceiptDiscount}: '
+                    [
+                      if (summary.manual) l10n.receiptsManual,
+                      if (tag != null) shortTransactionTag(tag),
+                    ].join(' · '),
+                    textAlign: TextAlign.center,
+                  ),
+                const _Rule(),
+                for (final line in detail.lines) _LineRows(line: line),
+                if (detail.discountCents > 0)
+                  _Row(
+                    l10n.extractionReceiptDiscount,
                     '-${Money.format(detail.discountCents)}',
                   ),
+                const _Rule(),
+                _Row(
+                  l10n.receiptTotal,
+                  Money.format(summary.totalCents),
+                  style: ink.headlineSmall,
+                ),
+                if (totalDiscount > 0)
+                  _Row(
+                    l10n.receiptTotalDiscount,
+                    '-${Money.format(totalDiscount)}',
+                  ),
               ],
-            ),
-          ),
+            );
+          },
         ),
-        for (final key in keys) ...[
-          CategorySectionHeader(
-            title: key == null
-                ? l10n.pantryUncategorised
-                : categoryLabel(l10n, byId[key]!.name),
-            sprite: categorySprite(byId[key]?.name),
-            trailing: Money.format(
-              groups[key]!.fold(0, (sum, line) => sum + line.netCents),
-            ),
-            open: _open.contains(key),
-            onTap: () => setState(
-              () => _open.contains(key) ? _open.remove(key) : _open.add(key),
-            ),
-          ),
-          if (_open.contains(key))
-            for (final line in groups[key]!) _LineTile(line: line),
-        ],
-      ],
+      ),
     );
   }
 
@@ -169,9 +179,9 @@ class _ReceiptDetailScreenState extends ConsumerState<ReceiptDetailScreen> {
   }
 }
 
-/// One row: name, quantity × unit price when it says more than the
-/// total, discount, and what was paid.
-class _LineTile extends StatelessWidget {
+/// One product: name and price, quantity × unit price when it says more
+/// than the price, then its discount.
+class _LineRows extends StatelessWidget {
   const new({required this.line});
 
   final ReceiptLine line;
@@ -179,21 +189,68 @@ class _LineTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final quantity = formatQuantity(l10n, line.quantity, line.unit);
-    final details = [
-      if (line.quantity != 1 || line.unit != 'pz')
-        '$quantity × ${Money.format(line.unitPriceCents)}',
-      if (line.discountCents > 0)
-        l10n.extractionDiscount(Money.format(line.discountCents)),
-    ];
-    return ListTile(
-      contentPadding: const EdgeInsets.fromLTRB(32, 0, 24, 0),
-      title: Text(line.name),
-      subtitle: details.isEmpty ? null : Text(details.join(' · ')),
-      trailing: Text(
-        Money.format(line.netCents),
-        style: Theme.of(context).textTheme.bodyLarge,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _Row(line.name, Money.format(line.lineTotalCents)),
+          if (line.quantity != 1 || line.unit != 'pz')
+            Padding(
+              padding: const EdgeInsets.only(left: 16),
+              child: Text(
+                '${formatQuantity(l10n, line.quantity, line.unit)} × '
+                '${Money.format(line.unitPriceCents)}',
+              ),
+            ),
+          if (line.discountCents > 0)
+            Padding(
+              padding: const EdgeInsets.only(left: 16),
+              child: _Row(
+                l10n.receiptDiscount,
+                '-${Money.format(line.discountCents)}',
+              ),
+            ),
+        ],
       ),
     );
   }
+}
+
+/// A label on the left, an amount on the right.
+class _Row extends StatelessWidget {
+  const new(this.label, this.amount, {this.style});
+
+  final String label;
+  final String amount;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = style ?? Theme.of(context).textTheme.bodyLarge;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: Text(label, style: text)),
+        const SizedBox(width: 12),
+        Text(amount, style: text),
+      ],
+    );
+  }
+}
+
+/// A dashed line across the receipt.
+class _Rule extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: Text(
+      '-' * 80,
+      maxLines: 1,
+      overflow: TextOverflow.clip,
+      softWrap: false,
+    ),
+  );
 }

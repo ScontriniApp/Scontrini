@@ -113,10 +113,11 @@ void main() {
       ('Latte intero', 1.0, 'pz'),
     });
     expect(lots.every((l) => l.source == PantrySource.receipt), isTrue);
-    expect(find.text('Latticini e uova'), findsOneWidget);
-    await tester.tap(find.text('Latticini e uova'));
-    await settle(tester);
+    // Printed like the receipt: every product, then the total.
     expect(find.text('Latte intero'), findsOneWidget);
+    expect(find.text('Farina'), findsOneWidget);
+    expect(find.text('TOTALE'), findsOneWidget);
+    expect(find.text('SCONTO TOTALE'), findsNothing);
 
     await tester.binding.handlePopRoute();
     await settle(tester);

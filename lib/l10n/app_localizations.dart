@@ -818,6 +818,24 @@ abstract class AppLocalizations {
   /// **'Scontrino non trovato.'**
   String get receiptNotFound;
 
+  /// No description provided for @receiptDiscount.
+  ///
+  /// In it, this message translates to:
+  /// **'Sconto'**
+  String get receiptDiscount;
+
+  /// No description provided for @receiptTotal.
+  ///
+  /// In it, this message translates to:
+  /// **'TOTALE'**
+  String get receiptTotal;
+
+  /// No description provided for @receiptTotalDiscount.
+  ///
+  /// In it, this message translates to:
+  /// **'SCONTO TOTALE'**
+  String get receiptTotalDiscount;
+
   /// No description provided for @pantryManage.
   ///
   /// In it, this message translates to:

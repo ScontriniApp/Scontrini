@@ -435,6 +435,15 @@ class AppLocalizationsIt extends AppLocalizations {
   String get receiptNotFound => 'Scontrino non trovato.';
 
   @override
+  String get receiptDiscount => 'Sconto';
+
+  @override
+  String get receiptTotal => 'TOTALE';
+
+  @override
+  String get receiptTotalDiscount => 'SCONTO TOTALE';
+
+  @override
   String get pantryManage => 'Gestisci in dispensa';
 
   @override

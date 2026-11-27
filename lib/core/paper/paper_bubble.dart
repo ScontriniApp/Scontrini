@@ -49,12 +49,16 @@ const receiptInk = Color(0xFF211F29);
 ///
 /// With [controller], [child] must contain the vertical scrollable it
 /// drives; the sheet is as long as that content, and only the sides bleed
-/// (the top and bottom are the viewport's edges, cut on purpose).
+/// (the top and bottom are the viewport's edges, cut on purpose). With
+/// [leading], the sheet starts that far down the content: the room above
+/// it shows what is behind the bubble, so the torn top is seen whole at the
+/// start and scrolls away with the print.
 class PaperBubble extends ConsumerStatefulWidget {
   const new({
     required this.params,
     required this.child,
     this.controller,
+    this.leading = 0,
     this.light,
     super.key,
   });
@@ -62,6 +66,10 @@ class PaperBubble extends ConsumerStatefulWidget {
   final PaperParams params;
   final Widget child;
   final ScrollController? controller;
+
+  /// With [controller]: room at the top of the scrolled content, logical
+  /// px, before the sheet starts (keep the content's first lines below it).
+  final double leading;
 
   /// Overrides [paperLightProvider].
   final PaperLight? light;
@@ -118,8 +126,9 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
     final length =
         position.maxScrollExtent -
         position.minScrollExtent +
-        position.viewportDimension;
-    return Size(size.width, length);
+        position.viewportDimension -
+        widget.leading;
+    return Size(size.width, math.max(length, 1));
   }
 
   double _scroll() {
@@ -127,7 +136,7 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
     if (controller == null || controller.positions.length != 1) return 0;
     final position = controller.position;
     if (!position.hasPixels || !position.hasContentDimensions) return 0;
-    return position.pixels - position.minScrollExtent;
+    return position.pixels - position.minScrollExtent - widget.leading;
   }
 
   /// How far past the bubble's edges the folded sheet can be seen, logical
