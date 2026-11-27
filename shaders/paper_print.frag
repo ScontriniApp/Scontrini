@@ -3,17 +3,18 @@
 // relief and grain were computed once; here the content is printed where
 // the camera ray landed, the outline is cut and the bottom edge aged.
 //
-// Two uses, as receipt_paper.frag:
-// - ImageFilter.shader over the real widgets (uFilter = 1): the engine binds
-//   the rendered content (on white) to uTexture and its size to uSize;
-// - CustomPaint behind the widgets (uFilter = 0): paper only.
+// Drawn on a canvas in the bubble's own coordinates (FlutterFragCoord is
+// local, logical px), two uses:
+// - print (uFilter = 1): uTexture is a snapshot of the content (on white)
+//   that PaperBubble renders itself, so clips around the bubble never cut
+//   what the shader reads (an ImageFilter only got the visible part);
+// - paper only (uFilter = 0): the content is painted on top.
 //
-// Positions are logical px; uScale is the device pixel ratio in filter mode
-// and 1 in paint mode.
+// uScale (device pixels per logical px) only sharpens the outline.
 
 #include <flutter/runtime_effect.glsl>
 
-uniform vec2 uSize;       // bubble + 2 * uMargin, px (engine-set in filter mode)
+uniform vec2 uSize;       // bubble + 2 * uMargin, logical px
 uniform float uScale;     // px per logical px
 uniform vec2 uMargin;     // bleed around the bubble on each side
 uniform vec2 uSheet;      // the sheet (the scrolled content)
@@ -25,11 +26,7 @@ uniform float uMode;      // 0 = paper only, 1 = thermal print, 2 = colour print
 uniform float uEdge;      // ageing strength
 uniform float uTorn;      // tooth width of the torn ends (0 = straight)
 uniform float uCorner;    // corner radius
-uniform float uFilter;    // 1 = image filter (uTexture is the content)
-// Area point (px) at the top-left of the engine's image. In filter mode the
-// engine renders only what its clips let through, and FlutterFragCoord and
-// uSize are that image's: a paper half outside a clip starts mid-sheet.
-uniform vec2 uCut;
+uniform float uFilter;    // 1 = print (uTexture is the content)
 
 uniform sampler2D uTexture;
 uniform sampler2D uColour;  // baked pass 0: lit paper
@@ -57,13 +54,7 @@ float outline(vec2 paper) {
 
 void main() {
   vec2 pos = FlutterFragCoord().xy;
-#ifdef IMPELLER_TARGET_OPENGLES
-  if (uFilter > 0.5) {
-    pos.y = uSize.y - pos.y;
-  }
-#endif
-  pos += uCut;
-  vec2 through = pos / uScale - uMargin + vec2(0.0, uScroll);
+  vec2 through = pos - uMargin + vec2(0.0, uScroll);
   vec2 uv = (through - uBakeOrigin) / uBakeSize;
   vec3 paper = texture(uColour, uv).rgb;
   vec3 baked = texture(uOffset, uv).rgb;
@@ -80,10 +71,15 @@ void main() {
   paper = mix(paper, kAged * shade, clamp(edge * 0.6 * uEdge, 0.0, 1.0));
 
   if (uFilter > 0.5 && uMode > 0.5) {
-    // The content texture covers the bleed area too (white there).
-    vec2 content =
-        ((hit - vec2(0.0, uScroll) + uMargin) * uScale - uCut) / uSize;
+    // The content texture covers the bleed area too (white there); past
+    // it, blank paper (a clamped read would smear the edge row into
+    // streaks).
+    vec2 content = (hit - vec2(0.0, uScroll) + uMargin) / uSize;
     vec3 src = texture(uTexture, clamp(content, 0.0, 1.0)).rgb;
+    if (any(lessThan(content, vec2(0.0))) ||
+        any(greaterThan(content, vec2(1.0)))) {
+      src = vec3(1.0);
+    }
     if (uMode < 1.5) {
       float ink = clamp((1.0 - dot(src, vec3(0.299, 0.587, 0.114))) * 1.8,
                         0.0, 1.0) * baked.z;

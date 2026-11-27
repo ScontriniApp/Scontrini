@@ -581,9 +581,9 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
     final bake = _bake;
     final shader = live || bake == null ? _live! : _frame!;
 
-    // [cut]: area point at the top-left of what the engine renders, in
-    // the shader's units (see _CutFilter).
-    void configure({required double scale, Offset cut = Offset.zero}) {
+    // Both shaders draw in the bubble's local, logical coordinates; the
+    // print shader's uScale (device pixels) only sharpens its outline.
+    void configure() {
       final sheet = _sheet() ?? const Size(1, 1);
       final bubble = _size ?? const Size(1, 1);
       final area = bleed.inflateSize(bubble);
@@ -595,11 +595,10 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
           sheet: paperSheet ?? sheet,
           scroll: _scroll(),
           height: _map == null ? 0 : _mapHeight,
-          scale: scale,
+          scale: 1,
           params: widget.params,
           light: light,
           filter: print,
-          cut: cut,
         );
         if (!print) shader.setImageSampler(0, _blank);
         shader.setImageSampler(
@@ -612,16 +611,15 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
       _setFrameUniforms(
         shader,
         area: area,
-        scale: scale,
+        scale: dpr,
         margin: bleed.topLeft,
         sheet: sheet,
         scroll: _scroll(),
         bake: bake,
         params: widget.params,
         filter: print,
-        cut: cut,
       );
-      // In filter mode the engine binds sampler 0 to the content.
+      // When printing, _Printed binds sampler 0 to the content.
       if (!print) shader.setImageSampler(0, _blank);
       shader
         ..setImageSampler(1, bake.colour, filterQuality: FilterQuality.low)
@@ -635,18 +633,15 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
         margin: bleed,
         child: ListenableBuilder(
           listenable: scroll,
-          builder: (context, child) => _CutFilter(
+          builder: (context, child) => _Printed(
             shader: shader,
-            scale: dpr,
-            configure: (cut) => configure(scale: dpr, cut: cut),
+            pixelRatio: dpr,
+            configure: configure,
             child: child,
           ),
-          // Opaque white, so the filter gets the whole area and the paper
-          // shows through wherever nothing is drawn. Its own layer: the
-          // filter repaints on every scroll of a list around it.
-          child: RepaintBoundary(
-            child: ColoredBox(color: Colors.white, child: padded),
-          ),
+          // Opaque white, so the snapshot covers the whole area and the
+          // paper shows through wherever nothing is drawn.
+          child: ColoredBox(color: Colors.white, child: padded),
         ),
       );
     }
@@ -656,7 +651,7 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
         painter: _PaperPainter(
           shader: shader,
           repaint: scroll,
-          configure: () => configure(scale: 1),
+          configure: configure,
         ),
         child: padded,
       ),
@@ -710,13 +705,11 @@ void _setFrameUniforms(
   required _Bake bake,
   required PaperParams params,
   required bool filter,
-  Offset cut = Offset.zero,
 }) {
   var i = 0;
   void set(double v) => shader.setFloat(i++, v);
-  // uSize: the engine sets the same in filter mode.
-  set(area.width * scale);
-  set(area.height * scale);
+  set(area.width);
+  set(area.height);
   set(scale);
   set(margin.dx);
   set(margin.dy);
@@ -733,8 +726,6 @@ void _setFrameUniforms(
   set(params.torn);
   set(params.corner);
   set(filter ? 1 : 0);
-  set(cut.dx);
-  set(cut.dy);
 }
 
 /// Uniform order of `receipt_paper.frag`.
@@ -749,14 +740,12 @@ void _setLiveUniforms(
   required PaperParams params,
   required PaperLight light,
   required bool filter,
-  Offset cut = Offset.zero,
 }) {
   final p = params;
   final (lx, ly, lz) = light.direction;
   final (cx, cy, cz) = p.camera;
   var i = 0;
   void set(double v) => shader.setFloat(i++, v);
-  // uSize: the engine sets the same in filter mode.
   set(area.width * scale);
   set(area.height * scale);
   set(sheet.width * scale);
@@ -793,10 +782,6 @@ void _setLiveUniforms(
   set(filter ? 1 : 0);
   set(margin.dx * scale);
   set(margin.dy * scale);
-  set(area.width * scale);
-  set(area.height * scale);
-  set(cut.dx);
-  set(cut.dy);
 }
 
 /// Paints all text and icons below in [colour], whatever the theme: in dark
@@ -971,113 +956,86 @@ class _RenderBleed extends RenderProxyBox {
       transform.translateByDouble(_shift.dx, _shift.dy, 0, 1);
 }
 
-/// [child] through the paper shader as an image filter, telling the shader
-/// where the engine's image starts. The engine renders only the part its
-/// clips (a list's viewport, the screen) let through, and the shader sees
-/// that image's coordinates: without the cut, a paper half outside a clip
-/// would draw its edge, torn ends and creases at the clip instead of on the
-/// sheet. Repaints when a list around it scrolls.
-class _CutFilter extends SingleChildRenderObjectWidget {
+/// [child] printed by the paper shader: the content is rendered into an
+/// image on every paint (on white, the whole area, whatever clips are
+/// around), then the shader draws the paper and the print from it on this
+/// box's canvas, in its own coordinates. An ImageFilter was used before:
+/// the engine fed it only the part its clips let through, and when it cut
+/// changed with its own thresholds, so a paper half out of a list jumped
+/// and its print smeared at the edge.
+///
+/// [child] repaints reach this box only if nothing between them is a
+/// repaint boundary.
+class _Printed extends SingleChildRenderObjectWidget {
   const new({
     required this.shader,
-    required this.scale,
+    required this.pixelRatio,
     required this.configure,
     super.child,
   });
 
   final ui.FragmentShader shader;
-  final double scale;
+  final double pixelRatio;
 
-  /// Sets the shader's uniforms for a cut (physical px).
-  final ValueChanged<Offset> configure;
+  /// Sets the shader's uniforms (sampler 0 is bound here).
+  final VoidCallback configure;
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
-      _RenderCutFilter(shader, scale, configure);
+      _RenderPrinted(shader, pixelRatio, configure);
 
   @override
-  void updateRenderObject(BuildContext context, _RenderCutFilter object) {
+  void updateRenderObject(BuildContext context, _RenderPrinted object) {
     object
       ..shader = shader
-      ..scale = scale
+      ..pixelRatio = pixelRatio
       ..configure = configure
       ..markNeedsPaint();
   }
 }
 
-class _RenderCutFilter extends RenderProxyBox {
-  new(this.shader, this.scale, this.configure);
+class _RenderPrinted extends RenderProxyBox {
+  new(this.shader, this.pixelRatio, this.configure);
 
   ui.FragmentShader shader;
-  double scale;
-  ValueChanged<Offset> configure;
+  double pixelRatio;
+  VoidCallback configure;
 
-  final List<ViewportOffset> _scrolls = [];
-
-  @override
-  bool get alwaysNeedsCompositing => child != null;
+  /// The last snapshot, kept until the next one replaces it.
+  ui.Image? _content;
 
   @override
-  void attach(PipelineOwner owner) {
-    super.attach(owner);
-    // Every list around the paper moves it against that list's clip.
-    for (var node = parent; node != null; node = node.parent) {
-      if (node is RenderViewportBase) {
-        node.offset.addListener(markNeedsPaint);
-        _scrolls.add(node.offset);
-      }
-    }
+  void dispose() {
+    _content?.dispose();
+    super.dispose();
   }
 
-  @override
-  void detach() {
-    for (final offset in _scrolls) {
-      offset.removeListener(markNeedsPaint);
-    }
-    _scrolls.clear();
-    super.detach();
-  }
-
-  /// The part of this box its ancestors' clips and the screen let through,
-  /// in this box's coordinates.
-  Rect _visible() {
-    var rect = Offset.zero & size;
-    RenderObject node = this;
-    for (var parent = node.parent; parent != null; parent = node.parent) {
-      final clip = parent.describeApproximatePaintClip(node);
-      if (clip != null) {
-        rect = rect.intersect(
-          MatrixUtils.inverseTransformRect(getTransformTo(parent), clip),
-        );
-      }
-      node = parent;
-    }
-    if (node is RenderView) {
-      final screen = Offset.zero & node.size;
-      rect = rect.intersect(
-        MatrixUtils.inverseTransformRect(getTransformTo(node), screen),
-      );
-    }
-    return rect;
+  ui.Image _snapshot() {
+    final layer = OffsetLayer();
+    final context = PaintingContext(layer, Offset.zero & size);
+    super.paint(context, Offset.zero);
+    // As SnapshotWidget does: the recording must be closed before the
+    // layer is rasterised.
+    // ignore: invalid_use_of_protected_member
+    context.stopRecordingIfNeeded();
+    final image = layer.toImageSync(Offset.zero & size, pixelRatio: pixelRatio);
+    layer.dispose();
+    return image;
   }
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    if (child == null) return;
-    final visible = _visible();
-    final cut = visible.isEmpty
-        ? Offset.zero
-        : Offset(math.max(0, visible.left), math.max(0, visible.top));
-    configure(cut * scale);
-    // A new filter every paint: the engine copies the uniforms when it
-    // builds the filter, and keeps an unchanged layer as it was.
-    layer = ImageFilterLayer(
-      // Bilinear: bent print stays smooth instead of stair-stepped.
-      imageFilter: ui.ImageFilter.shader(
-        shader,
-        filterQuality: FilterQuality.low,
-      ),
-    );
-    context.pushLayer(layer!, super.paint, offset);
+    if (child == null || size.isEmpty) return;
+    final content = _snapshot();
+    _content?.dispose();
+    _content = content;
+    configure();
+    shader.setImageSampler(0, content, filterQuality: FilterQuality.low);
+    // Translated, so FlutterFragCoord is this box's own position.
+    context.canvas
+      ..save()
+      ..translate(offset.dx, offset.dy)
+      ..drawRect(Offset.zero & size, Paint()..shader = shader)
+      ..restore();
   }
 }
