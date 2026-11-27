@@ -283,5 +283,8 @@
   "settingsColorApply": "Apply",
   "settingsColorSquare": "Saturation and brightness",
   "settingsColorHue": "Hue",
-  "settingsAppBackground": "App background"
+  "settingsAppBackground": "App background",
+  "receiptTotal": "TOTAL",
+  "receiptTotalDiscount": "TOTAL DISCOUNT",
+  "receiptDiscount": "Discount"
 }

@@ -1807,6 +1807,24 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Sfondo dell\'app'**
   String get settingsAppBackground;
+
+  /// Receipt detail: total line, in capitals as printed
+  ///
+  /// In it, this message translates to:
+  /// **'TOTALE'**
+  String get receiptTotal;
+
+  /// Receipt detail: products' and receipt's discounts together
+  ///
+  /// In it, this message translates to:
+  /// **'SCONTO TOTALE'**
+  String get receiptTotalDiscount;
+
+  /// Receipt detail: a product's discount
+  ///
+  /// In it, this message translates to:
+  /// **'Sconto'**
+  String get receiptDiscount;
 }
 
 class _AppLocalizationsDelegate

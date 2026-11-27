@@ -84,6 +84,8 @@ GoRouter _createRouter() => GoRouter(
                   builder: (_, state) => ReceiptDetailScreen(
                     receiptId:
                         int.tryParse(state.pathParameters['id'] ?? '') ?? -1,
+                    // In the shell: the paper stops above "Aggiungi".
+                    belowAddButton: true,
                   ),
                 ),
               ],
