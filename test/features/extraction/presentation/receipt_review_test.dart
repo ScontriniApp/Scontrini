@@ -500,6 +500,26 @@ void main() {
     expect(lit(screen), 0);
   });
 
+  testWidgets('a header correction dialog keeps the app theme, not ink', (
+    tester,
+  ) async {
+    await openReview(tester);
+    await tester.tap(find.text('Totale'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Correggi'));
+    await tester.pumpAndSettle();
+    final dialog = find.byType(AlertDialog);
+    expect(dialog, findsOneWidget);
+    // Opened from inside the paper it captured the print's theme: ink text
+    // and ink accents on the dialog's surface.
+    final title = tester.widget<RichText>(
+      find.descendant(of: dialog, matching: find.byType(RichText)).first,
+    );
+    expect(title.text.style?.color, isNot(receiptInk));
+    final theme = Theme.of(tester.element(dialog));
+    expect(theme.colorScheme.primary, isNot(receiptInk));
+  });
+
   testWidgets('the recognised text is not shown', (tester) async {
     await openReview(tester);
     expect(find.text('Testo riconosciuto'), findsNothing);

@@ -181,7 +181,11 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                               foregroundColor: Colors.white,
                             ),
                             icon: const Icon(Icons.check),
-                            label: Text(l10n.reviewSave),
+                            // One line, however narrow the half.
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(l10n.reviewSave, maxLines: 1),
+                            ),
                             onPressed: _saving || !_draft.canSave
                                 ? null
                                 : _confirm,
@@ -221,6 +225,9 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               _Header(
+                                // Modals open from here, outside the print:
+                                // they inherit the screen's theme, not ink.
+                                modalContext: context,
                                 draft: _draft,
                                 onChanged: _update,
                                 // By hand: no total = the rows' sum.
@@ -587,6 +594,7 @@ class _Header extends StatelessWidget {
     required this.manual,
     required this.selected,
     required this.onSelect,
+    required this.modalContext,
   });
 
   final ReceiptDraft draft;
@@ -597,6 +605,11 @@ class _Header extends StatelessWidget {
 
   final Object? selected;
   final ValueChanged<_Head> onSelect;
+
+  /// The screen's context, outside the paper: dialogs and pickers capture
+  /// the theme where they are opened, and inside the paper everything is
+  /// ink (black text on the dialog's dark surface).
+  final BuildContext modalContext;
 
   @override
   Widget build(BuildContext context) {
@@ -653,7 +666,7 @@ class _Header extends StatelessWidget {
           actions: [
             correct(() async {
               final name = await _editText(
-                context,
+                modalContext,
                 title: l10n.fieldStore,
                 initial: receipt.storeName ?? '',
               );
@@ -671,7 +684,7 @@ class _Header extends StatelessWidget {
           flagged: warnings.contains(ParseWarning.missingDate),
           actions: [
             correct(() async {
-              final picked = await _pickDateTime(context, date);
+              final picked = await _pickDateTime(modalContext, date);
               if (picked != null) onChanged(draft.withDate(picked));
             }),
           ],
@@ -687,7 +700,7 @@ class _Header extends StatelessWidget {
           actions: [
             correct(() async {
               final cents = await _editAmount(
-                context,
+                modalContext,
                 title: l10n.fieldTotal,
                 initial: total,
                 allowEmpty: true,
@@ -703,7 +716,7 @@ class _Header extends StatelessWidget {
           actions: [
             correct(() async {
               final cents = await _editAmount(
-                context,
+                modalContext,
                 title: l10n.extractionReceiptDiscount,
                 initial: receipt.discountCents,
                 allowEmpty: true,
