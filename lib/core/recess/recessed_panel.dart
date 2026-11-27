@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/core/paper/paper_bubble.dart';
@@ -271,10 +272,17 @@ class _RenderWell extends RenderProxyBox {
     markNeedsPaint();
   }
 
+  /// Where the drawer was on the screen when last painted with the shader.
+  Offset? _paintedAt;
+
+  /// A post-frame check is waiting.
+  bool _watching = false;
+
   @override
   void attach(PipelineOwner owner) {
     super.attach(owner);
     _scrolls?.addListener(markNeedsPaint);
+    _watch();
   }
 
   @override
@@ -283,14 +291,35 @@ class _RenderWell extends RenderProxyBox {
     super.detach();
   }
 
+  /// After every frame: a drawer that moved on the screen without being
+  /// painted again (a list item's layer is only shifted when a drawer above
+  /// opens or closes, or the list clamps its scroll) repaints, so its
+  /// perspective follows. Adds no frames while nothing moves.
+  void _watch() {
+    if (_watching) return;
+    _watching = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _watching = false;
+      if (!attached) return;
+      final painted = _paintedAt;
+      if (painted != null && hasSize && localToGlobal(Offset.zero) != painted) {
+        markNeedsPaint();
+      }
+      _watch();
+    });
+  }
+
   @override
   void paint(PaintingContext context, Offset offset) {
     if (!size.isEmpty) {
       final canvas = context.canvas;
       final shader = _shader;
+      _paintedAt = null;
       if (shader != null) {
         // Where the eye is, in the drawer's own coordinates.
-        final eye = _eye - localToGlobal(Offset.zero);
+        final origin = localToGlobal(Offset.zero);
+        _paintedAt = origin;
+        final eye = _eye - origin;
         _setUniforms(shader, eye);
         canvas
           ..save()
