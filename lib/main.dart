@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/app.dart';
@@ -14,6 +15,8 @@ import 'package:scontrini/features/settings/presentation/language_provider.dart'
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Portrait only (also locked in AndroidManifest.xml and Info.plist).
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   final key = await DatabaseKeyStore().readOrCreate();
   final database = AppDatabase(openEncryptedConnection(key));
