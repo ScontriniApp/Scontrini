@@ -24,13 +24,15 @@ typedef TiltBuilder = Widget Function(
 /// around it doesn't scroll and nothing inside gets it (shelf labels, which
 /// have no taps). Without, the surface only watches the pointer: buttons and
 /// sliders inside keep working, and it lets go as soon as it moves under the
-/// finger (the list around it scrolled).
+/// finger (the list around it scrolled) or [letGo] fires (its own content
+/// scrolled).
 class TouchTilt extends StatefulWidget {
   const new({
     required this.knobs,
     required this.builder,
     this.enabled = true,
     this.claim = true,
+    this.letGo,
     super.key,
   });
 
@@ -40,6 +42,11 @@ class TouchTilt extends StatefulWidget {
   /// Off: flat, no pointer watched.
   final bool enabled;
   final bool claim;
+
+  /// While a finger is down, a notification here lets the surface go until
+  /// the finger lifts: a scroll inside the surface (a scrolling sheet's
+  /// controller), where the surface itself doesn't move on screen.
+  final Listenable? letGo;
 
   /// The transform for [motion]: perspective, tilt, lift, about the centre.
   static Matrix4 transformOf(PlateMotion motion, TiltKnobs knobs) =>
@@ -66,16 +73,36 @@ class _TouchTiltState extends State<TouchTilt>
   /// The finger is down but no longer tilts (the surface moved under it).
   var _ignoring = false;
 
+  /// A finger is down on the surface.
+  var _pressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.letGo?.addListener(_onLetGo);
+  }
+
   @override
   void didUpdateWidget(TouchTilt old) {
     super.didUpdateWidget(old);
+    if (old.letGo != widget.letGo) {
+      old.letGo?.removeListener(_onLetGo);
+      widget.letGo?.addListener(_onLetGo);
+    }
     if (!widget.enabled && old.enabled) _release();
   }
 
   @override
   void dispose() {
+    widget.letGo?.removeListener(_onLetGo);
     _ticker.dispose();
     super.dispose();
+  }
+
+  void _onLetGo() {
+    if (!_pressed || _ignoring) return;
+    _ignoring = true;
+    _release();
   }
 
   void _tick(Duration elapsed) {
@@ -107,6 +134,7 @@ class _TouchTiltState extends State<TouchTilt>
   }
 
   void _down(Offset local) {
+    _pressed = true;
     _ignoring = false;
     _origin = widget.claim ? null : _screenOrigin();
     _touch(local, pressed: true);
@@ -149,6 +177,7 @@ class _TouchTiltState extends State<TouchTilt>
   }
 
   void _up() {
+    _pressed = false;
     _origin = null;
     _ignoring = false;
     _release();

@@ -1,46 +1,45 @@
-// Bakes a folded sheet once, for receipt_paper_print.frag to read on every
-// frame. The scene is the one of receipt_paper.frag (height field from the
-// fold map, perspective camera ray-marched into it, point lamp, cast
-// shadows, ambient occlusion, rough paper, fibres, ageing), computed for the
-// whole sheet when the paper, lamp or sheet size change, not per frame.
+// Bakes a folded sheet's MATERIAL once, for paper_print.frag to light on
+// every frame. The scene is the one of receipt_paper.frag (height field from
+// the fold map, perspective camera ray-marched into it, rough paper, fibres,
+// ageing), computed for the whole sheet when the paper or the sheet change.
+// Nothing here depends on the lamp: the print shader lights the sheet per
+// frame, so a moving lamp (the tilt light, a tilted sheet) never re-bakes.
 //
-// Drawn twice into opaque images covering the sheet plus its bleed, in
-// logical px (uBakeScale image px each):
-// - pass 0: the lit paper's colour where this point's camera ray lands;
-// - pass 1: R, G where the ray lands, relative to the point (-uReach..uReach
-//   -> 0..1), and B the thermal ink's strength there (banding, missing dots,
-//   fading).
+// Drawn four times into opaque images covering the sheet plus its bleed, in
+// logical px (uBakeScale image px each), all for the point the camera ray
+// through this pixel hits:
+// - pass 0 (surface): R, G the normal's x, y (-1..1 -> 0..1); B the fibre
+//   noise (-0.5..0.5 -> 0..1); A how aged the paper is (sides, top,
+//   blotches);
+// - pass 1 (offset): R, G where the ray lands, relative to the point
+//   (-uReach..uReach -> 0..1); B the thermal ink's strength there (banding,
+//   missing dots, fading); A the height hit (-top..top -> 0..1);
+// - pass 2, 3 (horizon, half resolution): how high the relief rises around
+//   the point, in six directions 60 degrees apart (pass 2: 0, 60, 120;
+//   pass 3: 180, 240, 300), as an elevation angle (0..pi/2 -> 0..1). A lamp
+//   lower than that horizon is hidden: the cast shadow. Pass 2's A is the
+//   ambient occlusion (0 open .. 1 enclosed).
 //
 // Simplifications that make a bake possible: the bottom edge's ageing is
 // left to the print shader (the sheet's end moves as the content grows),
-// and on a scrolling sheet (uRowEye = 1) the eye and the lamp follow each
-// row instead of the viewport's middle, so a row looks the same wherever it
-// is on screen.
+// and on a scrolling sheet (uRowEye = 1) the eye follows each row instead of
+// the viewport's middle, so a row looks the same wherever it is on screen.
 
 #include <flutter/runtime_effect.glsl>
 
 uniform float uBakeScale; // image px per logical px
 uniform vec2 uOrigin;     // paper point of the image's top-left corner
 uniform vec2 uPaper;      // the fold map's sheet, logical px
-uniform float uRowEye;    // 1 = eye and lamp follow the row (scrolling)
-uniform float uPass;      // 0 = colour, 1 = offset + ink
+uniform float uRowEye;    // 1 = the eye follows the row (scrolling)
+uniform float uPass;      // 0 surface, 1 offset + ink, 2 / 3 horizon
 uniform float uReach;     // largest offset the pass-1 encoding holds
 uniform float uSeed;
 uniform float uDepth;     // relief multiplier
 uniform float uHeight;    // map height 1.0 (before uDepth)
-uniform vec3 uLight;      // direction towards the light
-uniform float uLightDist; // light distance from the centre
 uniform vec3 uCamera;     // eye relative to the centre (z > 0)
-uniform float uAmbient;
-uniform float uOcclusion;
-uniform float uShadow;
-uniform float uSoftness;
-uniform float uSheen;
 uniform float uRoughness;
-uniform float uFibres;
 uniform float uEdge;
-uniform float uLevels;    // 0 = smooth; else grey levels, Bayer dithered
-uniform float uPixel;     // print dot / dither cell
+uniform float uPixel;     // print dot
 uniform float uInkFade;
 uniform float uLines;
 uniform float uDropout;
@@ -49,10 +48,10 @@ uniform sampler2D uMap;
 
 out vec4 fragColor;
 
-const vec3 kPaper = vec3(0.985, 0.972, 0.935);
-const vec3 kAged = vec3(0.90, 0.85, 0.72);
 const int kViewSteps = 20;
-const int kShadowSteps = 16;
+const int kHorizonSteps = 14;
+const float kHorizonReach = 400.0;
+const float kHalfPi = 1.5707963;
 
 float hash1(vec2 p) {
   return fract(sin(dot(p, vec2(12.9898, 78.233)) + uSeed * 3.7) * 43758.5453);
@@ -86,15 +85,6 @@ vec2 slopeOf(vec2 p) {
               valueNoise(p + vec2(0.0, e)) - valueNoise(p - vec2(0.0, e)));
 }
 
-float bayer2(vec2 a) {
-  a = floor(a);
-  return fract(a.x / 2.0 + a.y * a.y * 0.75);
-}
-
-float bayer4(vec2 a) {
-  return bayer2(0.5 * a) * 0.25 + bayer2(a);
-}
-
 vec3 mapAt(vec2 paper) {
   return texture(uMap, clamp(paper / uPaper, 0.0, 1.0)).rgb * 2.0 - 1.0;
 }
@@ -103,81 +93,19 @@ float heightAt(vec2 paper) {
   return mapAt(paper).z * uHeight * uDepth;
 }
 
-// The lit paper's colour at the point the camera ray hit.
-vec3 paperColour(vec2 paper, vec3 point, vec3 through, vec3 eye, vec3 centre,
-                 float top, vec2 dotCell) {
-  // --- Surface -------------------------------------------------------------
-  vec3 m = mapAt(paper);
-  vec2 bump = (slopeOf(paper * 0.9) * 0.25 +
-               slopeOf(paper * 0.07 + 13.0) * 0.5) * uRoughness;
-  vec3 normal = normalize(vec3(-m.xy * uDepth - bump, 1.0));
-
-  // --- Light ---------------------------------------------------------------
-  vec3 lightDir = normalize(uLight);
-  vec3 lamp = centre + lightDir * uLightDist;
-  vec3 toLamp = lamp - point;
-  float lampDist = length(toLamp);
-  vec3 l = toLamp / lampDist;
-  float falloff = (uLightDist * uLightDist) / (lampDist * lampDist);
-  float exposure = 1.0 / max(lightDir.z, 0.12);
-  float direct = max(dot(normal, l), 0.0) * falloff * exposure;
-
-  float lit = 1.0;
-  if (top > 0.0 && uShadow > 0.0) {
-    float reach = min(2.0 * top / max(l.z, 0.05), 400.0);
-    for (int i = 1; i <= kShadowSteps; i++) {
-      float t = reach * float(i) / float(kShadowSteps);
-      vec3 q = point + l * t;
-      if (q.z > top) {
-        break;
-      }
-      float clearance = q.z - heightAt(q.xy);
-      float penumbra = uSoftness * t * 0.05 + 0.5;
-      lit = min(lit, clamp(clearance / penumbra, 0.0, 1.0));
-    }
-    lit = mix(1.0, lit, uShadow);
-  }
-
-  float occlusion = 0.0;
+// Elevation angle of the relief seen from `point` along `dir`, 0..1.
+float horizon(vec3 point, vec2 dir, float top) {
+  float best = 0.0;
   if (top > 0.0) {
-    for (int i = 0; i < 6; i++) {
-      float a = float(i) * 1.0471976;
-      vec2 dir = vec2(cos(a), sin(a));
-      for (int j = 1; j <= 2; j++) {
-        float r = float(j) * 10.0;
-        float rise = heightAt(paper + dir * r) - point.z;
-        occlusion += clamp(rise / r, 0.0, 1.0);
-      }
+    for (int i = 1; i <= kHorizonSteps; i++) {
+      float s = float(i) / float(kHorizonSteps);
+      // Denser near the point: small ridges matter there.
+      float t = 1.5 + kHorizonReach * s * s;
+      float rise = heightAt(point.xy + dir * t) - point.z;
+      best = max(best, atan(rise, t));
     }
-    occlusion /= 12.0;
   }
-  float ambient = uAmbient * (1.0 - uOcclusion * occlusion);
-  float shade = ambient + (1.0 - uAmbient) * direct * lit;
-
-  vec3 v = normalize(eye - point);
-  vec3 halfway = normalize(l + v);
-  float shininess = mix(60.0, 5.0, uRoughness);
-  float sheen = pow(max(dot(normal, halfway), 0.0), shininess) * lit *
-                falloff * uSheen * (1.0 - 0.75 * uRoughness);
-
-  if (uLevels > 0.5) {
-    float threshold = bayer4(dotCell) - 0.5;
-    shade = floor(shade * uLevels + threshold + 0.5) / uLevels;
-  }
-  shade = clamp(shade, 0.0, 1.25);
-
-  // --- Paper ---------------------------------------------------------------
-  vec3 albedo = kPaper;
-  float fibres = fbm(vec2(paper.x * 0.6, paper.y * 0.11)) - 0.5;
-  albedo *= 1.0 + fibres * 0.06 * uFibres;
-  // The sides and the top; the bottom edge is the print shader's.
-  float toEdge = min(min(paper.x, uPaper.x - paper.x), paper.y);
-  float edge = 1.0 - smoothstep(0.0, 70.0, toEdge);
-  float blotch = fbm(paper * 0.008 + 5.0);
-  albedo = mix(albedo, kAged,
-               clamp((edge * 0.6 + blotch * 0.25) * uEdge, 0.0, 1.0));
-
-  return clamp(albedo * shade + sheen, 0.0, 1.0);
+  return clamp(best / kHalfPi, 0.0, 1.0);
 }
 
 void main() {
@@ -219,8 +147,22 @@ void main() {
   vec3 point = vec3(paper, hitZ);
   vec2 dotCell = floor(paper / max(uPixel, 1.0));
 
-  if (uPass > 0.5) {
-    // --- Where the print lands, and how strong its ink is ----------------
+  vec4 result = vec4(0.0);
+  if (uPass < 0.5) {
+    // --- Surface: normal, fibres, age --------------------------------------
+    vec3 m = mapAt(paper);
+    vec2 bump = (slopeOf(paper * 0.9) * 0.25 +
+                 slopeOf(paper * 0.07 + 13.0) * 0.5) * uRoughness;
+    vec3 normal = normalize(vec3(-m.xy * uDepth - bump, 1.0));
+    float fibres = fbm(vec2(paper.x * 0.6, paper.y * 0.11)) - 0.5;
+    // The sides and the top; the bottom edge is the print shader's.
+    float toEdge = min(min(paper.x, uPaper.x - paper.x), paper.y);
+    float edge = 1.0 - smoothstep(0.0, 70.0, toEdge);
+    float blotch = fbm(paper * 0.008 + 5.0);
+    float aged = clamp((edge * 0.6 + blotch * 0.25) * uEdge, 0.0, 1.0);
+    result = vec4(normal.xy * 0.5 + 0.5, clamp(fibres + 0.5, 0.0, 1.0), aged);
+  } else if (uPass < 1.5) {
+    // --- Where the print lands, its ink, the height ------------------------
     vec2 offset = clamp((paper - through.xy) / max(uReach, 1e-3), -1.0, 1.0);
     float ink = 1.0 - mod(dotCell.y, 2.0) * 0.25 * uLines;
     float streak = valueNoise(vec2(paper.x * 0.35, uSeed));
@@ -228,11 +170,30 @@ void main() {
     ink *= 1.0 - uDropout * (smoothstep(0.75, 0.95, streak) * 0.7 +
                              step(1.0 - 0.25 * uDropout, missing));
     ink *= 1.0 - 0.7 * uInkFade * (0.55 + 0.45 * fbm(paper * 0.01 + 2.0));
-    fragColor = vec4(offset * 0.5 + 0.5, clamp(ink, 0.0, 1.0), 1.0);
+    float height = top > 0.0 ? clamp(hitZ / top * 0.5 + 0.5, 0.0, 1.0) : 0.5;
+    result = vec4(offset * 0.5 + 0.5, clamp(ink, 0.0, 1.0), height);
   } else {
-    fragColor = vec4(paperColour(paper, point, through, eye, centre, top,
-                                 dotCell), 1.0);
+    // --- Horizon in three directions (+ occlusion on pass 2) ---------------
+    float first = uPass < 2.5 ? 0.0 : 3.1415927;
+    float a1 = first + 1.0471976;
+    float a2 = first + 2.0943951;
+    vec3 h = vec3(horizon(point, vec2(cos(first), sin(first)), top),
+                  horizon(point, vec2(cos(a1), sin(a1)), top),
+                  horizon(point, vec2(cos(a2), sin(a2)), top));
+    float occlusion = 0.0;
+    if (uPass < 2.5 && top > 0.0) {
+      for (int i = 0; i < 6; i++) {
+        float a = float(i) * 1.0471976;
+        vec2 dir = vec2(cos(a), sin(a));
+        for (int j = 1; j <= 2; j++) {
+          float r = float(j) * 10.0;
+          float rise = heightAt(paper + dir * r) - point.z;
+          occlusion += clamp(rise / r, 0.0, 1.0);
+        }
+      }
+      occlusion /= 12.0;
+    }
+    result = vec4(h, uPass < 2.5 ? occlusion : 1.0);
   }
+  fragColor = result;
 }
-
-
