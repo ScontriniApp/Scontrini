@@ -31,6 +31,8 @@ Future<ItemSheetResult?> showReviewItemSheet(
   DraftItem? item,
 }) => showModalBottomSheet<ItemSheetResult>(
   context: context,
+  // The review screen dims itself around the receipt instead.
+  barrierColor: Colors.transparent,
   isScrollControlled: true,
   showDragHandle: true,
   builder: (context) => Padding(

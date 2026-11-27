@@ -130,6 +130,7 @@
   "extractionStepFindingLines": "Cerco le righe…",
   "extractionStepReadingLines": "Leggo le righe…",
   "extractionStepParsing": "Ricostruisco lo scontrino…",
+  "extractionStepPaper": "Preparo lo scontrino",
   "confirmFailed": "Impossibile salvare lo scontrino.",
   "navInsights": "Consigli",
   "insightsEmpty": "I consigli personalizzati appariranno qui.",

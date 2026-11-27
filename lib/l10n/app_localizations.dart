@@ -506,6 +506,12 @@ abstract class AppLocalizations {
   /// **'Ricostruisco lo scontrino…'**
   String get extractionStepParsing;
 
+  /// No description provided for @extractionStepPaper.
+  ///
+  /// In it, this message translates to:
+  /// **'Preparo lo scontrino'**
+  String get extractionStepPaper;
+
   /// No description provided for @confirmFailed.
   ///
   /// In it, this message translates to:

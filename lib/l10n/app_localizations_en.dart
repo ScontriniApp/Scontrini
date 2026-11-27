@@ -234,6 +234,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get extractionStepParsing => 'Putting the receipt together…';
 
   @override
+  String get extractionStepPaper => 'Preparing the receipt';
+
+  @override
   String get confirmFailed => 'Could not save the receipt.';
 
   @override

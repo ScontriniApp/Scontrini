@@ -457,6 +457,69 @@ void main() {
     expect(tester.getTopLeft(find.text('LATTE INTERO')), before);
   });
 
+  testWidgets('a correction dims the screen around the receipt only', (
+    tester,
+  ) async {
+    await openReview(tester);
+    double lit(Finder of) => tester
+        .widgetList<AnimatedOpacity>(
+          find.descendant(of: of, matching: find.byType(AnimatedOpacity)),
+        )
+        .map((a) => a.opacity)
+        .fold(0, (a, b) => a + b);
+    final screen = find.byType(Scaffold).last;
+    expect(lit(screen), 0);
+
+    await correct(tester, 'PANE');
+    // The sheet brings no scrim of its own...
+    final barriers = tester.widgetList<ModalBarrier>(find.byType(ModalBarrier));
+    expect(barriers.every((b) => (b.color?.a ?? 0) == 0), isTrue);
+    // ...the screen dims its bar, its buttons and the space around the
+    // paper (three veils), none of them over the receipt.
+    expect(lit(screen), 3);
+    expect(
+      find.descendant(
+        of: find.byType(PaperBubble),
+        matching: find.byType(AnimatedOpacity),
+      ),
+      findsNothing,
+    );
+    final paper = tester.getRect(find.byType(PaperBubble));
+    final veil = find
+        .descendant(of: screen, matching: find.byType(AnimatedOpacity))
+        .evaluate()
+        .map((e) => e.renderObject! as RenderBox)
+        .map((box) => box.localToGlobal(Offset.zero) & box.size)
+        .firstWhere((rect) => rect.overlaps(paper));
+    // The body's veil is under the paper: painted before it.
+    expect(veil.contains(paper.center), isTrue);
+
+    // Closed (a tap outside it), the screen lights up again.
+    await tester.tapAt(const Offset(20, 20));
+    await tester.pumpAndSettle();
+    expect(lit(screen), 0);
+  });
+
+  testWidgets('a header correction dialog keeps the app theme, not ink', (
+    tester,
+  ) async {
+    await openReview(tester);
+    await tester.tap(find.text('Totale'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Correggi'));
+    await tester.pumpAndSettle();
+    final dialog = find.byType(AlertDialog);
+    expect(dialog, findsOneWidget);
+    // Opened from inside the paper it captured the print's theme: ink text
+    // and ink accents on the dialog's surface.
+    final title = tester.widget<RichText>(
+      find.descendant(of: dialog, matching: find.byType(RichText)).first,
+    );
+    expect(title.text.style?.color, isNot(receiptInk));
+    final theme = Theme.of(tester.element(dialog));
+    expect(theme.colorScheme.primary, isNot(receiptInk));
+  });
+
   testWidgets('the recognised text is not shown', (tester) async {
     await openReview(tester);
     expect(find.text('Testo riconosciuto'), findsNothing);

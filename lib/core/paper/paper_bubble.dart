@@ -90,6 +90,8 @@ class PaperBubble extends ConsumerStatefulWidget {
     required this.child,
     this.controller,
     this.light,
+    this.onReady,
+    this.hideUntilReady = false,
     super.key,
   });
 
@@ -100,6 +102,18 @@ class PaperBubble extends ConsumerStatefulWidget {
   /// Overrides [paperLightProvider].
   final PaperLight? light;
 
+  /// Called once, after the first frame that shows the finished paper (its
+  /// creases decoded and the sheet baked), so a screen can keep a loading
+  /// cover up until then.
+  final VoidCallback? onReady;
+
+  /// Keeps the content invisible (laid out, not painted) until the paper is
+  /// ready, at most [readyTimeout]: no flash of unprinted content.
+  final bool hideUntilReady;
+
+  /// The longest [hideUntilReady] hides the content.
+  static const readyTimeout = Duration(seconds: 3);
+
   /// Whether this backend can print the content with the shader.
   static bool get canPrint => ui.ImageFilter.isShaderFilterSupported;
 
@@ -109,6 +123,11 @@ class PaperBubble extends ConsumerStatefulWidget {
 
   /// A scrolling sheet's length grows in steps of this many logical px.
   static const double sheetBlock = 512;
+
+  /// Whether readiness waits for the shaders, the creases and the bake.
+  /// Widget tests turn it off (their fake clock never loads them): every
+  /// bubble is ready at once.
+  static bool waitForPaper = true;
 
   @override
   ConsumerState<PaperBubble> createState() => _PaperBubbleState();
@@ -212,8 +231,26 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
   /// paper switches between placeholder, filter and painter.
   final GlobalKey _contentKey = GlobalKey();
 
+  /// [PaperBubble.onReady] was called.
+  var _reported = false;
+
+  /// [PaperBubble.readyTimeout] passed: show the content whatever happens.
+  var _timedOut = false;
+  Timer? _timeout;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.hideUntilReady && PaperBubble.waitForPaper) {
+      _timeout = Timer(PaperBubble.readyTimeout, () {
+        if (mounted) setState(() => _timedOut = true);
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _timeout?.cancel();
     _live?.dispose();
     _frame?.dispose();
     _bakeColour?.dispose();
@@ -462,8 +499,36 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
     );
   }
 
+  /// Reports [PaperBubble.onReady] once, after the frame that shows it.
+  void _reportReady() {
+    if (_reported) return;
+    _reported = true;
+    _timeout?.cancel();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.onReady?.call();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bubble = _buildPaper(context);
+    final ready =
+        !PaperBubble.waitForPaper ||
+        (_programs != null &&
+            _map != null &&
+            (widget.params.debugView != PaperDebugView.result ||
+                _bake != null));
+    if (ready || _timedOut) _reportReady();
+    return Visibility(
+      visible: ready || _timedOut || !widget.hideUntilReady,
+      maintainSize: true,
+      maintainAnimation: true,
+      maintainState: true,
+      child: bubble,
+    );
+  }
+
+  Widget _buildPaper(BuildContext context) {
     final programs = ref.watch(paperProgramProvider).value;
     final shared = ref.watch(paperLightProvider);
     final light = widget.light ?? shared;

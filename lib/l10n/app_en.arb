@@ -68,6 +68,7 @@
   "extractionStepFindingLines": "Finding the lines…",
   "extractionStepReadingLines": "Reading the lines…",
   "extractionStepParsing": "Putting the receipt together…",
+  "extractionStepPaper": "Preparing the receipt",
   "confirmFailed": "Could not save the receipt.",
   "navInsights": "Tips",
   "insightsEmpty": "Personalised tips will appear here.",
