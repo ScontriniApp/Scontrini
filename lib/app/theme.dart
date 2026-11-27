@@ -1,7 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 
 abstract final class AppTheme {
-  static const _seed = Color(0xFF2E7D5B);
+  /// The app's accent (icons, headings, buttons): an amber, also the seed
+  /// of every theme's palette.
+  static const accent = Color(0xFFC58003);
+
+  /// Text and icons on [accent] (buttons).
+  static const onAccent = Color(0xFFFFF5DC);
+
+  static const Color _seed = accent;
 
   /// Pixel terminal font (VT323, bundled in assets/fonts/), used for all
   /// text.
@@ -51,7 +58,18 @@ abstract final class AppTheme {
     ),
   );
 
+  /// Font and accent on every theme: the palette's primary is [accent]
+  /// exactly (the seed alone shifts it), with [onAccent] on it; the
+  /// "Aggiungi" button is filled with it too.
   static ThemeData _withFont(ThemeData theme) => theme.copyWith(
+    colorScheme: theme.colorScheme.copyWith(
+      primary: accent,
+      onPrimary: onAccent,
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: accent,
+      foregroundColor: onAccent,
+    ),
     textTheme: _scaled(theme.textTheme),
     primaryTextTheme: _scaled(theme.primaryTextTheme),
   );
