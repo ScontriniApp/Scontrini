@@ -1,21 +1,24 @@
 // A hard plastic (PVC) shelf label, lit as a small relief.
 //
-// Runs as ImageFilter.shader over the real label widget: the engine binds
-// the rendered label to uTexture and its size to uSize. The shader keeps the
-// label's colours and adds the plastic: a raised rim with a rounded outer
-// edge, an inner slope down to a recessed screen, glossy highlights, a soft
-// reflection of the room, orange-peel grain and the rim's shadow on the
-// screen.
-//
+// Drawn as a LIGHT OVERLAY over the real label widget, inside the plate's
+// own transform: FlutterFragCoord is the plate's local position, so the
+// relief tilts, scrolls and clips with the plate (an ImageFilter ran on the
+// screen image after the tilt and the clip, and its rim stayed put).
+// The shader never sees the label: it draws the light, the label keeps its
+// colours underneath. Two passes over the plate's rectangle:
+//   uPass 0 (BlendMode.multiply): shade, the rim's shadow on the screen;
+//   uPass 1 (BlendMode.plus): specular, fresnel, room reflection, and the
+//            part of the shade above 1 (slopes facing the lamp);
+//   uPass 2 (srcOver): debug views, opaque.
 // Geometry is analytic (rounded rectangles), in logical px: x right, y down,
 // z towards the viewer; z = 0 is the table. Light and view come in the
 // plate's own frame, so when the widget tilts the plate (touch), the
 // highlights slide across it as on a real object.
+// ASCII only: impellerc warns on anything else.
 
 #include <flutter/runtime_effect.glsl>
 
-uniform vec2 uSize;          // the plate, physical px (set by the engine)
-uniform float uScale;        // physical px per logical px
+uniform vec2 uSize;          // the plate, logical px
 uniform float uOuterRadius;  // plate corner radius
 uniform vec4 uScreen;        // screen insets: left, top, right, bottom
 uniform float uScreenRadius;
@@ -35,8 +38,7 @@ uniform float uReflection;
 uniform float uGrain;
 uniform float uShadow;
 uniform float uDebug;        // 0 result, 1 normals, 2 height, 3 light
-
-uniform sampler2D uTexture;
+uniform float uPass;         // 0 multiply, 1 add, 2 debug
 
 out vec4 fragColor;
 
@@ -69,19 +71,13 @@ float roundUp(float t) {
   return sqrt(1.0 - (1.0 - t) * (1.0 - t));
 }
 
-vec2 plateSize() {
-  return uSize / uScale;
-}
-
 float outerDistance(vec2 p) {
-  vec2 size = plateSize();
-  return roundRect(p - size * 0.5, size * 0.5, uOuterRadius);
+  return roundRect(p - uSize * 0.5, uSize * 0.5, uOuterRadius);
 }
 
 float screenDistance(vec2 p) {
-  vec2 size = plateSize();
   vec2 topLeft = uScreen.xy;
-  vec2 bottomRight = size - uScreen.zw;
+  vec2 bottomRight = uSize - uScreen.zw;
   vec2 halfSize = max((bottomRight - topLeft) * 0.5, vec2(1.0));
   return roundRect(p - (topLeft + halfSize), halfSize, uScreenRadius);
 }
@@ -95,18 +91,9 @@ float heightAt(vec2 p) {
 }
 
 void main() {
-  vec2 pos = FlutterFragCoord().xy;
-#ifdef IMPELLER_TARGET_OPENGLES
-  pos.y = uSize.y - pos.y;
-#endif
-  vec2 uv = pos / uSize;
-  vec4 src = texture(uTexture, uv);
-  if (src.a <= 0.0) {
-    fragColor = vec4(0.0);
-    return;
-  }
-  vec3 albedo = src.rgb / src.a;
-  vec2 p = pos / uScale;
+  vec2 p = FlutterFragCoord().xy;
+  // Coverage of the plate's outline (antialiased edge).
+  float mask = 1.0 - smoothstep(-0.5, 0.5, outerDistance(p));
 
   // --- Surface --------------------------------------------------------------
   const float e = 0.75;
@@ -142,7 +129,7 @@ void main() {
     lit = mix(1.0, lit, uShadow);
   }
 
-  float shade = uAmbient + (1.0 - uAmbient) * direct * lit;
+  float shade = min(uAmbient + (1.0 - uAmbient) * direct * lit, 1.3);
 
   // Specular: tight on the cover, broader on the frame.
   vec3 halfway = normalize(l + v);
@@ -162,14 +149,20 @@ void main() {
   float room = (window * 0.6 + streak * 0.4) * uReflection *
                mix(0.5, 1.0, onScreen);
 
-  if (uDebug > 0.5) {
+  vec4 result;
+  if (uPass < 0.5) {
+    // Multiply: premultiplied, so the edge fades into the untouched label.
+    result = vec4(vec3(min(shade, 1.0) * mask), mask);
+  } else if (uPass < 1.5) {
+    // Plus: light only, alpha untouched. The label's colour can't be read,
+    // so a lit slope above 1 brightens towards white (half strength).
+    float add = specular + fresnel + room + max(shade - 1.0, 0.0) * 0.5;
+    result = vec4(vec3(clamp(add, 0.0, 1.0) * mask), 0.0);
+  } else {
     vec3 debug = uDebug < 1.5 ? normal * 0.5 + 0.5
                : uDebug < 2.5 ? vec3(clamp(h / max(uRim, 0.01) * 0.5 + 0.5, 0.0, 1.0))
                : vec3(shade * 0.8 + specular + room);
-    fragColor = vec4(debug * src.a, src.a);
-    return;
+    result = vec4(debug * mask, mask);
   }
-
-  vec3 color = albedo * min(shade, 1.3) + vec3(specular + fresnel + room);
-  fragColor = vec4(clamp(color, 0.0, 1.0) * src.a, src.a);
+  fragColor = result;
 }

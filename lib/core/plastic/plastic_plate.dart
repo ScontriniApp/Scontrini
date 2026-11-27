@@ -21,9 +21,12 @@ final plasticProgramProvider = FutureProvider<ui.FragmentProgram>(
 /// back flat.
 ///
 /// [child] should fill a rounded rectangle of [radius], with its screen
-/// [screenInsets] in from the edges. The shader needs Impeller; elsewhere
-/// (Skia, widget tests) the plate still tilts, without the plastic light.
-/// The side wall and shadow paint outside the plate's box: leave room.
+/// [screenInsets] in from the edges. The plastic is a light overlay painted
+/// over [child] inside the plate's transform (multiply for shade, plus for
+/// highlights), so it tilts, scrolls and clips with the plate. Only drawn
+/// on Impeller; elsewhere (Skia, widget tests) the plate still tilts,
+/// without the plastic light. The side wall and shadow paint outside the
+/// plate's box: leave room.
 class PlasticPlate extends ConsumerStatefulWidget {
   const new({
     required this.child,
@@ -57,11 +60,10 @@ class _PlasticPlateState extends ConsumerState<PlasticPlate>
   final PlateMotion _motion = PlateMotion();
   late final Ticker _ticker = createTicker(_tick);
   Duration? _last;
-  ui.FragmentShader? _shader;
-  ui.FragmentProgram? _program;
 
-  /// The plate's size at the last layout (the shader's geometry).
-  Size _size = const Size(1, 1);
+  /// One shader per pass (multiply, plus, debug): each keeps its uniforms.
+  List<ui.FragmentShader> _shaders = const [];
+  ui.FragmentProgram? _program;
 
   PlasticParams get _params =>
       widget.params ?? ref.read(plasticSettingsProvider);
@@ -69,7 +71,9 @@ class _PlasticPlateState extends ConsumerState<PlasticPlate>
   @override
   void dispose() {
     _ticker.dispose();
-    _shader?.dispose();
+    for (final shader in _shaders) {
+      shader.dispose();
+    }
     super.dispose();
   }
 
@@ -123,52 +127,42 @@ class _PlasticPlateState extends ConsumerState<PlasticPlate>
     ..rotateY(_motion.tiltY)
     ..scaleByDouble(_motion.lift, _motion.lift, 1, 1);
 
-  /// Picks up the laid-out size after the frame (`context.size` can't be
-  /// read during build).
-  void _measure() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final size = context.size;
-      if (size != null && !size.isEmpty && size != _size) {
-        setState(() => _size = size);
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    _measure();
     final watched = ref.watch(plasticSettingsProvider);
     final p = widget.params ?? watched;
     final light = ref.watch(paperLightProvider);
     final program = ref.watch(plasticProgramProvider).value;
-    final dpr = MediaQuery.devicePixelRatioOf(context);
     final matrix = _transform(p);
     final shape = BorderRadius.circular(widget.radius);
 
     var face = widget.child;
     if (program != null && PlasticPlate.canShade) {
       if (program != _program) {
-        _shader?.dispose();
-        _shader = program.fragmentShader();
+        for (final shader in _shaders) {
+          shader.dispose();
+        }
+        _shaders = [for (var i = 0; i < 3; i++) program.fragmentShader()];
         _program = program;
       }
-      final shader = _shader!;
-      _setUniforms(
-        shader,
-        size: _size * dpr,
-        scale: dpr,
-        plate: widget,
-        params: p,
-        light: _motion.toPlate(light.direction),
-        view: _motion.toPlate((0, 0, 1)),
-      );
-      face = ImageFiltered(
-        imageFilter: ui.ImageFilter.shader(
-          shader,
-          filterQuality: FilterQuality.low,
-        ),
-        child: face,
+      face = Stack(
+        fit: StackFit.passthrough,
+        children: [
+          face,
+          Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: _PlasticLight(
+                  shaders: _shaders,
+                  plate: widget,
+                  params: p,
+                  light: _motion.toPlate(light.direction),
+                  view: _motion.toPlate((0, 0, 1)),
+                ),
+              ),
+            ),
+          ),
+        ],
       );
     }
 
@@ -201,17 +195,23 @@ class _PlasticPlateState extends ConsumerState<PlasticPlate>
     final (lx, ly, lz) = light.direction;
     final height = p.thickness + p.rim + (_motion.lift - 1) * 120;
     final reach = height / math.max(lz, 0.25);
+    // It follows the plate's tilt: the tilted outline, pushed along the
+    // light on the table.
     final shadow = Positioned.fill(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: shape,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: p.dropShadow),
-              blurRadius: p.dropBlur,
-              offset: Offset(-lx, -ly) * reach,
-            ),
-          ],
+      child: Transform(
+        alignment: Alignment.center,
+        transform: matrix,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: shape,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: p.dropShadow),
+                blurRadius: p.dropBlur,
+                offset: Offset(-lx, -ly) * reach,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -242,24 +242,74 @@ class _PlasticPlateState extends ConsumerState<PlasticPlate>
   }
 }
 
+/// Paints the plastic light over the label in the plate's own coordinates.
+class _PlasticLight extends CustomPainter {
+  new({
+    required this.shaders,
+    required this.plate,
+    required this.params,
+    required this.light,
+    required this.view,
+  });
+
+  final List<ui.FragmentShader> shaders;
+  final PlasticPlate plate;
+  final PlasticParams params;
+  final (double, double, double) light;
+  final (double, double, double) view;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final rect = Offset.zero & size;
+    final passes = params.debugView.index > 0
+        ? const [(2, BlendMode.srcOver)]
+        : const [(0, BlendMode.multiply), (1, BlendMode.plus)];
+    for (final (pass, mode) in passes) {
+      final shader = shaders[pass];
+      _setUniforms(
+        shader,
+        size: size,
+        plate: plate,
+        params: params,
+        light: light,
+        view: view,
+        pass: pass,
+      );
+      canvas.drawRect(
+        rect,
+        Paint()
+          ..shader = shader
+          ..blendMode = mode,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_PlasticLight old) =>
+      old.params != params ||
+      old.light != light ||
+      old.view != view ||
+      old.plate != plate ||
+      old.shaders != shaders;
+}
+
 /// Uniform order of `plastic_plate.frag`.
 void _setUniforms(
   ui.FragmentShader shader, {
   required Size size,
-  required double scale,
   required PlasticPlate plate,
   required PlasticParams params,
   required (double, double, double) light,
   required (double, double, double) view,
+  required int pass,
 }) {
   final p = params;
   final insets = plate.screenInsets;
   var i = 0;
   void set(double v) => shader.setFloat(i++, v);
-  // uSize: the engine sets the same in filter mode.
   set(size.width);
   set(size.height);
-  set(scale);
   set(plate.radius);
   set(insets.left);
   set(insets.top);
@@ -286,4 +336,5 @@ void _setUniforms(
   set(p.grain);
   set(p.shadow);
   set(p.debugView.index.toDouble());
+  set(pass.toDouble());
 }
