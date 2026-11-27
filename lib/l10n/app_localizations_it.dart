@@ -1091,4 +1091,41 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get importFailed =>
       'File non valido: scegli un CSV esportato da questa app';
+
+  @override
+  String get settingsSectionColors => 'Colori';
+
+  @override
+  String get settingsSectionColorsHint =>
+      'Sezioni: schede e liste di Home, Storico, Analisi e Dispensa. La carta e le etichette restano come sono.';
+
+  @override
+  String get settingsSectionBackground => 'Sfondo';
+
+  @override
+  String get settingsSectionText => 'Testo';
+
+  @override
+  String get settingsSectionColorDefault => 'Predefinito';
+
+  @override
+  String get settingsSectionPreviewTitle => 'Anteprima';
+
+  @override
+  String get settingsSectionPreviewBody => 'Così appariranno le sezioni.';
+
+  @override
+  String get settingsColorHex => 'Codice';
+
+  @override
+  String get settingsColorApply => 'Applica';
+
+  @override
+  String get settingsColorSquare => 'Saturazione e luminosità';
+
+  @override
+  String get settingsColorHue => 'Tonalità';
+
+  @override
+  String get settingsAppBackground => 'Sfondo dell\'app';
 }

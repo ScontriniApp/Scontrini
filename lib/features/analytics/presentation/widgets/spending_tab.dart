@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:scontrini/core/section_colors/section_surface.dart';
 import 'package:scontrini/core/utils/money.dart';
 import 'package:scontrini/features/analytics/domain/models/analytics_overview.dart';
 import 'package:scontrini/features/analytics/domain/models/dashboard_summary.dart';
@@ -28,14 +29,16 @@ class SpendingTab extends StatelessWidget {
     children: [
       _TotalCard(overview: overview),
       const SizedBox(height: 12),
-      SpendingChartCard(
-        buckets: overview.buckets,
-        granularity: overview.granularity,
+      SectionSurface(
+        child: SpendingChartCard(
+          buckets: overview.buckets,
+          granularity: overview.granularity,
+        ),
       ),
       const SizedBox(height: 12),
-      _CategoriesCard(slices: overview.categories),
+      SectionSurface(child: _CategoriesCard(slices: overview.categories)),
       const SizedBox(height: 12),
-      _StoresCard(stores: overview.stores),
+      SectionSurface(child: _StoresCard(stores: overview.stores)),
       const SizedBox(height: 12),
       _SavingsCard(overview: overview),
     ],

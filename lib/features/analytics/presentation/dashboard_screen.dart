@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/router.dart';
 import 'package:scontrini/app/tab_reselect.dart';
+import 'package:scontrini/core/section_colors/section_surface.dart';
 import 'package:scontrini/core/widgets/placeholder_view.dart';
 import 'package:scontrini/core/widgets/refreshable_fill.dart';
 import 'package:scontrini/features/analytics/presentation/dashboard_providers.dart';
@@ -60,11 +61,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             children: [
               MonthTotalCard(summary: value),
               const SizedBox(height: 12),
-              CategoryPieCard(slices: value.slices),
+              SectionSurface(child: CategoryPieCard(slices: value.slices)),
               const SizedBox(height: 12),
-              const ShoppingListCard(),
+              const SectionSurface(child: ShoppingListCard()),
               const SizedBox(height: 12),
-              const DashboardInsightsSection(),
+              const SectionSurface(child: DashboardInsightsSection()),
             ],
           ),
           AsyncData() => RefreshableFill(

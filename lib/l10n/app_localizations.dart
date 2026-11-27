@@ -1741,6 +1741,78 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'File non valido: scegli un CSV esportato da questa app'**
   String get importFailed;
+
+  /// Settings: title of the section colour picker
+  ///
+  /// In it, this message translates to:
+  /// **'Colori'**
+  String get settingsSectionColors;
+
+  /// Settings: what the section colours change
+  ///
+  /// In it, this message translates to:
+  /// **'Sezioni: schede e liste di Home, Storico, Analisi e Dispensa. La carta e le etichette restano come sono.'**
+  String get settingsSectionColorsHint;
+
+  /// Settings: section background colour row
+  ///
+  /// In it, this message translates to:
+  /// **'Sfondo'**
+  String get settingsSectionBackground;
+
+  /// Settings: section text colour row
+  ///
+  /// In it, this message translates to:
+  /// **'Testo'**
+  String get settingsSectionText;
+
+  /// Settings: swatch that keeps the theme's colour
+  ///
+  /// In it, this message translates to:
+  /// **'Predefinito'**
+  String get settingsSectionColorDefault;
+
+  /// Settings: title of the sample section
+  ///
+  /// In it, this message translates to:
+  /// **'Anteprima'**
+  String get settingsSectionPreviewTitle;
+
+  /// Settings: text of the sample section
+  ///
+  /// In it, this message translates to:
+  /// **'Così appariranno le sezioni.'**
+  String get settingsSectionPreviewBody;
+
+  /// Colour picker: hex code field
+  ///
+  /// In it, this message translates to:
+  /// **'Codice'**
+  String get settingsColorHex;
+
+  /// Colour picker: confirm button
+  ///
+  /// In it, this message translates to:
+  /// **'Applica'**
+  String get settingsColorApply;
+
+  /// Colour picker: semantics label of the square
+  ///
+  /// In it, this message translates to:
+  /// **'Saturazione e luminosità'**
+  String get settingsColorSquare;
+
+  /// Colour picker: semantics label of the hue bar
+  ///
+  /// In it, this message translates to:
+  /// **'Tonalità'**
+  String get settingsColorHue;
+
+  /// Settings: colour behind every screen
+  ///
+  /// In it, this message translates to:
+  /// **'Sfondo dell\'app'**
+  String get settingsAppBackground;
 }
 
 class _AppLocalizationsDelegate

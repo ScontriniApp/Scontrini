@@ -1088,4 +1088,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importFailed => 'Invalid file: pick a CSV exported from this app';
+
+  @override
+  String get settingsSectionColors => 'Colours';
+
+  @override
+  String get settingsSectionColorsHint =>
+      'Sections: cards and lists in Home, History, Analytics and Pantry. Paper and labels stay as they are.';
+
+  @override
+  String get settingsSectionBackground => 'Background';
+
+  @override
+  String get settingsSectionText => 'Text';
+
+  @override
+  String get settingsSectionColorDefault => 'Default';
+
+  @override
+  String get settingsSectionPreviewTitle => 'Preview';
+
+  @override
+  String get settingsSectionPreviewBody => 'This is how sections will look.';
+
+  @override
+  String get settingsColorHex => 'Code';
+
+  @override
+  String get settingsColorApply => 'Apply';
+
+  @override
+  String get settingsColorSquare => 'Saturation and brightness';
+
+  @override
+  String get settingsColorHue => 'Hue';
+
+  @override
+  String get settingsAppBackground => 'App background';
 }

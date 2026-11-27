@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/tab_reselect.dart';
+import 'package:scontrini/core/section_colors/section_surface.dart';
 import 'package:scontrini/core/utils/clock.dart';
 import 'package:scontrini/core/widgets/placeholder_view.dart';
 import 'package:scontrini/core/widgets/refreshable_fill.dart';
@@ -118,7 +119,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                 child: TabBarView(
                   children: [
                     tab((o) => SpendingTab(overview: o)),
-                    tab((o) => ProductsTab(overview: o)),
+                    tab((o) => SectionSurface(child: ProductsTab(overview: o))),
                     pantryTab,
                   ],
                 ),

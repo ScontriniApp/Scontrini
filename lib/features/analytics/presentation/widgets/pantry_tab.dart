@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/router.dart';
 import 'package:scontrini/core/database/tables/pantry_enums.dart';
+import 'package:scontrini/core/section_colors/section_surface.dart';
 import 'package:scontrini/core/utils/money.dart';
 import 'package:scontrini/features/analytics/domain/models/pantry_overview.dart';
 import 'package:scontrini/features/analytics/domain/models/period_amount.dart';
@@ -28,9 +29,11 @@ class PantryTab extends StatelessWidget {
     physics: const AlwaysScrollableScrollPhysics(),
     padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
     children: [
-      _FateCard(fate: overview.fate),
+      SectionSurface(child: _FateCard(fate: overview.fate)),
       const SizedBox(height: 12),
-      _WasteCard(overview: overview, comparedLabel: comparedLabel),
+      SectionSurface(
+        child: _WasteCard(overview: overview, comparedLabel: comparedLabel),
+      ),
     ],
   );
 }

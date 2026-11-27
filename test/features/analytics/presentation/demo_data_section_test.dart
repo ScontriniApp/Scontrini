@@ -36,6 +36,10 @@ void main() {
         .runAsync(() async => (await db.select(db.receipts).get()).length)
         .then((n) => n!);
 
+    // Below the other settings: scroll to it first.
+    await tester.scrollUntilVisible(find.text('Carica dati demo'), 200);
+    await tester.ensureVisible(find.text('Carica dati demo'));
+    await tester.pump();
     await tester.runAsync(() async {
       await tester.tap(find.text('Carica dati demo'));
       await Future<void>.delayed(const Duration(seconds: 1));
@@ -44,6 +48,9 @@ void main() {
     expect(await receipts(), greaterThan(0));
     expect(find.textContaining('scontrini demo'), findsOneWidget);
 
+    await tester.scrollUntilVisible(find.text('Rimuovi dati demo'), 200);
+    await tester.ensureVisible(find.text('Rimuovi dati demo'));
+    await tester.pump();
     await tester.runAsync(() async {
       await tester.tap(find.text('Rimuovi dati demo'));
       await Future<void>.delayed(const Duration(milliseconds: 500));
