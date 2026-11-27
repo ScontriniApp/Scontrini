@@ -581,7 +581,9 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
     final bake = _bake;
     final shader = live || bake == null ? _live! : _frame!;
 
-    void configure({required double scale}) {
+    // [cut]: area point at the top-left of what the engine renders, in
+    // the shader's units (see _CutFilter).
+    void configure({required double scale, Offset cut = Offset.zero}) {
       final sheet = _sheet() ?? const Size(1, 1);
       final bubble = _size ?? const Size(1, 1);
       final area = bleed.inflateSize(bubble);
@@ -597,6 +599,7 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
           params: widget.params,
           light: light,
           filter: print,
+          cut: cut,
         );
         if (!print) shader.setImageSampler(0, _blank);
         shader.setImageSampler(
@@ -616,6 +619,7 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
         bake: bake,
         params: widget.params,
         filter: print,
+        cut: cut,
       );
       // In filter mode the engine binds sampler 0 to the content.
       if (!print) shader.setImageSampler(0, _blank);
@@ -631,20 +635,18 @@ class _PaperBubbleState extends ConsumerState<PaperBubble> {
         margin: bleed,
         child: ListenableBuilder(
           listenable: scroll,
-          builder: (context, child) {
-            configure(scale: dpr);
-            return ImageFiltered(
-              // Bilinear: bent print stays smooth instead of stair-stepped.
-              imageFilter: ui.ImageFilter.shader(
-                shader,
-                filterQuality: FilterQuality.low,
-              ),
-              child: child,
-            );
-          },
+          builder: (context, child) => _CutFilter(
+            shader: shader,
+            scale: dpr,
+            configure: (cut) => configure(scale: dpr, cut: cut),
+            child: child,
+          ),
           // Opaque white, so the filter gets the whole area and the paper
-          // shows through wherever nothing is drawn.
-          child: ColoredBox(color: Colors.white, child: padded),
+          // shows through wherever nothing is drawn. Its own layer: the
+          // filter repaints on every scroll of a list around it.
+          child: RepaintBoundary(
+            child: ColoredBox(color: Colors.white, child: padded),
+          ),
         ),
       );
     }
@@ -708,6 +710,7 @@ void _setFrameUniforms(
   required _Bake bake,
   required PaperParams params,
   required bool filter,
+  Offset cut = Offset.zero,
 }) {
   var i = 0;
   void set(double v) => shader.setFloat(i++, v);
@@ -730,6 +733,8 @@ void _setFrameUniforms(
   set(params.torn);
   set(params.corner);
   set(filter ? 1 : 0);
+  set(cut.dx);
+  set(cut.dy);
 }
 
 /// Uniform order of `receipt_paper.frag`.
@@ -744,6 +749,7 @@ void _setLiveUniforms(
   required PaperParams params,
   required PaperLight light,
   required bool filter,
+  Offset cut = Offset.zero,
 }) {
   final p = params;
   final (lx, ly, lz) = light.direction;
@@ -787,6 +793,10 @@ void _setLiveUniforms(
   set(filter ? 1 : 0);
   set(margin.dx * scale);
   set(margin.dy * scale);
+  set(area.width * scale);
+  set(area.height * scale);
+  set(cut.dx);
+  set(cut.dy);
 }
 
 /// Paints all text and icons below in [colour], whatever the theme: in dark
@@ -959,4 +969,115 @@ class _RenderBleed extends RenderProxyBox {
   @override
   void applyPaintTransform(RenderBox child, Matrix4 transform) =>
       transform.translateByDouble(_shift.dx, _shift.dy, 0, 1);
+}
+
+/// [child] through the paper shader as an image filter, telling the shader
+/// where the engine's image starts. The engine renders only the part its
+/// clips (a list's viewport, the screen) let through, and the shader sees
+/// that image's coordinates: without the cut, a paper half outside a clip
+/// would draw its edge, torn ends and creases at the clip instead of on the
+/// sheet. Repaints when a list around it scrolls.
+class _CutFilter extends SingleChildRenderObjectWidget {
+  const new({
+    required this.shader,
+    required this.scale,
+    required this.configure,
+    super.child,
+  });
+
+  final ui.FragmentShader shader;
+  final double scale;
+
+  /// Sets the shader's uniforms for a cut (physical px).
+  final ValueChanged<Offset> configure;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderCutFilter(shader, scale, configure);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderCutFilter object) {
+    object
+      ..shader = shader
+      ..scale = scale
+      ..configure = configure
+      ..markNeedsPaint();
+  }
+}
+
+class _RenderCutFilter extends RenderProxyBox {
+  new(this.shader, this.scale, this.configure);
+
+  ui.FragmentShader shader;
+  double scale;
+  ValueChanged<Offset> configure;
+
+  final List<ViewportOffset> _scrolls = [];
+
+  @override
+  bool get alwaysNeedsCompositing => child != null;
+
+  @override
+  void attach(PipelineOwner owner) {
+    super.attach(owner);
+    // Every list around the paper moves it against that list's clip.
+    for (var node = parent; node != null; node = node.parent) {
+      if (node is RenderViewportBase) {
+        node.offset.addListener(markNeedsPaint);
+        _scrolls.add(node.offset);
+      }
+    }
+  }
+
+  @override
+  void detach() {
+    for (final offset in _scrolls) {
+      offset.removeListener(markNeedsPaint);
+    }
+    _scrolls.clear();
+    super.detach();
+  }
+
+  /// The part of this box its ancestors' clips and the screen let through,
+  /// in this box's coordinates.
+  Rect _visible() {
+    var rect = Offset.zero & size;
+    RenderObject node = this;
+    for (var parent = node.parent; parent != null; parent = node.parent) {
+      final clip = parent.describeApproximatePaintClip(node);
+      if (clip != null) {
+        rect = rect.intersect(
+          MatrixUtils.inverseTransformRect(getTransformTo(parent), clip),
+        );
+      }
+      node = parent;
+    }
+    if (node is RenderView) {
+      final screen = Offset.zero & node.size;
+      rect = rect.intersect(
+        MatrixUtils.inverseTransformRect(getTransformTo(node), screen),
+      );
+    }
+    return rect;
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    if (child == null) return;
+    final visible = _visible();
+    final cut = visible.isEmpty
+        ? Offset.zero
+        : Offset(math.max(0, visible.left), math.max(0, visible.top));
+    configure(cut * scale);
+    // A new filter every paint: the engine copies the uniforms when it
+    // builds the filter, and keeps an unchanged layer as it was.
+    layer = ImageFilterLayer(
+      // Bilinear: bent print stays smooth instead of stair-stepped.
+      imageFilter: ui.ImageFilter.shader(
+        shader,
+        filterQuality: FilterQuality.low,
+      ),
+    );
+    context.pushLayer(layer!, super.paint, offset);
+  }
 }

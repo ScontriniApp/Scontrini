@@ -26,6 +26,10 @@ uniform float uEdge;      // ageing strength
 uniform float uTorn;      // tooth width of the torn ends (0 = straight)
 uniform float uCorner;    // corner radius
 uniform float uFilter;    // 1 = image filter (uTexture is the content)
+// Area point (px) at the top-left of the engine's image. In filter mode the
+// engine renders only what its clips let through, and FlutterFragCoord and
+// uSize are that image's: a paper half outside a clip starts mid-sheet.
+uniform vec2 uCut;
 
 uniform sampler2D uTexture;
 uniform sampler2D uColour;  // baked pass 0: lit paper
@@ -58,6 +62,7 @@ void main() {
     pos.y = uSize.y - pos.y;
   }
 #endif
+  pos += uCut;
   vec2 through = pos / uScale - uMargin + vec2(0.0, uScroll);
   vec2 uv = (through - uBakeOrigin) / uBakeSize;
   vec3 paper = texture(uColour, uv).rgb;
@@ -76,7 +81,8 @@ void main() {
 
   if (uFilter > 0.5 && uMode > 0.5) {
     // The content texture covers the bleed area too (white there).
-    vec2 content = (hit - vec2(0.0, uScroll) + uMargin) * uScale / uSize;
+    vec2 content =
+        ((hit - vec2(0.0, uScroll) + uMargin) * uScale - uCut) / uSize;
     vec3 src = texture(uTexture, clamp(content, 0.0, 1.0)).rgb;
     if (uMode < 1.5) {
       float ink = clamp((1.0 - dot(src, vec3(0.299, 0.587, 0.114))) * 1.8,
