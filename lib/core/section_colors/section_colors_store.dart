@@ -24,7 +24,7 @@ class MemorySectionColorsStore implements SectionColorsStore {
   Future<void> write(SectionColors colors) async => _colors = colors;
 }
 
-/// The device's shared preferences: three ARGB integers, absent for the
+/// The device's shared preferences: four ARGB integers, absent for the
 /// theme's colour.
 class PreferencesSectionColorsStore implements SectionColorsStore {
   new(this._preferences);
@@ -32,6 +32,7 @@ class PreferencesSectionColorsStore implements SectionColorsStore {
   static const _background = 'section_background';
   static const _text = 'section_text';
   static const _app = 'app_background';
+  static const _accent = 'accent_color';
 
   final SharedPreferencesWithCache _preferences;
 
@@ -40,7 +41,7 @@ class PreferencesSectionColorsStore implements SectionColorsStore {
       PreferencesSectionColorsStore(
         await SharedPreferencesWithCache.create(
           cacheOptions: const SharedPreferencesWithCacheOptions(
-            allowList: {_background, _text, _app},
+            allowList: {_background, _text, _app, _accent},
           ),
         ),
       );
@@ -50,6 +51,7 @@ class PreferencesSectionColorsStore implements SectionColorsStore {
     background: _color(_background),
     text: _color(_text),
     appBackground: _color(_app),
+    accent: _color(_accent),
   );
 
   Color? _color(String key) => switch (_preferences.getInt(key)) {
@@ -62,6 +64,7 @@ class PreferencesSectionColorsStore implements SectionColorsStore {
     await _save(_background, colors.background);
     await _save(_text, colors.text);
     await _save(_app, colors.appBackground);
+    await _save(_accent, colors.accent);
   }
 
   Future<void> _save(String key, Color? color) => color == null

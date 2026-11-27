@@ -1131,6 +1131,28 @@ class AppLocalizationsIt extends AppLocalizations {
   String get settingsAppBackground => 'Sfondo dell\'app';
 
   @override
+  String get settingsAccent => 'Testo secondario';
+
+  @override
+  String get settingsAccentHint =>
+      'Titoli, icone e pulsanti come «Aggiungi». La dispensa ha i suoi colori nel Laboratorio dispensa.';
+
+  @override
+  String get pantryLabColors => 'Colori della dispensa';
+
+  @override
+  String get pantryLabAccent => 'Slider e pulsanti';
+
+  @override
+  String get pantryLabTitleColor => 'Titoli delle categorie';
+
+  @override
+  String get pantryLabTextColor => 'Testo';
+
+  @override
+  String get pantryLabIconColor => 'Icone';
+
+  @override
   String get receiptTotal => 'TOTALE';
 
   @override

@@ -19,16 +19,20 @@ class ScontriniApp extends ConsumerWidget {
     // Amounts are formatted without a context (see Money); this rebuild
     // re-renders every screen in the new language, so they follow it here.
     Money.locale = language.code;
-    final background = ref.watch(
-      sectionColorsProvider.select((c) => c.appBackground),
+    final (background, accent) = ref.watch(
+      sectionColorsProvider.select((c) => (c.appBackground, c.accent)),
     );
     final custom = background == null
         ? null
         : AppTheme.onBackground(background);
+    // Settings → "Testo secondario": the accent everywhere but the pantry
+    // (which takes its colours from the pantry lab).
+    ThemeData accented(ThemeData theme) =>
+        accent == null ? theme : AppTheme.withAccent(theme, accent);
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
-      theme: custom ?? AppTheme.light,
-      darkTheme: custom ?? AppTheme.dark,
+      theme: accented(custom ?? AppTheme.light),
+      darkTheme: accented(custom ?? AppTheme.dark),
       routerConfig: ref.watch(routerProvider),
       locale: Locale(language.code),
       supportedLocales: AppLocalizations.supportedLocales,

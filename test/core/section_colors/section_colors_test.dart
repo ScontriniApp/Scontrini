@@ -176,8 +176,8 @@ void main() {
     // The preview follows.
     expect(_textColor(tester, 'Anteprima'), text);
 
-    // Rows: app background, section background, text.
-    await tester.tap(find.byTooltip('Predefinito').at(1));
+    // Rows: app background, accent, section background, text.
+    await tester.tap(find.byTooltip('Predefinito').at(2));
     await tester.pump();
     expect(store.read(), SectionColors(text: text));
   });
@@ -193,6 +193,31 @@ void main() {
     await tester.tap(find.text('Applica'));
     await tester.pumpAndSettle();
     expect(store.read(), const SectionColors(appBackground: Color(0xFF263238)));
+  });
+
+  testWidgets('Settings tile: "Testo secondario" from the picker', (
+    tester,
+  ) async {
+    final store = MemorySectionColorsStore();
+    await _pump(tester, store, const SectionColorsTile());
+
+    await tester.tap(find.bySemanticsLabel('Testo secondario: Predefinito'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('colorPickerHex')), '1A237E');
+    await tester.pump();
+    await tester.tap(find.text('Applica'));
+    await tester.pumpAndSettle();
+    expect(store.read(), const SectionColors(accent: _navy));
+  });
+
+  test('the accent replaces the amber: headings, buttons, Aggiungi', () {
+    final theme = AppTheme.withAccent(AppTheme.light, _navy);
+    expect(theme.colorScheme.primary, _navy);
+    expect(theme.colorScheme.onPrimary, AppTheme.onAccent);
+    expect(theme.floatingActionButtonTheme.backgroundColor, _navy);
+    // A light accent gets dark ink on it.
+    final light = AppTheme.withAccent(AppTheme.light, _amber);
+    expect(light.colorScheme.onPrimary, const Color(0xFF211F29));
   });
 
   test('a dark app background gives a dark theme on it', () {
@@ -228,6 +253,30 @@ void main() {
     final scaffold = tester.element(find.byType(Scaffold).first);
     expect(Theme.of(scaffold).scaffoldBackgroundColor, _navy);
     expect(Theme.of(scaffold).brightness, Brightness.dark);
+  });
+
+  testWidgets('the app uses the chosen accent', (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(seconds: 1));
+      await db.close();
+    });
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          sectionColorsStoreProvider.overrideWithValue(
+            MemorySectionColorsStore(const SectionColors(accent: _navy)),
+          ),
+        ],
+        child: const ScontriniApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final scaffold = tester.element(find.byType(Scaffold).first);
+    expect(Theme.of(scaffold).colorScheme.primary, _navy);
+    expect(Theme.of(scaffold).floatingActionButtonTheme.backgroundColor, _navy);
   });
 
   test('hex codes', () {

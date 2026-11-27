@@ -58,6 +58,26 @@ abstract final class AppTheme {
     ),
   );
 
+  /// [base] with [accent] (Settings → "Testo secondario") in place of the
+  /// amber: headings, icons, buttons and the "Aggiungi" button follow it.
+  static ThemeData withAccent(ThemeData base, Color accent) {
+    final on = onAccentFor(accent);
+    return base.copyWith(
+      colorScheme: base.colorScheme.copyWith(primary: accent, onPrimary: on),
+      floatingActionButtonTheme: base.floatingActionButtonTheme.copyWith(
+        backgroundColor: accent,
+        foregroundColor: on,
+      ),
+    );
+  }
+
+  /// Text and icons on [color]: the cream on dark accents, near-black ink
+  /// on light ones.
+  static Color onAccentFor(Color color) =>
+      ThemeData.estimateBrightnessForColor(color) == Brightness.dark
+      ? onAccent
+      : const Color(0xFF211F29);
+
   /// Font and accent on every theme: the palette's primary is [accent]
   /// exactly (the seed alone shifts it), with [onAccent] on it; the
   /// "Aggiungi" button is filled with it too.

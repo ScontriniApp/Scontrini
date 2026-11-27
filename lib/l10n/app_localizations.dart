@@ -1832,6 +1832,48 @@ abstract class AppLocalizations {
   /// **'Sfondo dell\'app'**
   String get settingsAppBackground;
 
+  /// Settings: accent colour of headings, icons, buttons and the Add button (not the pantry)
+  ///
+  /// In it, this message translates to:
+  /// **'Testo secondario'**
+  String get settingsAccent;
+
+  /// No description provided for @settingsAccentHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Titoli, icone e pulsanti come «Aggiungi». La dispensa ha i suoi colori nel Laboratorio dispensa.'**
+  String get settingsAccentHint;
+
+  /// No description provided for @pantryLabColors.
+  ///
+  /// In it, this message translates to:
+  /// **'Colori della dispensa'**
+  String get pantryLabColors;
+
+  /// No description provided for @pantryLabAccent.
+  ///
+  /// In it, this message translates to:
+  /// **'Slider e pulsanti'**
+  String get pantryLabAccent;
+
+  /// No description provided for @pantryLabTitleColor.
+  ///
+  /// In it, this message translates to:
+  /// **'Titoli delle categorie'**
+  String get pantryLabTitleColor;
+
+  /// No description provided for @pantryLabTextColor.
+  ///
+  /// In it, this message translates to:
+  /// **'Testo'**
+  String get pantryLabTextColor;
+
+  /// No description provided for @pantryLabIconColor.
+  ///
+  /// In it, this message translates to:
+  /// **'Icone'**
+  String get pantryLabIconColor;
+
   /// Receipt detail: total line, in capitals as printed
   ///
   /// In it, this message translates to:

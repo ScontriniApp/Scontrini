@@ -84,9 +84,17 @@ void main() {
         .merge(title.style);
     expect(style.shadows, isNotEmpty);
 
+    // Category titles take the lab's title colour.
+    expect(title.style!.color, const RecessParams().titleColor);
+
     // Knobs save, the debug view doesn't.
     await tester.tap(find.byIcon(Icons.tune));
     await tester.pump();
+    await tester.scrollUntilVisible(
+      find.text('normals'),
+      100,
+      scrollable: find.byType(Scrollable).last,
+    );
     await tester.tap(find.text('normals'));
     await tester.pump();
     await tester.scrollUntilVisible(

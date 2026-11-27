@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/router.dart';
-import 'package:scontrini/app/theme.dart';
 import 'package:scontrini/core/paper/paper_bubble.dart';
 import 'package:scontrini/core/paper/paper_settings.dart';
 import 'package:scontrini/core/utils/clock.dart';
@@ -178,8 +177,12 @@ class _ReceiptReviewScreenState extends ConsumerState<ReceiptReviewScreen> {
                           child: FilledButton.icon(
                             key: const Key('review-save'),
                             style: FilledButton.styleFrom(
-                              backgroundColor: AppTheme.accent,
-                              foregroundColor: AppTheme.onAccent,
+                              backgroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .primary,
+                              foregroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimary,
                             ),
                             icon: const Icon(Icons.check),
                             // One line, however narrow the half.

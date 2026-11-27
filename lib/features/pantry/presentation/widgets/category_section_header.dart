@@ -12,6 +12,7 @@ class CategorySectionHeader extends StatelessWidget {
     required this.open,
     required this.onTap,
     this.sprite,
+    this.titleColor,
     super.key,
   });
 
@@ -24,6 +25,9 @@ class CategorySectionHeader extends StatelessWidget {
   final String trailing;
   final bool open;
   final VoidCallback? onTap;
+
+  /// Overrides the heading colour ([SectionSurface.headingColor]).
+  final Color? titleColor;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +45,7 @@ class CategorySectionHeader extends StatelessWidget {
               child: Text(
                 title,
                 style: theme.textTheme.titleLarge?.copyWith(
-                  color: SectionSurface.headingColor(context),
+                  color: titleColor ?? SectionSurface.headingColor(context),
                 ),
               ),
             ),

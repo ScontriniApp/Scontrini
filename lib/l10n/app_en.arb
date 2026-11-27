@@ -288,6 +288,13 @@
   "settingsColorSquare": "Saturation and brightness",
   "settingsColorHue": "Hue",
   "settingsAppBackground": "App background",
+  "settingsAccent": "Secondary text",
+  "settingsAccentHint": "Headings, icons and buttons like “Add”. The pantry has its own colours in the pantry lab.",
+  "pantryLabColors": "Pantry colours",
+  "pantryLabAccent": "Sliders and buttons",
+  "pantryLabTitleColor": "Category titles",
+  "pantryLabTextColor": "Text",
+  "pantryLabIconColor": "Icons",
   "receiptTotal": "TOTAL",
   "receiptTotalDiscount": "TOTAL DISCOUNT",
   "receiptDiscount": "Discount"

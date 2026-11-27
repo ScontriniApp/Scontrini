@@ -796,6 +796,16 @@
   "@settingsAppBackground": {
     "description": "Settings: colour behind every screen"
   },
+  "settingsAccent": "Testo secondario",
+  "@settingsAccent": {
+    "description": "Settings: accent colour of headings, icons, buttons and the Add button (not the pantry)"
+  },
+  "settingsAccentHint": "Titoli, icone e pulsanti come «Aggiungi». La dispensa ha i suoi colori nel Laboratorio dispensa.",
+  "pantryLabColors": "Colori della dispensa",
+  "pantryLabAccent": "Slider e pulsanti",
+  "pantryLabTitleColor": "Titoli delle categorie",
+  "pantryLabTextColor": "Testo",
+  "pantryLabIconColor": "Icone",
   "receiptTotal": "TOTALE",
   "@receiptTotal": {
     "description": "Receipt detail: total line, in capitals as printed"

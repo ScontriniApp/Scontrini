@@ -9,6 +9,7 @@ import 'package:scontrini/features/pantry/domain/pantry_category.dart';
 import 'package:scontrini/features/pantry/domain/pantry_lot.dart';
 import 'package:scontrini/features/pantry/presentation/category_label.dart';
 import 'package:scontrini/features/pantry/presentation/category_sprites.dart';
+import 'package:scontrini/features/pantry/presentation/pantry_colors.dart';
 import 'package:scontrini/features/pantry/presentation/pantry_providers.dart';
 import 'package:scontrini/features/pantry/presentation/quantity_format.dart';
 import 'package:scontrini/features/pantry/presentation/widgets/category_drawer.dart';
@@ -51,6 +52,14 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     final categories =
         ref.watch(pantryCategoriesProvider).value ?? const <PantryCategory>[];
 
+    return PantryColors(child: _scaffold(l10n, lots, categories));
+  }
+
+  Widget _scaffold(
+    AppLocalizations l10n,
+    AsyncValue<List<PantryLot>> lots,
+    List<PantryCategory> categories,
+  ) {
     return ScrollAwayScaffold(
       title: Text(l10n.navPantry),
       actions: [

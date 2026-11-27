@@ -2,11 +2,14 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:scontrini/app/theme.dart';
 import 'package:scontrini/core/paper/paper_params.dart';
 import 'package:scontrini/core/recess/recess_params.dart';
 import 'package:scontrini/core/recess/recess_settings.dart';
 import 'package:scontrini/core/recess/recessed_panel.dart';
 import 'package:scontrini/core/utils/settings_store.dart';
+import 'package:scontrini/features/pantry/presentation/pantry_colors.dart';
 
 void main() {
   test('JSON round trip; missing or bad knobs keep their defaults', () {
@@ -17,6 +20,41 @@ void main() {
     expect(partial.radius, const RecessParams().radius);
     expect(tuned.toJson().containsKey('debugView'), isFalse);
     expect(tuned.toDart(), startsWith('RecessParams(depth: 31.00,'));
+  });
+
+  test('the pantry colours round trip; no text or icon colour = theme', () {
+    const tuned = RecessParams(
+      accent: Color(0xFF1B5E20),
+      titleColor: Color(0xFFB71C1C),
+      textColor: Color(0xFF424242),
+      iconColor: Color(0xFF0D47A1),
+    );
+    expect(RecessParams.fromJson(tuned.toJson()), tuned);
+    expect(tuned.toDart(), contains('iconColor: Color(0xff0d47a1)'));
+    final cleared = tuned.copyWith(textColor: null);
+    expect(cleared.textColor, isNull);
+    expect(cleared.iconColor, const Color(0xFF0D47A1));
+    expect(const RecessParams().toJson().containsKey('textColor'), isFalse);
+    expect(const RecessParams().accent, const Color(0xFFC58003));
+  });
+
+  test('the pantry takes its colours from the lab, not the app accent', () {
+    final app = AppTheme.withAccent(AppTheme.light, const Color(0xFF1A237E));
+    final pantry = PantryColors.themed(
+      app,
+      const RecessParams(
+        accent: Color(0xFF1B5E20),
+        textColor: Color(0xFF424242),
+        iconColor: Color(0xFF0D47A1),
+      ),
+    );
+    expect(pantry.colorScheme.primary, const Color(0xFF1B5E20));
+    expect(pantry.textTheme.titleMedium!.color, const Color(0xFF424242));
+    expect(pantry.iconTheme.color, const Color(0xFF0D47A1));
+    expect(
+      PantryColors.themed(app, const RecessParams()).colorScheme.primary,
+      const Color(0xFFC58003),
+    );
   });
 
   test('the file store reads back what was saved', () async {

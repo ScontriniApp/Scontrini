@@ -1127,6 +1127,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAppBackground => 'App background';
 
   @override
+  String get settingsAccent => 'Secondary text';
+
+  @override
+  String get settingsAccentHint =>
+      'Headings, icons and buttons like “Add”. The pantry has its own colours in the pantry lab.';
+
+  @override
+  String get pantryLabColors => 'Pantry colours';
+
+  @override
+  String get pantryLabAccent => 'Sliders and buttons';
+
+  @override
+  String get pantryLabTitleColor => 'Category titles';
+
+  @override
+  String get pantryLabTextColor => 'Text';
+
+  @override
+  String get pantryLabIconColor => 'Icons';
+
+  @override
   String get receiptTotal => 'TOTAL';
 
   @override

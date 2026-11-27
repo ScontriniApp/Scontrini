@@ -1,3 +1,5 @@
+import 'dart:ui' show Color;
+
 import 'package:flutter/foundation.dart';
 
 /// What the recess shader shows: the result, or one of its inputs (lab
@@ -8,6 +10,10 @@ enum RecessDebugView { result, normals, depth, light }
 /// carved into the app's background, with walls, a floor, the rim's shadow
 /// on them, and content floating above the floor that casts its own
 /// shadow. Distances are in logical pixels.
+///
+/// Also the pantry's own colours ([accent], [titleColor], [textColor],
+/// [iconColor]): the pantry tab takes them from here, never from the app's
+/// accent (Settings → "Testo secondario").
 ///
 /// The defaults are the look the app ships with; the pantry lab (debug
 /// builds) tunes them on the phone.
@@ -31,6 +37,10 @@ class RecessParams {
     this.lift = 6,
     this.textShadow = 0.28,
     this.textBlur = 2,
+    this.accent = defaultAccent,
+    this.titleColor = defaultAccent,
+    this.textColor,
+    this.iconColor,
     this.debugView = RecessDebugView.result,
   });
 
@@ -42,6 +52,11 @@ class RecessParams {
       final value = json[key];
       return value is num && value.isFinite ? value.toDouble() : fallback;
     }
+
+    Color? c(String key) => switch (json[key]) {
+      final int argb => Color(argb),
+      _ => null,
+    };
 
     return RecessParams(
       depth: n('depth', d.depth),
@@ -61,8 +76,15 @@ class RecessParams {
       lift: n('lift', d.lift),
       textShadow: n('textShadow', d.textShadow),
       textBlur: n('textBlur', d.textBlur),
+      accent: c('accent') ?? d.accent,
+      titleColor: c('titleColor') ?? d.titleColor,
+      textColor: c('textColor'),
+      iconColor: c('iconColor'),
     );
   }
+
+  /// The app's amber, the pantry's starting accent.
+  static const defaultAccent = Color(0xFFC58003);
 
   /// How deep an open drawer goes below the background.
   final double depth;
@@ -116,6 +138,18 @@ class RecessParams {
   /// Blur of the content's shadow.
   final double textBlur;
 
+  /// The pantry's sliders, buttons and accent (its colour scheme primary).
+  final Color accent;
+
+  /// The pantry's category titles.
+  final Color titleColor;
+
+  /// The pantry's text; null: the theme's.
+  final Color? textColor;
+
+  /// The pantry's icons; null: the theme's.
+  final Color? iconColor;
+
   /// Lab only: show an input of the shader instead of the result.
   final RecessDebugView debugView;
 
@@ -137,6 +171,10 @@ class RecessParams {
     double? lift,
     double? textShadow,
     double? textBlur,
+    Color? accent,
+    Color? titleColor,
+    Object? textColor = _keep,
+    Object? iconColor = _keep,
     RecessDebugView? debugView,
   }) => RecessParams(
     depth: depth ?? this.depth,
@@ -156,8 +194,23 @@ class RecessParams {
     lift: lift ?? this.lift,
     textShadow: textShadow ?? this.textShadow,
     textBlur: textBlur ?? this.textBlur,
+    accent: accent ?? this.accent,
+    titleColor: titleColor ?? this.titleColor,
+    textColor: textColor == _keep ? this.textColor : textColor as Color?,
+    iconColor: iconColor == _keep ? this.iconColor : iconColor as Color?,
     debugView: debugView ?? this.debugView,
   );
+
+  /// [copyWith]'s "leave as it is" for the nullable colours.
+  static const _keep = Object();
+
+  /// The colours by name, ARGB (absent: the theme's).
+  Map<String, int> get _colors => {
+    'accent': accent.toARGB32(),
+    'titleColor': titleColor.toARGB32(),
+    if (textColor case final c?) 'textColor': c.toARGB32(),
+    if (iconColor case final c?) 'iconColor': c.toARGB32(),
+  };
 
   /// The knobs by name (no debug view), for JSON and the lab's copy.
   Map<String, double> get _knobs => {
@@ -181,17 +234,27 @@ class RecessParams {
   };
 
   /// The knobs as JSON, for saving. [debugView] is not saved.
-  Map<String, Object> toJson() => Map.of(_knobs);
+  Map<String, Object> toJson() => {..._knobs, ..._colors};
 
   /// Dart source for these values, to paste back as the new defaults.
   String toDart() {
     final fields = _knobs.entries
         .map((e) => '${e.key}: ${e.value.toStringAsFixed(2)}')
         .join(', ');
-    return 'RecessParams($fields)';
+    final colors = _colors.entries
+        .map((e) => '${e.key}: Color(0x${e.value.toRadixString(16)})')
+        .join(', ');
+    return 'RecessParams($fields, $colors)';
   }
 
-  List<Object> get _fields => [..._knobs.values, debugView];
+  List<Object?> get _fields => [
+    ..._knobs.values,
+    accent,
+    titleColor,
+    textColor,
+    iconColor,
+    debugView,
+  ];
 
   @override
   bool operator ==(Object other) =>

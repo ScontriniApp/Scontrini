@@ -6,7 +6,7 @@ import 'package:material_ui/material_ui.dart';
 /// ([appBackground]). `null` keeps the theme's colour.
 @immutable
 final class SectionColors {
-  const new({this.background, this.text, this.appBackground});
+  const new({this.background, this.text, this.appBackground, this.accent});
 
   static const none = SectionColors();
 
@@ -17,33 +17,48 @@ final class SectionColors {
   /// to match it.
   final Color? appBackground;
 
+  /// "Testo secondario": the accent of the whole app (headings, icons,
+  /// buttons, "Aggiungi") in place of the amber. Not the pantry's, which
+  /// comes from the pantry lab.
+  final Color? accent;
+
   /// No section colour chosen (the app background doesn't count).
   bool get sectionsDefault => background == null && text == null;
 
-  SectionColors withBackground(Color? value) => SectionColors(
-    background: value,
-    text: text,
-    appBackground: appBackground,
+  SectionColors _copy({
+    Object? background = _keep,
+    Object? text = _keep,
+    Object? appBackground = _keep,
+    Object? accent = _keep,
+  }) => SectionColors(
+    background: background == _keep ? this.background : background as Color?,
+    text: text == _keep ? this.text : text as Color?,
+    appBackground: appBackground == _keep
+        ? this.appBackground
+        : appBackground as Color?,
+    accent: accent == _keep ? this.accent : accent as Color?,
   );
 
-  SectionColors withText(Color? value) => SectionColors(
-    background: background,
-    text: value,
-    appBackground: appBackground,
-  );
+  static const _keep = Object();
 
-  SectionColors withAppBackground(Color? value) =>
-      SectionColors(background: background, text: text, appBackground: value);
+  SectionColors withBackground(Color? value) => _copy(background: value);
+
+  SectionColors withText(Color? value) => _copy(text: value);
+
+  SectionColors withAppBackground(Color? value) => _copy(appBackground: value);
+
+  SectionColors withAccent(Color? value) => _copy(accent: value);
 
   @override
   bool operator ==(Object other) =>
       other is SectionColors &&
       other.background == background &&
       other.text == text &&
-      other.appBackground == appBackground;
+      other.appBackground == appBackground &&
+      other.accent == accent;
 
   @override
-  int get hashCode => Object.hash(background, text, appBackground);
+  int get hashCode => Object.hash(background, text, appBackground, accent);
 
   /// Background swatches offered in Settings: light papers, then darks.
   static const backgrounds = [

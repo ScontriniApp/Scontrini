@@ -59,6 +59,7 @@ class CategoryDrawer extends ConsumerWidget {
               trailing: trailing,
               open: open,
               onTap: onTap,
+              titleColor: p.titleColor,
             ),
             if (open) ...[...children, const SizedBox(height: 8)],
           ],

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:scontrini/app/theme.dart';
 import 'package:scontrini/core/section_colors/section_colors.dart';
 import 'package:scontrini/core/section_colors/section_colors_provider.dart';
 import 'package:scontrini/core/section_colors/section_surface.dart';
@@ -26,17 +27,25 @@ class SectionColorsTile extends ConsumerWidget {
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _ColorRow(
+          ColorRow(
             label: l10n.settingsAppBackground,
             color: colors.appBackground,
             fallback: theme.scaffoldBackgroundColor,
             shortcuts: SectionColors.backgrounds,
             onChanged: (c) => notifier.select(colors.withAppBackground(c)),
           ),
+          ColorRow(
+            label: l10n.settingsAccent,
+            color: colors.accent,
+            fallback: AppTheme.accent,
+            shortcuts: const [AppTheme.accent, ...SectionColors.texts],
+            onChanged: (c) => notifier.select(colors.withAccent(c)),
+          ),
+          Text(l10n.settingsAccentHint),
           const Divider(),
           Text(l10n.settingsSectionColorsHint),
           const SizedBox(height: 8),
-          _ColorRow(
+          ColorRow(
             label: l10n.settingsSectionBackground,
             color: colors.background,
             // Starting point when nothing is chosen: the card colour now.
@@ -44,7 +53,7 @@ class SectionColorsTile extends ConsumerWidget {
             shortcuts: SectionColors.backgrounds,
             onChanged: (c) => notifier.select(colors.withBackground(c)),
           ),
-          _ColorRow(
+          ColorRow(
             label: l10n.settingsSectionText,
             color: colors.text,
             fallback: theme.colorScheme.onSurface,
@@ -88,14 +97,15 @@ class SectionColorsTile extends ConsumerWidget {
 }
 
 /// "Sfondo  [●] #1A237E   Predefinito": the swatch opens the picker, the
-/// button goes back to the theme's colour.
-class _ColorRow extends StatelessWidget {
+/// button goes back to the theme's colour. Also the pantry lab's colours.
+class ColorRow extends StatelessWidget {
   const new({
     required this.label,
     required this.color,
     required this.fallback,
     required this.shortcuts,
     required this.onChanged,
+    super.key,
   });
 
   final String label;

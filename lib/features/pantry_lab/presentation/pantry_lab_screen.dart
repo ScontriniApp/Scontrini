@@ -8,16 +8,20 @@ import 'package:material_ui/material_ui.dart';
 import 'package:scontrini/app/router.dart';
 import 'package:scontrini/core/database/tables/pantry_enums.dart';
 import 'package:scontrini/core/paper/paper_bubble.dart';
+import 'package:scontrini/core/paper/paper_params.dart';
 import 'package:scontrini/core/paper/paper_settings.dart';
 import 'package:scontrini/core/paper/tilt_light.dart';
 import 'package:scontrini/core/recess/recess_params.dart';
 import 'package:scontrini/core/recess/recess_settings.dart';
 import 'package:scontrini/core/recess/recessed_panel.dart';
+import 'package:scontrini/core/section_colors/section_colors.dart';
 import 'package:scontrini/features/pantry/domain/lot_ledger.dart';
 import 'package:scontrini/features/pantry/domain/pantry_lot.dart';
 import 'package:scontrini/features/pantry/presentation/category_sprites.dart';
+import 'package:scontrini/features/pantry/presentation/pantry_colors.dart';
 import 'package:scontrini/features/pantry/presentation/widgets/category_drawer.dart';
 import 'package:scontrini/features/pantry/presentation/widgets/pantry_lot_tile.dart';
+import 'package:scontrini/features/settings/presentation/section_colors_tile.dart';
 import 'package:scontrini/l10n/app_localizations.dart';
 
 /// Debug-only screen to tune the pantry's drawers on the phone: the real
@@ -76,36 +80,10 @@ class _PantryLabScreenState extends ConsumerState<PantryLabScreen> {
     final shown = params.copyWith(debugView: _debugView);
     void update(RecessParams value) => _settings.set(value);
 
-    final preview = ListView(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      children: [
-        for (final (i, shelf) in _shelves.indexed)
-          CategoryDrawer(
-            title: shelf.title,
-            sprite: categorySprite(shelf.category),
-            trailing: '${shelf.lots.length}',
-            open: _open.contains(i),
-            onTap: () => setState(
-              () => _open.contains(i) ? _open.remove(i) : _open.add(i),
-            ),
-            params: shown,
-            children: [
-              for (final lot in shelf.lots)
-                PantryLotTile(
-                  key: ValueKey(lot.id),
-                  lot: lot,
-                  onSetRemaining: (_) {},
-                  onTap: () {},
-                ),
-            ],
-          ),
-        const SizedBox(height: 8),
-        Text(
-          l10n.pantryLabTapHint,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-      ],
+    // The pantry's own colours, as the tab shows them.
+    final preview = PantryColors(
+      params: shown,
+      child: Builder(builder: (context) => _preview(context, l10n, shown)),
     );
 
     return Scaffold(
@@ -129,137 +107,226 @@ class _PantryLabScreenState extends ConsumerState<PantryLabScreen> {
                 elevation: 4,
                 child: SizedBox(
                   height: MediaQuery.sizeOf(context).height * 0.42,
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    children: [
-                      if (!RecessedPanel.canShade)
-                        ListTile(
-                          dense: true,
-                          leading: const Icon(Icons.info_outline),
-                          title: Text(l10n.pantryLabUnsupported),
-                        ),
-                      Wrap(
-                        spacing: 8,
-                        alignment: WrapAlignment.center,
-                        children: [
-                          OutlinedButton(
-                            onPressed: _settings.reset,
-                            child: Text(l10n.shaderLabReset),
-                          ),
-                          OutlinedButton(
-                            onPressed: () async {
-                              await Clipboard.setData(
-                                ClipboardData(text: params.toDart()),
-                              );
-                              messenger
-                                ..hideCurrentSnackBar()
-                                ..showSnackBar(
-                                  SnackBar(content: Text(l10n.shaderLabCopied)),
-                                );
-                            },
-                            child: Text(l10n.shaderLabCopy),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      // Shader inputs: developer names, not translated.
-                      Center(
-                        child: SegmentedButton<RecessDebugView>(
-                          segments: [
-                            for (final v in RecessDebugView.values)
-                              ButtonSegment(value: v, label: Text(v.name)),
-                          ],
-                          selected: {_debugView},
-                          onSelectionChanged: (s) =>
-                              setState(() => _debugView = s.single),
-                        ),
-                      ),
-                      SwitchListTile(
-                        dense: true,
-                        secondary: const Icon(Icons.screen_rotation),
-                        title: Text(l10n.shaderLabTiltLight),
-                        subtitle: Text(l10n.shaderLabTiltLightHint),
-                        value: _tilt.running,
-                        onChanged: (on) async {
-                          if (on) {
-                            _tilt.start();
-                          } else {
-                            await _tilt.stop();
-                            ref.invalidate(paperLightProvider);
-                          }
-                          if (mounted) setState(() {});
-                        },
-                      ),
-                      // Knob names match the params (developer tool), so
-                      // they aren't translated. The lamp is the paper's.
-                      _knob('lightDir', light.azimuth, 0, 2 * math.pi, (v) {
-                        _paper.setLight(light.copyWith(azimuth: v));
-                      }),
-                      _knob('lightUp', light.elevation, 0.1, math.pi / 2, (v) {
-                        _paper.setLight(light.copyWith(elevation: v));
-                      }),
-                      _section('drawer'),
-                      _knob('depth', params.depth, 0, 60, (v) {
-                        update(params.copyWith(depth: v));
-                      }),
-                      _knob('closedDepth', params.closedDepth, 0, 40, (v) {
-                        update(params.copyWith(closedDepth: v));
-                      }),
-                      _knob('radius', params.radius, 0, 32, (v) {
-                        update(params.copyWith(radius: v));
-                      }),
-                      _knob('bevel', params.bevel, 0, 12, (v) {
-                        update(params.copyWith(bevel: v));
-                      }),
-                      _section('perspective'),
-                      _knob('eyeDistance', params.eyeDistance, 150, 4000, (v) {
-                        update(params.copyWith(eyeDistance: v));
-                      }),
-                      _knob('eyeX', params.eyeX, 0, 1, (v) {
-                        update(params.copyWith(eyeX: v));
-                      }),
-                      _knob('eyeY', params.eyeY, 0, 1, (v) {
-                        update(params.copyWith(eyeY: v));
-                      }),
-                      _section('shading'),
-                      _knob('ambient', params.ambient, 0, 1, (v) {
-                        update(params.copyWith(ambient: v));
-                      }),
-                      _knob('floorShade', params.floorShade, 0.5, 1.2, (v) {
-                        update(params.copyWith(floorShade: v));
-                      }),
-                      _knob('wallShade', params.wallShade, 0.3, 1.2, (v) {
-                        update(params.copyWith(wallShade: v));
-                      }),
-                      _knob('shadow', params.shadow, 0, 1, (v) {
-                        update(params.copyWith(shadow: v));
-                      }),
-                      _knob('softness', params.softness, 0, 1.5, (v) {
-                        update(params.copyWith(softness: v));
-                      }),
-                      _knob('occlusion', params.occlusion, 0, 1, (v) {
-                        update(params.copyWith(occlusion: v));
-                      }),
-                      _knob('highlight', params.highlight, 0, 1, (v) {
-                        update(params.copyWith(highlight: v));
-                      }),
-                      _section('content'),
-                      _knob('lift', params.lift, 0, 30, (v) {
-                        update(params.copyWith(lift: v));
-                      }),
-                      _knob('textShadow', params.textShadow, 0, 1, (v) {
-                        update(params.copyWith(textShadow: v));
-                      }),
-                      _knob('textBlur', params.textBlur, 0, 12, (v) {
-                        update(params.copyWith(textBlur: v));
-                      }),
-                    ],
-                  ),
+                  child: _controlsList(l10n, messenger, params, light, update),
                 ),
               ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _preview(
+    BuildContext context,
+    AppLocalizations l10n,
+    RecessParams shown,
+  ) => ListView(
+    padding: const EdgeInsets.symmetric(vertical: 12),
+    children: [
+      for (final (i, shelf) in _shelves.indexed)
+        CategoryDrawer(
+          title: shelf.title,
+          sprite: categorySprite(shelf.category),
+          trailing: '${shelf.lots.length}',
+          open: _open.contains(i),
+          onTap: () => setState(
+            () => _open.contains(i) ? _open.remove(i) : _open.add(i),
+          ),
+          params: shown,
+          children: [
+            for (final lot in shelf.lots)
+              PantryLotTile(
+                key: ValueKey(lot.id),
+                lot: lot,
+                onSetRemaining: (_) {},
+                onTap: () {},
+              ),
+          ],
+        ),
+      const SizedBox(height: 8),
+      Text(
+        l10n.pantryLabTapHint,
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+    ],
+  );
+
+  /// A pantry colour: the swatch opens the picker, reset goes back to
+  /// [fallback] ([onChanged] null).
+  Widget _colorRow(
+    String label,
+    Color? value,
+    Color fallback,
+    ValueChanged<Color?> onChanged,
+  ) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: ColorRow(
+      label: label,
+      color: value,
+      fallback: fallback,
+      shortcuts: const [RecessParams.defaultAccent, ...SectionColors.texts],
+      onChanged: onChanged,
+    ),
+  );
+
+  Widget _controlsList(
+    AppLocalizations l10n,
+    ScaffoldMessengerState messenger,
+    RecessParams params,
+    PaperLight light,
+    void Function(RecessParams) update,
+  ) {
+    final theme = Theme.of(context);
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      children: [
+        if (!RecessedPanel.canShade)
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.info_outline),
+            title: Text(l10n.pantryLabUnsupported),
+          ),
+        Wrap(
+          spacing: 8,
+          alignment: WrapAlignment.center,
+          children: [
+            OutlinedButton(
+              onPressed: _settings.reset,
+              child: Text(l10n.shaderLabReset),
+            ),
+            OutlinedButton(
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: params.toDart()));
+                messenger
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(SnackBar(content: Text(l10n.shaderLabCopied)));
+              },
+              child: Text(l10n.shaderLabCopy),
+            ),
+          ],
+        ),
+        // The pantry's own colours (the tab reads only these).
+        _section(l10n.pantryLabColors),
+        _colorRow(
+          l10n.pantryLabAccent,
+          params.accent,
+          RecessParams.defaultAccent,
+          (c) =>
+              update(params.copyWith(accent: c ?? RecessParams.defaultAccent)),
+        ),
+        _colorRow(
+          l10n.pantryLabTitleColor,
+          params.titleColor,
+          RecessParams.defaultAccent,
+          (c) => update(
+            params.copyWith(titleColor: c ?? RecessParams.defaultAccent),
+          ),
+        ),
+        _colorRow(
+          l10n.pantryLabTextColor,
+          params.textColor,
+          theme.colorScheme.onSurface,
+          (c) => update(params.copyWith(textColor: c)),
+        ),
+        _colorRow(
+          l10n.pantryLabIconColor,
+          params.iconColor,
+          theme.colorScheme.onSurfaceVariant,
+          (c) => update(params.copyWith(iconColor: c)),
+        ),
+        const SizedBox(height: 8),
+        // Shader inputs: developer names, not translated.
+        Center(
+          child: SegmentedButton<RecessDebugView>(
+            segments: [
+              for (final v in RecessDebugView.values)
+                ButtonSegment(value: v, label: Text(v.name)),
+            ],
+            selected: {_debugView},
+            onSelectionChanged: (s) => setState(() => _debugView = s.single),
+          ),
+        ),
+        SwitchListTile(
+          dense: true,
+          secondary: const Icon(Icons.screen_rotation),
+          title: Text(l10n.shaderLabTiltLight),
+          subtitle: Text(l10n.shaderLabTiltLightHint),
+          value: _tilt.running,
+          onChanged: (on) async {
+            if (on) {
+              _tilt.start();
+            } else {
+              await _tilt.stop();
+              ref.invalidate(paperLightProvider);
+            }
+            if (mounted) setState(() {});
+          },
+        ),
+        // Knob names match the params (developer tool), so
+        // they aren't translated. The lamp is the paper's.
+        _knob('lightDir', light.azimuth, 0, 2 * math.pi, (v) {
+          _paper.setLight(light.copyWith(azimuth: v));
+        }),
+        _knob('lightUp', light.elevation, 0.1, math.pi / 2, (v) {
+          _paper.setLight(light.copyWith(elevation: v));
+        }),
+        _section('drawer'),
+        _knob('depth', params.depth, 0, 60, (v) {
+          update(params.copyWith(depth: v));
+        }),
+        _knob('closedDepth', params.closedDepth, 0, 40, (v) {
+          update(params.copyWith(closedDepth: v));
+        }),
+        _knob('radius', params.radius, 0, 32, (v) {
+          update(params.copyWith(radius: v));
+        }),
+        _knob('bevel', params.bevel, 0, 12, (v) {
+          update(params.copyWith(bevel: v));
+        }),
+        _section('perspective'),
+        _knob('eyeDistance', params.eyeDistance, 150, 4000, (v) {
+          update(params.copyWith(eyeDistance: v));
+        }),
+        _knob('eyeX', params.eyeX, 0, 1, (v) {
+          update(params.copyWith(eyeX: v));
+        }),
+        _knob('eyeY', params.eyeY, 0, 1, (v) {
+          update(params.copyWith(eyeY: v));
+        }),
+        _section('shading'),
+        _knob('ambient', params.ambient, 0, 1, (v) {
+          update(params.copyWith(ambient: v));
+        }),
+        _knob('floorShade', params.floorShade, 0.5, 1.2, (v) {
+          update(params.copyWith(floorShade: v));
+        }),
+        _knob('wallShade', params.wallShade, 0.3, 1.2, (v) {
+          update(params.copyWith(wallShade: v));
+        }),
+        _knob('shadow', params.shadow, 0, 1, (v) {
+          update(params.copyWith(shadow: v));
+        }),
+        _knob('softness', params.softness, 0, 1.5, (v) {
+          update(params.copyWith(softness: v));
+        }),
+        _knob('occlusion', params.occlusion, 0, 1, (v) {
+          update(params.copyWith(occlusion: v));
+        }),
+        _knob('highlight', params.highlight, 0, 1, (v) {
+          update(params.copyWith(highlight: v));
+        }),
+        _section('content'),
+        _knob('lift', params.lift, 0, 30, (v) {
+          update(params.copyWith(lift: v));
+        }),
+        _knob('textShadow', params.textShadow, 0, 1, (v) {
+          update(params.copyWith(textShadow: v));
+        }),
+        _knob('textBlur', params.textBlur, 0, 12, (v) {
+          update(params.copyWith(textBlur: v));
+        }),
+      ],
     );
   }
 
